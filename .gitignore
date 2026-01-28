@@ -36,3 +36,7 @@ build/
 
 ### Mac OS ###
 .DS_Store
+
+### Build ###
+messenger-client/dependency-reduced-pom.xml
+messenger-server/dependency-reduced-pom.xml
