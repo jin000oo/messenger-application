@@ -3,8 +3,8 @@
 본 문서는 메신저 시스템 개발 완료 후 요구사항 충족 여부를 스스로 확인하기 위한 체크리스트입니다.
 
 ## 1. 프로젝트 기본 구성 및 기술 스택
-- [ ] Maven 멀티 모듈 구조로 구성되어 있는가? (`messenger-common`, `messenger-server`, `messenger-client`)
-- [ ] Java 21 버전을 사용하는가?
+- [x] Maven 멀티 모듈 구조로 구성되어 있는가? (`messenger-common`, `messenger-server`, `messenger-client`)
+- [x] Java 21 버전을 사용하는가?
 - [ ] Jackson 라이브러리를 사용하여 JSON 직렬화/역직렬화를 처리하는가?
 - [ ] TCP 소켓 통신을 기반으로 구현되었는가?
 
