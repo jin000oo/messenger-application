@@ -12,9 +12,28 @@
 
 package com.nhnacademy.messenger.server;
 
-public class ServerMain {
-    public static void main(String[] args) {
-        Thread thread = new Thread(new MessageServer());
-        thread.start();
+import lombok.extern.slf4j.Slf4j;
+
+import java.io.IOException;
+import java.net.ServerSocket;
+import java.net.Socket;
+
+@Slf4j
+public class MessageServer implements Runnable {
+
+    @Override
+    public void run() {
+        try (ServerSocket serverSocket = new ServerSocket(12345)) {
+            while (true) {
+                Socket client = serverSocket.accept();
+                Thread clientThread = new Thread(new ClientHandler(client));
+                clientThread.start();
+
+                log.debug("client 접속 성공!");
+
+            }
+        } catch (IOException e) {
+            log.debug("IOException 발생했습니다.");
+        }
     }
 }
