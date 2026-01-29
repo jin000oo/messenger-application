@@ -12,6 +12,7 @@
 
 package com.nhnacademy.messenger.server;
 
+import com.nhnacademy.messenger.server.handler.MessageDispatcher;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
@@ -21,12 +22,14 @@ import java.net.Socket;
 @Slf4j
 public class MessageServer implements Runnable {
 
+    MessageDispatcher messageDispatcher = new MessageDispatcher();
+
     @Override
     public void run() {
         try (ServerSocket serverSocket = new ServerSocket(12345)) {
             while (true) {
                 Socket client = serverSocket.accept();
-                Thread clientThread = new Thread(new ClientHandler(client));
+                Thread clientThread = new Thread(new ClientHandler(client, messageDispatcher));
                 clientThread.start();
 
                 log.debug("[+] {}:{}", client.getInetAddress().getHostName(), client.getPort());
