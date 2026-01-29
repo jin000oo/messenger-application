@@ -25,7 +25,7 @@ public class ConsoleRecvObserver implements Observer {
     @Override
     public void updateMessage(String message) {
         System.out.printf("%s[Server] %s%s", System.lineSeparator(), message, System.lineSeparator());
-        System.out.println("> ");
+        System.out.print("> ");
     }
 
 }

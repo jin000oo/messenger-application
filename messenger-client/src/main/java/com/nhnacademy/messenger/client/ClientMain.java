@@ -27,7 +27,7 @@ import java.util.Scanner;
 public class ClientMain {
 
     private static final String DEFAULT_SERVER_ADDRESS = "localhost";
-    private static final int DEFAULT_PORT = 8080;
+    private static final int DEFAULT_PORT = 12345;
 
     public static void main(String[] args) {
         try {
