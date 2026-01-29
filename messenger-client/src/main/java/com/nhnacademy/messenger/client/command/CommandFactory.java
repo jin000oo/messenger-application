@@ -10,33 +10,26 @@
  * +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  */
 
-package com.nhnacademy.messenger.common.domain;
+package com.nhnacademy.messenger.client.command;
 
+import com.nhnacademy.messenger.client.command.impl.ChatCommand;
+import com.nhnacademy.messenger.client.command.impl.LoginCommand;
+import com.nhnacademy.messenger.client.command.impl.LogoutCommand;
+import java.util.HashMap;
 import java.util.Map;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
 
-@Data
-@Getter
-@NoArgsConstructor
-@AllArgsConstructor
-public class MessageRequest {
+public class CommandFactory {
 
-    private RequestHeader header;
-    private Map<String, Object> data;
+    private final Map<String, ClientCommand> commands = new HashMap<>();
 
-    @Data
-    @Getter
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class RequestHeader {
+    public CommandFactory() {
+        commands.put("/login", new LoginCommand());
+        commands.put("/logout", new LogoutCommand());
+        commands.put("/chat", new ChatCommand());
+    }
 
-        private MessageType type;
-        private String timestamp;
-        private String sessionId;
-
+    public ClientCommand getCommand(String commandName) {
+        return commands.get(commandName);
     }
 
 }

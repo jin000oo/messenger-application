@@ -10,33 +10,18 @@
  * +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  */
 
-package com.nhnacademy.messenger.common.domain;
+package com.nhnacademy.messenger.client.observer;
 
-import java.util.Map;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import com.nhnacademy.messenger.client.subject.EventType;
 
-@Data
-@Getter
-@NoArgsConstructor
-@AllArgsConstructor
-public class MessageRequest {
+public interface Observer {
 
-    private RequestHeader header;
-    private Map<String, Object> data;
+    EventType getEventType();
 
-    @Data
-    @Getter
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class RequestHeader {
+    void updateMessage(String message);
 
-        private MessageType type;
-        private String timestamp;
-        private String sessionId;
-
+    default boolean validate(EventType eventType) {
+        return getEventType().equals(eventType);
     }
 
 }

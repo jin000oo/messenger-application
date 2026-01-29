@@ -10,33 +10,19 @@
  * +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  */
 
-package com.nhnacademy.messenger.common.domain;
+package com.nhnacademy.messenger.client.session;
 
-import java.util.Map;
-import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-@Data
-@Getter
-@NoArgsConstructor
-@AllArgsConstructor
-public class MessageRequest {
+public class ClientSession {
 
-    private RequestHeader header;
-    private Map<String, Object> data;
-
-    @Data
     @Getter
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class RequestHeader {
+    @Setter
+    private static String sessionId;
 
-        private MessageType type;
-        private String timestamp;
-        private String sessionId;
-
-    }
+    @Getter
+    @Setter
+    private static String userId;
 
 }

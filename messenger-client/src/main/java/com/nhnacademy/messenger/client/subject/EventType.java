@@ -10,33 +10,21 @@
  * +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  */
 
-package com.nhnacademy.messenger.common.domain;
+package com.nhnacademy.messenger.client.subject;
 
-import java.util.Map;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+public enum EventType {
 
-@Data
-@Getter
-@NoArgsConstructor
-@AllArgsConstructor
-public class MessageRequest {
+    SEND("송신"),
+    RECV("수신");
 
-    private RequestHeader header;
-    private Map<String, Object> data;
+    private String value;
 
-    @Data
-    @Getter
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class RequestHeader {
+    EventType(String value) {
+        this.value = value;
+    }
 
-        private MessageType type;
-        private String timestamp;
-        private String sessionId;
-
+    public String getValue() {
+        return value;
     }
 
 }

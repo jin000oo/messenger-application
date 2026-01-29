@@ -10,32 +10,20 @@
  * +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  */
 
-package com.nhnacademy.messenger.common.domain;
+package com.nhnacademy.messenger.client.observer.console;
 
-import java.util.Map;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import com.nhnacademy.messenger.client.observer.Observer;
+import com.nhnacademy.messenger.client.subject.EventType;
 
-@Data
-@Getter
-@NoArgsConstructor
-@AllArgsConstructor
-public class MessageRequest {
+public class ConsoleSendObserver implements Observer {
 
-    private RequestHeader header;
-    private Map<String, Object> data;
+    @Override
+    public EventType getEventType() {
+        return EventType.SEND;
+    }
 
-    @Data
-    @Getter
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class RequestHeader {
-
-        private MessageType type;
-        private String timestamp;
-        private String sessionId;
+    @Override
+    public void updateMessage(String message) {
 
     }
 
