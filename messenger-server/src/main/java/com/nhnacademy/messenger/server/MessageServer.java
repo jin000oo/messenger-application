@@ -29,7 +29,7 @@ public class MessageServer implements Runnable {
                 Thread clientThread = new Thread(new ClientHandler(client));
                 clientThread.start();
 
-                log.debug("client 접속 성공!");
+                log.debug("[+] {}:{}", client.getInetAddress().getHostName(), client.getPort());
 
             }
         } catch (IOException e) {

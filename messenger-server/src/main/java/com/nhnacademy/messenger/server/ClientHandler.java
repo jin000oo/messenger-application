@@ -14,6 +14,8 @@ package com.nhnacademy.messenger.server;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nhnacademy.messenger.common.domain.MessageRequest;
+import com.nhnacademy.messenger.common.domain.MessageResponse;
+import com.nhnacademy.messenger.common.domain.MessageType;
 import com.nhnacademy.messenger.common.util.MessageUtils;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,6 +24,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.Map;
 
 @Slf4j
 @NoArgsConstructor
@@ -40,11 +45,25 @@ public class ClientHandler implements Runnable {
              OutputStream out = client.getOutputStream();
         ) {
             MessageRequest request;
+            MessageResponse response;
             while ((request = MessageUtils.readRequest(in)) != null) {
-                String json = objectMapper.writeValueAsString(request);
-                log.debug("Request: {}", json);
-f
-                MessageUtils.send(out, request);
+                log.debug("request: {}", objectMapper.writeValueAsString(request));
+
+                if (request.getHeader().getType() == MessageType.LOGIN) {
+                    response = new MessageResponse(
+                            new MessageResponse.ResponseHeader(
+                                    MessageType.LOGIN_SUCCESS,
+                                    LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS).toString(),
+                                    true),
+                            Map.of(
+                                    "userId", request.getData().get("userId"),
+                                    "sessionID", "sessionId",
+                                    "message", "welcome"
+                            )
+                    );
+
+                    MessageUtils.send(out, response);
+                }
             }
 
         } catch (IOException e) {
@@ -52,6 +71,7 @@ f
 
         } finally {
             try {
+                log.debug("[-] {}:{}", client.getInetAddress().getHostName(), client.getPort());
                 client.close();
 
             } catch (IOException e) {
