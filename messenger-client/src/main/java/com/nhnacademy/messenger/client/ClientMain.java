@@ -12,18 +12,18 @@
 
 package com.nhnacademy.messenger.client;
 
-import com.nhnacademy.messenger.common.domain.MessageRequest;
-import com.nhnacademy.messenger.common.domain.MessageResponse;
-import com.nhnacademy.messenger.common.domain.MessageType;
-import com.nhnacademy.messenger.common.util.MessageUtils;
+import com.nhnacademy.messenger.client.command.ClientCommand;
+import com.nhnacademy.messenger.client.command.CommandFactory;
+import com.nhnacademy.messenger.client.command.impl.ChatCommand;
+import com.nhnacademy.messenger.client.observer.console.ConsoleRecvObserver;
+import com.nhnacademy.messenger.client.runnable.ReceivedMessageClient;
+import com.nhnacademy.messenger.client.subject.EventType;
+import com.nhnacademy.messenger.client.subject.MessageSubject;
+import com.nhnacademy.messenger.client.subject.Subject;
 import java.io.IOException;
 import java.net.Socket;
-import java.time.LocalDateTime;
-import java.util.Map;
 import java.util.Scanner;
-import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
 public class ClientMain {
 
     private static final String DEFAULT_SERVER_ADDRESS = "localhost";
@@ -35,52 +35,49 @@ public class ClientMain {
             Socket socket = new Socket(DEFAULT_SERVER_ADDRESS, DEFAULT_PORT);
 
             if (socket.isConnected()) {
-                System.out.printf("[ClientMain] 클라이언트 소켓 연결에 성공했습니다. (%s:%d)%s",
+                System.out.printf("[ClientMain] 서버 연결 성공 (%s:%d)%s",
                         DEFAULT_SERVER_ADDRESS, DEFAULT_PORT, System.lineSeparator());
             }
 
+            Subject subject = new MessageSubject();
+            subject.register(EventType.RECV, new ConsoleRecvObserver());
+
             // 서버로부터 오는 메시지를 받는 스레드
-            Thread receiverThread = new Thread(() -> receiveMessage(socket));
+            Thread receiverThread = new Thread(new ReceivedMessageClient(socket, subject));
             receiverThread.start();
 
             // 사용자 입력을 받아 서버로 전송
             Scanner scanner = new Scanner(System.in);
+            CommandFactory commandFactory = new CommandFactory();
+
+            System.out.println("명령어를 입력하세요!");
+            System.out.print("> ");
 
             while (true) {
                 String input = scanner.nextLine();
 
-                if ("exit".equals(input)) {
-                    socket.close();
-                    break;
+                if (input.trim().isEmpty()) {
+                    continue;
                 }
 
-                MessageRequest request = new MessageRequest(new MessageRequest.RequestHeader(MessageType.LOGIN,
-                        LocalDateTime.now().toString(), "test-session"), Map.of("userId", "test", "input", input));
+                String[] parts = input.split(" ");
 
-                MessageUtils.send(socket.getOutputStream(), request);
+                ClientCommand command = commandFactory.getCommand(parts[0]);
+
+                if (command != null) {
+                    // 명령어 싪행
+                    command.execute(parts, socket.getOutputStream());
+                } else {
+                    // 명령어가 아니면 일반 채팅으로 간주
+                    new ChatCommand().execute(parts, socket.getOutputStream());
+                }
+
+                System.out.print("> ");
             }
 
         } catch (IOException e) {
             System.out.printf("[ClientMain] 예상치 못한 오류: %s%s", e.getMessage(), System.lineSeparator());
             throw new RuntimeException(e);
-        }
-    }
-
-    private static void receiveMessage(Socket socket) {
-        try {
-            while (!socket.isClosed()) {
-                MessageResponse response = MessageUtils.readResponse(socket.getInputStream());
-
-                if (response == null) {
-                    System.out.println("[ClientMain] 서버와의 연결이 끊어졌습니다.");
-                    break;
-                }
-
-                System.out.printf("[서버 응답]: %s%s", response, System.lineSeparator());
-            }
-
-        } catch (IOException e) {
-            System.out.println("[ClientMain] 수신 종료");
         }
     }
 
