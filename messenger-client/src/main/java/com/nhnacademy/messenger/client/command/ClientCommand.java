@@ -10,33 +10,13 @@
  * +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  */
 
-package com.nhnacademy.messenger.common.domain;
+package com.nhnacademy.messenger.client.command;
 
-import java.util.Map;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import java.io.OutputStream;
 
-@Data
-@Getter
-@NoArgsConstructor
-@AllArgsConstructor
-public class MessageRequest {
+public interface ClientCommand {
 
-    private RequestHeader header;
-    private Map<String, Object> data;
-
-    @Data
-    @Getter
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class RequestHeader {
-
-        private MessageType type;
-        private String timestamp;
-        private String sessionId;
-
-    }
+    // args: 사용자가 입력한 명령어 뒤의 인자들 (예: /login id pw -> ["id", "pw"])
+    void execute(String[] args, OutputStream out);
 
 }

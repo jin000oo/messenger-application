@@ -37,7 +37,7 @@ public class MessageUtils {
         byte[] bodyBytes = json.getBytes(StandardCharsets.UTF_8);
 
         // 헤더 생성
-        String header = String.format("%s%d\n", LENGTH_PREFIX, bodyBytes.length);
+        String header = String.format("%s%d%s", LENGTH_PREFIX, bodyBytes.length, System.lineSeparator());
         byte[] headerBytes = header.getBytes(StandardCharsets.UTF_8);
 
         // 전송 (헤더 + 바디)
