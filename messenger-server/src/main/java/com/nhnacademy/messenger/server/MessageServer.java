@@ -15,7 +15,6 @@ package com.nhnacademy.messenger.server;
 import com.nhnacademy.messenger.server.handler.MessageDispatcher;
 import lombok.extern.slf4j.Slf4j;
 
-import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -36,10 +35,10 @@ public class MessageServer implements Runnable {
                 clientThread.start();
 
                 log.debug("[+] {}:{}", client.getInetAddress().getHostName(), client.getPort());
-
             }
-        } catch (IOException e) {
-            log.debug("IOException 발생했습니다.");
+
+        } catch (Exception e) {
+            log.debug("Exception: {}", e.getMessage());
         }
     }
 }

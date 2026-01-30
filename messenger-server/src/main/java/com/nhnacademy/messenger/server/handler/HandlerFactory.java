@@ -26,6 +26,7 @@ public class HandlerFactory {
     static {
         Handlers.put(MessageType.LOGIN, new LoginHandler());
         Handlers.put(MessageType.LOGOUT, new LogoutHandler());
+//        Handlers.put(MessageType.USER_LIST, new UserListHandler());
     }
 
     public static Map<MessageType, Handler> getHandler() {
