@@ -10,17 +10,23 @@
  * +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  */
 
-package com.nhnacademy.messenger.server.handler;
+package com.nhnacademy.messenger.server.user.domain;
 
-import com.nhnacademy.messenger.common.domain.MessageRequest;
-import com.nhnacademy.messenger.common.domain.MessageResponse;
+import lombok.Getter;
+import lombok.Setter;
 
-import java.net.Socket;
+@Getter
+@Setter
+public class User {
+    private final String userId;
+    private String password;
+    private String userName;
+    private boolean online;
 
-public interface Handler {
-    MessageResponse handle(MessageRequest request);
-
-    default MessageResponse handleWithSocket(MessageRequest request, Socket socket) {
-        return handle(request);
+    public User(String userId, String password, String userName) {
+        this.userId = userId;
+        this.password = password;
+        this.userName = userName;
+        this.online = false;
     }
 }

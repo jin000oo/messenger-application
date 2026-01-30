@@ -15,9 +15,16 @@ package com.nhnacademy.messenger.server.session;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+import java.net.Socket;
+
 @AllArgsConstructor
 @Getter
 public class Session {
     private final String sessionId;
     private final String userId;
+    private volatile Socket socket;
+
+    public void updateSocket(Socket socket) {
+        this.socket = socket;
+    }
 }

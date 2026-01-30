@@ -15,11 +15,12 @@ package com.nhnacademy.messenger.server.handler;
 import com.nhnacademy.messenger.common.domain.MessageRequest;
 import com.nhnacademy.messenger.common.domain.MessageResponse;
 import com.nhnacademy.messenger.common.domain.MessageType;
+import com.nhnacademy.messenger.server.session.Session;
 import com.nhnacademy.messenger.server.session.SessionManager;
-import org.apache.commons.lang3.StringUtils;
+import com.nhnacademy.messenger.server.utils.HeaderValidator;
+import com.nhnacademy.messenger.server.utils.ResponseFactory;
 
-import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
+import java.net.Socket;
 import java.util.Map;
 import java.util.Objects;
 
@@ -35,39 +36,33 @@ public class MessageDispatcher {
         this.handlerMap = handlerMap;
     }
 
-    public MessageResponse dispatch(MessageRequest request) {
+    public MessageResponse dispatch(MessageRequest request, Socket socket) {
+        HeaderValidator.ValidationError validationError = HeaderValidator.validateHeader(request.getHeader());
+
+        // 헤더 확인.
+        if (validationError != null) {
+            return ResponseFactory.error(validationError.getCode(), validationError.getMessage());
+        }
+
         MessageType messageType = request.getHeader().getType();
         Handler handler = handlerMap.get(messageType);
 
+        // 메시지 타입에 따른 핸들러 확인.
         if (Objects.isNull(handler)) {
-            return createErrorResponse("COMMON.INVALID_TYPE", "유효하지 않는 Message Type입니다.");
+            return ResponseFactory.error("COMMON.UNSUPPORTED_TYPE", "아직 지원하지 않는 메시지 타입입니다.");
         }
 
-        if (messageType != MessageType.LOGIN) {
-            String sessionId = request.getHeader().getSessionId();
-            if (StringUtils.isBlank(sessionId) || Objects.isNull(SessionManager.getSession(sessionId))) {
-                return createErrorResponse("AUTH.INVALID_SESSION", "유효하지 않은 세션입니다.");
-            }
+        // 로그인
+        if (messageType == MessageType.LOGIN) {
+            return handler.handleWithSocket(request, socket);
+        }
+
+        // 재접속 시 소켓 업데이트
+        Session session = SessionManager.findBySessionId(request.getHeader().getSessionId());
+        if (session.getSocket() != socket) {
+            session.updateSocket(socket);
         }
 
         return handler.handle(request);
-    }
-
-    private MessageResponse createErrorResponse(String code, String message) {
-        return new MessageResponse(
-                new MessageResponse.ResponseHeader(
-                        MessageType.ERROR,
-                        LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS).toString(),
-                        false
-                ),
-                Map.of(
-                        "code", code,
-                        "message", message
-                )
-        );
-    }
-
-    private Handler getHandler(MessageType messageType) {
-        return handlerMap.get(messageType);
     }
 }

@@ -17,17 +17,33 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class SessionManager {
 
-    private static final Map<String, Session> sessions = new ConcurrentHashMap<>();
+    private static final Map<String, Session> sessionsById = new ConcurrentHashMap<>();
+    private static final Map<String, Session> sessionsByUserId = new ConcurrentHashMap<>();
 
     public static void addSession(Session session) {
-        sessions.put(session.getSessionId(), session);
+        sessionsById.put(session.getSessionId(), session);
+        sessionsByUserId.put(session.getUserId(), session);
     }
 
-    public static void removeSession(String sessionId) {
-        sessions.remove(sessionId);
+    public static void removeBySessionId(String sessionId) {
+        Session session = sessionsById.remove(sessionId);
+        if (session != null) {
+            sessionsByUserId.remove(session.getUserId());
+        }
     }
 
-    public static Session getSession(String sessionId) {
-        return sessions.get(sessionId);
+    public static void removeByUserId(String userId) {
+        Session session = sessionsByUserId.remove(userId);
+        if (session != null) {
+            sessionsById.remove(session.getSessionId());
+        }
+    }
+
+    public static Session findBySessionId(String sessionId) {
+        return sessionsById.get(sessionId);
+    }
+
+    public static Session findByUserId(String userId) {
+        return sessionsByUserId.get(userId);
     }
 }

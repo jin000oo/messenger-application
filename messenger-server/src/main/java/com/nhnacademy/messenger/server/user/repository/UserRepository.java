@@ -10,17 +10,23 @@
  * +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  */
 
-package com.nhnacademy.messenger.server.handler;
+package com.nhnacademy.messenger.server.user.repository;
 
-import com.nhnacademy.messenger.common.domain.MessageRequest;
-import com.nhnacademy.messenger.common.domain.MessageResponse;
+import com.nhnacademy.messenger.server.user.domain.User;
 
-import java.net.Socket;
+import java.util.List;
+import java.util.Optional;
 
-public interface Handler {
-    MessageResponse handle(MessageRequest request);
+public interface UserRepository {
+    User save(User user);
 
-    default MessageResponse handleWithSocket(MessageRequest request, Socket socket) {
-        return handle(request);
-    }
+    void delete(User user);
+
+    boolean exists(String userId);
+
+    Optional<User> find(String userId);
+
+    List<User> findAll();
+
+    void setOnline(String userId, boolean online);
 }

@@ -44,7 +44,7 @@ public class ClientHandler implements Runnable {
         ) {
             MessageRequest request;
             while ((request = MessageUtils.readRequest(in)) != null) {
-                MessageResponse response = messageDispatcher.dispatch(request);
+                MessageResponse response = messageDispatcher.dispatch(request, client);
                 log.debug("[{}:{}] Request: {}",
                         client.getInetAddress().getHostName(),
                         client.getPort(),
