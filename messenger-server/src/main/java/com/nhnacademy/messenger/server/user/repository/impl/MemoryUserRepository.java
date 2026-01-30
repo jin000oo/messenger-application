@@ -25,6 +25,10 @@ public class MemoryUserRepository implements UserRepository {
 
     private static final Map<String, User> users = new ConcurrentHashMap<>();
 
+    static {
+        users.put("marco", new User("marco", "nhnacademy123", "marco"));
+    }
+
     @Override
     public User save(User user) {
         users.put(user.getUserId(), user);
