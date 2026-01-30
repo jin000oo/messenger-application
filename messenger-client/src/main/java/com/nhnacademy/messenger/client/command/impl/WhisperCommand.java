@@ -23,37 +23,30 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Map;
 
-public class ChatCommand implements ClientCommand {
+public class WhisperCommand implements ClientCommand {
 
     @Override
     public void execute(String[] args, OutputStream out) {
         String sessionId = ClientSession.getSessionId();
-        Long currentRoomId = ClientSession.getCurrentRoomId();
+        String userId = ClientSession.getUserId();
 
         if (sessionId == null) {
             System.out.println("[Client] 해당 서비스를 이용하려면 로그인이 필요합니다.");
             return;
         }
 
-        if (currentRoomId == null) {
-            System.out.println("[Client] 채팅방에 먼저 입장을 해야 합니다.");
+        if (args.length < 3) {
             return;
         }
 
-        if (args.length < 2) {
-            return;
-        }
-
-        String[] messageParts = Arrays.copyOfRange(args, 1, args.length);
+        String targetId = args[1];
+        String[] messageParts = Arrays.copyOfRange(args, 2, args.length);
         String message = String.join(" ", messageParts);
 
-        if (message.trim().isEmpty()) {
-            return;
-        }
-
         MessageRequest request = new MessageRequest(
-                new MessageRequest.RequestHeader(MessageType.CHAT_MESSAGE, LocalDateTime.now().toString(), sessionId),
-                Map.of("roomId", currentRoomId, "message", message));
+                new MessageRequest.RequestHeader(MessageType.PRIVATE_MESSAGE, LocalDateTime.now().toString(),
+                        sessionId),
+                Map.of("senderId", userId, "receiverId", targetId, "message", message));
 
         try {
             MessageUtils.send(out, request);

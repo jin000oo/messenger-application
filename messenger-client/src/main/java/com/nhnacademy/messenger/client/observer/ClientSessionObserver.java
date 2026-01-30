@@ -41,17 +41,26 @@ public class ClientSessionObserver implements Observer {
                 ClientSession.setUserId((String) data.get("userId"));
             }
 
-            // 로그아웃 성공 시 세션 ID 지우기
-        } else if (type == MessageType.LOGOUT_SUCCESS) {
+        }
+
+        // 로그아웃 성공 시 세션 ID 지우기
+        else if (type == MessageType.LOGOUT_SUCCESS) {
             ClientSession.setSessionId(null);
             ClientSession.setUserId(null);
             ClientSession.setCurrentRoomId(null);
 
             System.out.println("[Client] 로그아웃 성공");
 
-            // 채팅방 입장 성공 시 채팅방 ID 저장
-        } else if (type == MessageType.CHAT_ROOM_ENTER_SUCCESS) {
+        }
+
+        // 채팅방 입장 성공 시 채팅방 ID 저장
+        else if (type == MessageType.CHAT_ROOM_ENTER_SUCCESS) {
             ClientSession.setCurrentRoomId((long) data.get("roomId"));
+        }
+
+        // 채팅방 나가면 방 번호 초기화
+        else if (type == MessageType.CHAT_ROOM_EXIT_SUCCESS) {
+            ClientSession.setCurrentRoomId(null);
         }
     }
 

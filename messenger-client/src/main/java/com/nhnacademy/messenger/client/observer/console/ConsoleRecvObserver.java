@@ -82,6 +82,36 @@ public class ConsoleRecvObserver implements Observer {
             }
         }
 
+        // 귓속말 전송
+        else if (type == MessageType.PRIVATE_MESSAGE_SUCCESS) {
+            System.out.printf("[%s → %s] %s%s",
+                    data.get("senderId"), data.get("receiverId"), data.get("message"), System.lineSeparator());
+        }
+
+        // 귓속말 수신
+        else if (type == MessageType.PRIVATE_MESSAGE) {
+            System.out.printf("[%s → %s] %s%s",
+                    data.get("receiverId"), data.get("senderId"), data.get("message"), System.lineSeparator());
+        }
+
+        // 채팅방 나가기
+        else if (type == MessageType.CHAT_ROOM_EXIT_SUCCESS) {
+            System.out.println("채팅방에서 퇴장했습니다.");
+        }
+
+        // 메시지 기록 조회
+        else if (type == MessageType.CHAT_MESSAGE_HISTORY_SUCCESS) {
+            List<Map<String, Object>> messages = (List<Map<String, Object>>) data.get("messages");
+
+            if (messages != null) {
+                for (Map<String, Object> message : messages) {
+                    System.out.printf(" [%s] %s: %s%s",
+                            message.get("timestamp"), message.get("senderId"), message.get("content"),
+                            System.lineSeparator());
+                }
+            }
+        }
+
         // 일반 시스템 메시지
         else {
             if (data != null && data.containsKey("message")) {

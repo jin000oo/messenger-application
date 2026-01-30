@@ -23,10 +23,13 @@ public class HelpCommand implements ClientCommand {
         System.out.println("/login <id> <pw>");
         System.out.println("/logout");
         System.out.println("/users");
-        System.out.println("/list");
-        System.out.println("/create <room-name>");
-        System.out.println("/enter <room-id>");
         System.out.println("/chat <message>");
+        System.out.println("/whisper <target-id> <message>");
+        System.out.println("/create <room-name>");
+        System.out.println("/list");
+        System.out.println("/enter <room-id>");
+        System.out.println("/leave");
+        System.out.println("/history");
         System.out.println("==================================");
     }
 
