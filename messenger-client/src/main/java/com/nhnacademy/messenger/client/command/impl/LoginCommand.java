@@ -13,6 +13,7 @@
 package com.nhnacademy.messenger.client.command.impl;
 
 import com.nhnacademy.messenger.client.command.ClientCommand;
+import com.nhnacademy.messenger.client.session.ClientSession;
 import com.nhnacademy.messenger.common.domain.MessageRequest;
 import com.nhnacademy.messenger.common.domain.MessageType;
 import com.nhnacademy.messenger.common.util.MessageUtils;
@@ -25,6 +26,11 @@ public class LoginCommand implements ClientCommand {
 
     @Override
     public void execute(String[] args, OutputStream out) {
+        if (ClientSession.getSessionId() != null) {
+            System.out.println("[Client] 이미 로그인되어 있습니다. 로그아웃 후 다시 시도해주세요.");
+            return;
+        }
+
         // 입력값 검증
         if (args.length < 3) {
             System.out.println("[Client] 사용법: /login <id> <password>");
@@ -40,10 +46,9 @@ public class LoginCommand implements ClientCommand {
 
         try {
             MessageUtils.send(out, request);
-            System.out.println("[Client] 로그인 요청 전송 성공");
 
         } catch (IOException e) {
-            System.out.printf("[Client] 로그인 요청 전송 실패: %s%s", e.getMessage(), System.lineSeparator());
+            System.out.printf("[Client] 예상치 못한 오류: %s%s", e.getMessage(), System.lineSeparator());
         }
     }
 

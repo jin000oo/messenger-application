@@ -39,10 +39,9 @@ public class LogoutCommand implements ClientCommand {
 
         try {
             MessageUtils.send(out, request);
-            System.out.println("[Client] 로그아웃 요청 전송 성공");
 
         } catch (IOException e) {
-            System.out.printf("[Client] 로그아웃 요청 전송 실패: %s%s", e.getMessage(), System.lineSeparator());
+            System.out.printf("[Client] 예상치 못한 오류: %s%s", e.getMessage(), System.lineSeparator());
         }
     }
 

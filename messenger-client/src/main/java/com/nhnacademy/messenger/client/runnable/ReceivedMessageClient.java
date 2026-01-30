@@ -51,25 +51,32 @@ public class ReceivedMessageClient implements Runnable {
                     break;
                 }
 
-                // 로그인 성공 시 세션 ID 저장
-                if (response.getHeader() != null && response.getHeader().getType() == MessageType.LOGIN_SUCCESS) {
-                    Map<String, Object> data = response.getData();
+                if (response.getHeader() != null) {
+                    // 로그인 성공 시 세션 ID 저장
+                    if (response.getHeader().getType() == MessageType.LOGIN_SUCCESS) {
+                        Map<String, Object> data = response.getData();
 
-                    if (data != null && data.containsKey("sessionId")) {
-                        String sessionId = (String) data.get("sessionId");
-                        String userId = (String) data.get("userId");
+                        if (data != null && data.containsKey("sessionId")) {
+                            String sessionId = (String) data.get("sessionId");
+                            String userId = (String) data.get("userId");
 
-                        ClientSession.setSessionId(sessionId);
-                        ClientSession.setUserId(userId);
+                            ClientSession.setSessionId(sessionId);
+                            ClientSession.setUserId(userId);
+                        }
 
-                        log.debug("[ReceivedMessageClient] 세션 ID 저장 완료: {}", sessionId);
+                        // 로그아웃 성공 시 세션 ID 지우기
+                    } else if (response.getHeader().getType() == MessageType.LOGOUT_SUCCESS) {
+                        ClientSession.setSessionId(null);
+                        ClientSession.setUserId(null);
+
+                        System.out.println("[Client] 로그아웃 성공");
                     }
                 }
 
-                subject.receiveMessage(response.toString());
+                subject.receiveMessage(String.valueOf(response));
 
             } catch (IOException e) {
-                log.error("[ReceivedMessageClient] 수신 중 예상치 못한 오류가 발생했습니다.", e);
+                System.out.printf("[Client] 예상치 못한 오류: %s%s", e.getMessage(), System.lineSeparator());
                 throw new RuntimeException(e);
             }
         }

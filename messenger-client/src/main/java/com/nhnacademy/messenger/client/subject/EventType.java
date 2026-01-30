@@ -12,19 +12,18 @@
 
 package com.nhnacademy.messenger.client.subject;
 
+import lombok.Getter;
+
 public enum EventType {
 
     SEND("송신"),
     RECV("수신");
 
+    @Getter
     private String value;
 
     EventType(String value) {
         this.value = value;
-    }
-
-    public String getValue() {
-        return value;
     }
 
 }

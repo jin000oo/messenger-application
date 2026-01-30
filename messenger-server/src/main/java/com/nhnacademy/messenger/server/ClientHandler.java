@@ -17,9 +17,6 @@ import com.nhnacademy.messenger.common.domain.MessageRequest;
 import com.nhnacademy.messenger.common.domain.MessageResponse;
 import com.nhnacademy.messenger.common.domain.MessageType;
 import com.nhnacademy.messenger.common.util.MessageUtils;
-import lombok.NoArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -27,6 +24,9 @@ import java.net.Socket;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Map;
+import java.util.UUID;
+import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @NoArgsConstructor
@@ -57,7 +57,7 @@ public class ClientHandler implements Runnable {
                                     true),
                             Map.of(
                                     "userId", request.getData().get("userId"),
-                                    "sessionID", "sessionId",
+                                    "sessionId", UUID.randomUUID().toString(),
                                     "message", "welcome"
                             )
                     );

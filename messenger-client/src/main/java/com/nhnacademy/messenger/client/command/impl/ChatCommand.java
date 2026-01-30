@@ -30,7 +30,7 @@ public class ChatCommand implements ClientCommand {
         String sessionId = ClientSession.getSessionId();
 
         if (sessionId == null) {
-            System.out.println("[Client] 채팅 서비스를 이용하려면 로그인이 필요합니다. (/login <id> <password>");
+            System.out.println("[Client] 채팅 서비스를 이용하려면 로그인이 필요합니다.");
             return;
         }
 
@@ -56,7 +56,7 @@ public class ChatCommand implements ClientCommand {
             MessageUtils.send(out, request);
 
         } catch (IOException e) {
-            System.out.printf("[Client] 메시지 전송 실패: %s%s", e.getMessage(), System.lineSeparator());
+            System.out.printf("[Client] 예상치 못한 오류: %s%s", e.getMessage(), System.lineSeparator());
         }
     }
 

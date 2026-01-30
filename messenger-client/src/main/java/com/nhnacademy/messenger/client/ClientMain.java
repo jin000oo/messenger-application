@@ -14,7 +14,6 @@ package com.nhnacademy.messenger.client;
 
 import com.nhnacademy.messenger.client.command.ClientCommand;
 import com.nhnacademy.messenger.client.command.CommandFactory;
-import com.nhnacademy.messenger.client.command.impl.ChatCommand;
 import com.nhnacademy.messenger.client.observer.console.ConsoleRecvObserver;
 import com.nhnacademy.messenger.client.runnable.ReceivedMessageClient;
 import com.nhnacademy.messenger.client.subject.EventType;
@@ -50,14 +49,13 @@ public class ClientMain {
             Scanner scanner = new Scanner(System.in);
             CommandFactory commandFactory = new CommandFactory();
 
-            System.out.println("명령어를 입력하세요!");
             System.out.print("> ");
 
             while (true) {
                 String input = scanner.nextLine();
 
                 if (input.trim().isEmpty()) {
-                    continue;
+                    System.out.println("[Client] 입력값이 비어있습니다.");
                 }
 
                 String[] parts = input.split(" ");
@@ -68,15 +66,14 @@ public class ClientMain {
                     // 명령어 싪행
                     command.execute(parts, socket.getOutputStream());
                 } else {
-                    // 명령어가 아니면 일반 채팅으로 간주
-                    new ChatCommand().execute(parts, socket.getOutputStream());
+                    System.out.println("[Client] 지원하지 않는 명령어입니다.");
                 }
 
                 System.out.print("> ");
             }
 
         } catch (IOException e) {
-            System.out.printf("[ClientMain] 예상치 못한 오류: %s%s", e.getMessage(), System.lineSeparator());
+            System.out.printf("[Client] 예상치 못한 오류: %s%s", e.getMessage(), System.lineSeparator());
             throw new RuntimeException(e);
         }
     }
