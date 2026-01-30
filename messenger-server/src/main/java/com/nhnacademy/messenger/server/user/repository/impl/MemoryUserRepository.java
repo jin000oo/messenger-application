@@ -27,6 +27,7 @@ public class MemoryUserRepository implements UserRepository {
 
     static {
         users.put("marco", new User("marco", "nhnacademy123", "marco"));
+        resetOnline();
     }
 
     @Override
@@ -61,5 +62,9 @@ public class MemoryUserRepository implements UserRepository {
         if (user != null) {
             user.setOnline(online);
         }
+    }
+
+    private static void resetOnline() {
+        users.values().forEach(user -> user.setOnline(false));
     }
 }

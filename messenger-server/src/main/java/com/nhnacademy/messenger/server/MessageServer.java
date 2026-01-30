@@ -15,28 +15,30 @@ package com.nhnacademy.messenger.server;
 import com.nhnacademy.messenger.server.handler.MessageDispatcher;
 import lombok.extern.slf4j.Slf4j;
 
-import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 
 @Slf4j
 public class MessageServer implements Runnable {
 
-    MessageDispatcher messageDispatcher = new MessageDispatcher();
+    private final int SERVER_PORT = 12345;
+    private final MessageDispatcher messageDispatcher = new MessageDispatcher();
 
     @Override
     public void run() {
-        try (ServerSocket serverSocket = new ServerSocket(12345)) {
+        try (ServerSocket serverSocket = new ServerSocket(SERVER_PORT)) {
+            log.debug("서버가 성공적으로 실행되었습니다.");
+
             while (true) {
                 Socket client = serverSocket.accept();
                 Thread clientThread = new Thread(new ClientHandler(client, messageDispatcher));
                 clientThread.start();
 
                 log.debug("[+] {}:{}", client.getInetAddress().getHostName(), client.getPort());
-
             }
-        } catch (IOException e) {
-            log.debug("IOException 발생했습니다.");
+
+        } catch (Exception e) {
+            log.debug("Exception: {}", e.getMessage());
         }
     }
 }
