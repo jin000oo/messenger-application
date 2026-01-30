@@ -20,7 +20,6 @@ import com.nhnacademy.messenger.server.session.Session;
 import com.nhnacademy.messenger.server.session.SessionManager;
 import com.nhnacademy.messenger.server.user.repository.UserRepository;
 import com.nhnacademy.messenger.server.user.repository.impl.MemoryUserRepository;
-
 import java.net.Socket;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -49,7 +48,7 @@ public class LoginHandler implements Handler {
                 Map.of(
                         "userId", userId,
                         "sessionId", sessionId,
-                        "message", "welcome"
+                        "message", "Welcome!"
                 )
         );
     }
