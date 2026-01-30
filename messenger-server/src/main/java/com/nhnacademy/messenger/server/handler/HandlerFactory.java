@@ -14,6 +14,7 @@ package com.nhnacademy.messenger.server.handler;
 
 import com.nhnacademy.messenger.common.domain.MessageType;
 import com.nhnacademy.messenger.server.handler.impl.LoginHandler;
+import com.nhnacademy.messenger.server.handler.impl.LogoutHandler;
 
 import java.util.EnumMap;
 import java.util.Map;
@@ -24,6 +25,7 @@ public class HandlerFactory {
 
     static {
         Handlers.put(MessageType.LOGIN, new LoginHandler());
+        Handlers.put(MessageType.LOGOUT, new LogoutHandler());
     }
 
     public static Map<MessageType, Handler> getHandler() {

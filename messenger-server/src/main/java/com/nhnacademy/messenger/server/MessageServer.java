@@ -22,11 +22,14 @@ import java.net.Socket;
 @Slf4j
 public class MessageServer implements Runnable {
 
-    MessageDispatcher messageDispatcher = new MessageDispatcher();
+    private final int SERVER_PORT = 12345;
+    private final MessageDispatcher messageDispatcher = new MessageDispatcher();
 
     @Override
     public void run() {
-        try (ServerSocket serverSocket = new ServerSocket(12345)) {
+        try (ServerSocket serverSocket = new ServerSocket(SERVER_PORT)) {
+            log.debug("서버가 성공적으로 실행되었습니다.");
+
             while (true) {
                 Socket client = serverSocket.accept();
                 Thread clientThread = new Thread(new ClientHandler(client, messageDispatcher));
