@@ -19,6 +19,7 @@ import com.nhnacademy.messenger.client.command.impl.HelpCommand;
 import com.nhnacademy.messenger.client.command.impl.LoginCommand;
 import com.nhnacademy.messenger.client.command.impl.LogoutCommand;
 import com.nhnacademy.messenger.client.command.impl.RoomListCommand;
+import com.nhnacademy.messenger.client.command.impl.UserListCommand;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -30,7 +31,8 @@ public class CommandFactory {
         commands.put("/help", new HelpCommand());
         commands.put("/login", new LoginCommand());
         commands.put("/logout", new LogoutCommand());
-        commands.put("/room-list", new RoomListCommand());
+        commands.put("/users", new UserListCommand());
+        commands.put("/list", new RoomListCommand());
         commands.put("/create", new CreateRoomCommand());
         commands.put("/enter", new EnterRoomCommand());
         commands.put("/chat", new ChatCommand());

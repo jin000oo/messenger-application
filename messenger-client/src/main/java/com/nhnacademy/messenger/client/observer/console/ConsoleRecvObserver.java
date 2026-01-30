@@ -37,6 +37,31 @@ public class ConsoleRecvObserver implements Observer {
 
         }
 
+        // 모든 사용자 목록
+        else if (type == MessageType.USER_LIST_SUCCESS) {
+            List<Map<String, Object>> users = null;
+
+            if (data.containsKey("users")) {
+                users = (List<Map<String, Object>>) data.get("users");
+            } else if (data.containsKey("data")) {
+                users = (List<Map<String, Object>>) data.get("data");
+            }
+
+            if (users == null || users.isEmpty()) {
+                System.out.println("현재 접속 중인 사용자가 없습니다.");
+            } else {
+                for (Map<String, Object> user : users) {
+                    String id = (String) user.get("id");
+                    String name = (String) user.get("name");
+                    boolean online = (boolean) user.get("online");
+
+                    String status = online ? "온라인" : "오프라인";
+
+                    System.out.printf("[%s] %s (%s)%s", id, name, status, System.lineSeparator());
+                }
+            }
+        }
+
         // 채팅 수신
         else if (type == MessageType.CHAT_MESSAGE_SUCCESS) {
             System.out.printf("[메시지]: %s%s", data.get("message"), System.lineSeparator());

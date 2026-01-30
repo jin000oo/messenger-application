@@ -61,11 +61,6 @@ public class ClientMain {
                     System.out.println("[Client] 입력값이 비어있습니다.");
                 }
 
-                if (input.equals("/exit")) {
-                    System.out.println("[Client] 연결을 종료합니다.");
-                    break;
-                }
-
                 String[] parts = input.split(" ");
 
                 ClientCommand command = commandFactory.getCommand(parts[0]);

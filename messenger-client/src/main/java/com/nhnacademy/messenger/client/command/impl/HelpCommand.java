@@ -22,11 +22,11 @@ public class HelpCommand implements ClientCommand {
         System.out.println("========== [ 명령어 목록 ] ==========");
         System.out.println("/login <id> <pw>");
         System.out.println("/logout");
-        System.out.println("/chat <message>");
-        System.out.println("/room-list");
+        System.out.println("/users");
+        System.out.println("/list");
         System.out.println("/create <room-name>");
         System.out.println("/enter <room-id>");
-        System.out.println("/exit");
+        System.out.println("/chat <message>");
         System.out.println("==================================");
     }
 
