@@ -10,23 +10,21 @@
  * +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  */
 
-package com.nhnacademy.messenger.client.session;
+package com.nhnacademy.messenger.client.command.impl;
 
-import lombok.Getter;
-import lombok.Setter;
+import com.nhnacademy.messenger.client.command.ClientCommand;
+import java.io.OutputStream;
 
-public class ClientSession {
+public class HelpCommand implements ClientCommand {
 
-    @Getter
-    @Setter
-    private static String sessionId;
-
-    @Getter
-    @Setter
-    private static String userId;
-
-    @Getter
-    @Setter
-    private static Long currentRoomId;
+    @Override
+    public void execute(String[] args, OutputStream out) {
+        System.out.println("========== [ 명령어 목록 ] ==========");
+        System.out.println("/login <id> <pw>");
+        System.out.println("/logout");
+        System.out.println("/chat <message>");
+        System.out.println("/exit");
+        System.out.println("==================================");
+    }
 
 }

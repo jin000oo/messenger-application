@@ -10,15 +10,15 @@
  * +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  */
 
-package com.nhnacademy.messenger.client.observer.console;
+package com.nhnacademy.messenger.client.observer;
 
-import com.nhnacademy.messenger.client.observer.Observer;
+import com.nhnacademy.messenger.client.session.ClientSession;
 import com.nhnacademy.messenger.client.subject.EventType;
 import com.nhnacademy.messenger.common.domain.MessageResponse;
 import com.nhnacademy.messenger.common.domain.MessageType;
 import java.util.Map;
 
-public class ConsoleRecvObserver implements Observer {
+public class ClientSessionObserver implements Observer {
 
     @Override
     public EventType getEventType() {
@@ -27,25 +27,32 @@ public class ConsoleRecvObserver implements Observer {
 
     @Override
     public void updateMessage(MessageResponse response) {
+        if (response.getHeader() == null) {
+            return;
+        }
+
         MessageType type = response.getHeader().getType();
         Map<String, Object> data = response.getData();
 
-        // 에러 메시지
-        if (type == MessageType.ERROR) {
-            System.out.printf("[Error] %s (코드: %s)%s", data.get("message"), data.get("code"), System.lineSeparator());
-
-            // 채팅 수신
-        } else if (type == MessageType.CHAT_MESSAGE_SUCCESS) {
-            System.out.printf("[메시지]: %s%s", data.get("message"), System.lineSeparator());
-
-            // 일반 시스템 메시지
-        } else {
-            if (data != null && data.containsKey("message")) {
-                System.out.printf("[시스템]: %s%s", data.get("message"), System.lineSeparator());
+        // 로그인 성공 시 세션 ID 저장
+        if (type == MessageType.LOGIN_SUCCESS) {
+            if (data != null && data.containsKey("sessionId")) {
+                ClientSession.setSessionId((String) data.get("sessionId"));
+                ClientSession.setUserId((String) data.get("userId"));
             }
-        }
 
-        System.out.print("> ");
+            // 로그아웃 성공 시 세션 ID 지우기
+        } else if (type == MessageType.LOGOUT_SUCCESS) {
+            ClientSession.setSessionId(null);
+            ClientSession.setUserId(null);
+            ClientSession.setCurrentRoomId(null);
+
+            System.out.println("[Client] 로그아웃 성공");
+
+            // 채팅방 입장 성공 시 채팅방 ID 저장
+        } else if (type == MessageType.CHAT_ROOM_ENTER_SUCCESS) {
+            ClientSession.setCurrentRoomId((long) data.get("roomId"));
+        }
     }
 
 }

@@ -13,6 +13,7 @@
 package com.nhnacademy.messenger.client.subject;
 
 import com.nhnacademy.messenger.client.observer.Observer;
+import com.nhnacademy.messenger.common.domain.MessageResponse;
 
 public interface Subject {
 
@@ -20,14 +21,14 @@ public interface Subject {
 
     void remove(EventType eventType, Observer observer);
 
-    void notifyObservers(EventType eventType, String message);
+    void notifyObservers(EventType eventType, MessageResponse response);
 
-    default void sendMessage(String message) {
-        notifyObservers(EventType.SEND, message);
+    default void sendMessage(MessageResponse response) {
+        notifyObservers(EventType.SEND, response);
     }
 
-    default void receiveMessage(String message) {
-        notifyObservers(EventType.RECV, message);
+    default void receiveMessage(MessageResponse response) {
+        notifyObservers(EventType.RECV, response);
     }
 
 }
