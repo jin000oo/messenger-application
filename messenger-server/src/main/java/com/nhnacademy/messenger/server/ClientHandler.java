@@ -28,9 +28,9 @@ import java.net.Socket;
 public class ClientHandler implements Runnable {
 
     private Socket client;
-    private static final ObjectMapper objectMapper = new ObjectMapper();
-
     private final MessageDispatcher messageDispatcher;
+
+    private static final ObjectMapper objectMapper = new ObjectMapper();
 
     public ClientHandler(Socket client, MessageDispatcher messageDispatcher) {
         this.client = client;
@@ -45,12 +45,16 @@ public class ClientHandler implements Runnable {
             MessageRequest request;
             while ((request = MessageUtils.readRequest(in)) != null) {
                 MessageResponse response = messageDispatcher.dispatch(request, client);
-                log.debug("[{}:{}] Request: {}",
+                log.debug("[{}:{}] Client Request: {}",
                         client.getInetAddress().getHostName(),
                         client.getPort(),
                         objectMapper.writeValueAsString(request));
 
                 MessageUtils.send(out, response);
+                log.debug("[{}:{}] Server Response: {}",
+                        client.getInetAddress().getHostName(),
+                        client.getPort(),
+                        objectMapper.writeValueAsString(response));
             }
 
         } catch (IOException e) {

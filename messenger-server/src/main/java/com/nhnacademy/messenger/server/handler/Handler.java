@@ -18,6 +18,7 @@ import com.nhnacademy.messenger.common.domain.MessageResponse;
 import java.net.Socket;
 
 public interface Handler {
+
     MessageResponse handle(MessageRequest request);
 
     default MessageResponse handleWithSocket(MessageRequest request, Socket socket) {

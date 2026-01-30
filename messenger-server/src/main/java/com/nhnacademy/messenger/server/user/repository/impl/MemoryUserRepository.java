@@ -25,6 +25,11 @@ public class MemoryUserRepository implements UserRepository {
 
     private static final Map<String, User> users = new ConcurrentHashMap<>();
 
+    static {
+        users.put("marco", new User("marco", "nhnacademy123", "marco"));
+        resetOnline();
+    }
+
     @Override
     public User save(User user) {
         users.put(user.getUserId(), user);
@@ -57,5 +62,9 @@ public class MemoryUserRepository implements UserRepository {
         if (user != null) {
             user.setOnline(online);
         }
+    }
+
+    private static void resetOnline() {
+        users.values().forEach(user -> user.setOnline(false));
     }
 }
