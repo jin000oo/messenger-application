@@ -16,6 +16,7 @@ import com.nhnacademy.messenger.client.observer.Observer;
 import com.nhnacademy.messenger.client.subject.EventType;
 import com.nhnacademy.messenger.common.domain.MessageResponse;
 import com.nhnacademy.messenger.common.domain.MessageType;
+import java.util.List;
 import java.util.Map;
 
 public class ConsoleRecvObserver implements Observer {
@@ -34,12 +35,30 @@ public class ConsoleRecvObserver implements Observer {
         if (type == MessageType.ERROR) {
             System.out.printf("[Error] %s (코드: %s)%s", data.get("message"), data.get("code"), System.lineSeparator());
 
-            // 채팅 수신
-        } else if (type == MessageType.CHAT_MESSAGE_SUCCESS) {
+        }
+
+        // 채팅 수신
+        else if (type == MessageType.CHAT_MESSAGE_SUCCESS) {
             System.out.printf("[메시지]: %s%s", data.get("message"), System.lineSeparator());
 
-            // 일반 시스템 메시지
-        } else {
+        }
+
+        // 채팅방 목록 조회
+        else if (type == MessageType.CHAT_ROOM_LIST_SUCCESS) {
+            List<Map<String, Object>> rooms = (List<Map<String, Object>>) data.get("rooms");
+
+            if (rooms == null || rooms.isEmpty()) {
+                System.out.println("현재 생성된 채팅방이 없습니다.");
+            } else {
+                for (Map<String, Object> room : rooms) {
+                    System.out.printf("[%s] %s (인원: %s)%s",
+                            room.get("roomId"), room.get("roomName"), room.get("userCount"), System.lineSeparator());
+                }
+            }
+        }
+
+        // 일반 시스템 메시지
+        else {
             if (data != null && data.containsKey("message")) {
                 System.out.printf("[시스템]: %s%s", data.get("message"), System.lineSeparator());
             }

@@ -20,18 +20,16 @@ import com.nhnacademy.messenger.common.util.MessageUtils;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.Map;
-import java.util.Objects;
 
-public class ChatCommand implements ClientCommand {
+public class CreateRoomCommand implements ClientCommand {
 
     @Override
     public void execute(String[] args, OutputStream out) {
         String sessionId = ClientSession.getSessionId();
 
         if (sessionId == null) {
-            System.out.println("[Client] 채팅 서비스를 이용하려면 로그인이 필요합니다.");
+            System.out.println("[Client] 해당 서비스를 이용하려면 로그인이 필요합니다.");
             return;
         }
 
@@ -39,23 +37,12 @@ public class ChatCommand implements ClientCommand {
             return;
         }
 
-        String[] messageParts = Arrays.copyOfRange(args, 1, args.length);
-        String message = String.join(" ", messageParts);
-
-        if (message.trim().isEmpty()) {
-            return;
-        }
-
-        // 임시
-        Long currentRoomId = ClientSession.getCurrentRoomId();
-
-        if (currentRoomId == null) {
-            System.out.println("[Client] 채팅방에 먼저 입장을 해야 합니다.");
-        }
+        String roomName = args[1];
 
         MessageRequest request = new MessageRequest(
-                new MessageRequest.RequestHeader(MessageType.CHAT_MESSAGE, LocalDateTime.now().toString(), sessionId),
-                Map.of("roomId", Objects.requireNonNull(currentRoomId), "message", message));
+                new MessageRequest.RequestHeader(MessageType.CHAT_ROOM_CREATE, LocalDateTime.now().toString(),
+                        sessionId),
+                Map.of("roomName", roomName));
 
         try {
             MessageUtils.send(out, request);
