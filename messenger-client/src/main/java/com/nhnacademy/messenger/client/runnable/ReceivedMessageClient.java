@@ -12,14 +12,11 @@
 
 package com.nhnacademy.messenger.client.runnable;
 
-import com.nhnacademy.messenger.client.session.ClientSession;
 import com.nhnacademy.messenger.client.subject.Subject;
 import com.nhnacademy.messenger.common.domain.MessageResponse;
-import com.nhnacademy.messenger.common.domain.MessageType;
 import com.nhnacademy.messenger.common.util.MessageUtils;
 import java.io.IOException;
 import java.net.Socket;
-import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -51,29 +48,7 @@ public class ReceivedMessageClient implements Runnable {
                     break;
                 }
 
-                if (response.getHeader() != null) {
-                    // 로그인 성공 시 세션 ID 저장
-                    if (response.getHeader().getType() == MessageType.LOGIN_SUCCESS) {
-                        Map<String, Object> data = response.getData();
-
-                        if (data != null && data.containsKey("sessionId")) {
-                            String sessionId = (String) data.get("sessionId");
-                            String userId = (String) data.get("userId");
-
-                            ClientSession.setSessionId(sessionId);
-                            ClientSession.setUserId(userId);
-                        }
-
-                        // 로그아웃 성공 시 세션 ID 지우기
-                    } else if (response.getHeader().getType() == MessageType.LOGOUT_SUCCESS) {
-                        ClientSession.setSessionId(null);
-                        ClientSession.setUserId(null);
-
-                        System.out.println("[Client] 로그아웃 성공");
-                    }
-                }
-
-                subject.receiveMessage(String.valueOf(response));
+                subject.receiveMessage(response);
 
             } catch (IOException e) {
                 System.out.printf("[Client] 예상치 못한 오류: %s%s", e.getMessage(), System.lineSeparator());

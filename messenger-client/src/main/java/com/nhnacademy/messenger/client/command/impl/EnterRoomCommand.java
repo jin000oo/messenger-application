@@ -20,23 +20,16 @@ import com.nhnacademy.messenger.common.util.MessageUtils;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.Map;
 
-public class ChatCommand implements ClientCommand {
+public class EnterRoomCommand implements ClientCommand {
 
     @Override
     public void execute(String[] args, OutputStream out) {
         String sessionId = ClientSession.getSessionId();
-        Long currentRoomId = ClientSession.getCurrentRoomId();
 
         if (sessionId == null) {
             System.out.println("[Client] 해당 서비스를 이용하려면 로그인이 필요합니다.");
-            return;
-        }
-
-        if (currentRoomId == null) {
-            System.out.println("[Client] 채팅방에 먼저 입장을 해야 합니다.");
             return;
         }
 
@@ -44,19 +37,18 @@ public class ChatCommand implements ClientCommand {
             return;
         }
 
-        String[] messageParts = Arrays.copyOfRange(args, 1, args.length);
-        String message = String.join(" ", messageParts);
-
-        if (message.trim().isEmpty()) {
-            return;
-        }
-
-        MessageRequest request = new MessageRequest(
-                new MessageRequest.RequestHeader(MessageType.CHAT_MESSAGE, LocalDateTime.now().toString(), sessionId),
-                Map.of("roomId", currentRoomId, "message", message));
-
         try {
+            long roomId = Long.parseLong(args[1]);
+
+            MessageRequest request = new MessageRequest(
+                    new MessageRequest.RequestHeader(MessageType.CHAT_ROOM_ENTER, LocalDateTime.now().toString(),
+                            sessionId),
+                    Map.of("roomId", roomId));
+
             MessageUtils.send(out, request);
+
+        } catch (NumberFormatException e) {
+            System.out.println("[Client] 방 번호는 숫자여야 합니다.");
 
         } catch (IOException e) {
             System.out.printf("[Client] 예상치 못한 오류: %s%s", e.getMessage(), System.lineSeparator());

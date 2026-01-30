@@ -25,4 +25,8 @@ public class ClientSession {
     @Setter
     private static String userId;
 
+    @Getter
+    @Setter
+    private static Long currentRoomId;
+
 }

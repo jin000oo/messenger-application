@@ -20,40 +20,22 @@ import com.nhnacademy.messenger.common.util.MessageUtils;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.Map;
+import java.util.Collections;
 
-public class ChatCommand implements ClientCommand {
+public class UserListCommand implements ClientCommand {
 
     @Override
     public void execute(String[] args, OutputStream out) {
         String sessionId = ClientSession.getSessionId();
-        Long currentRoomId = ClientSession.getCurrentRoomId();
 
         if (sessionId == null) {
             System.out.println("[Client] 해당 서비스를 이용하려면 로그인이 필요합니다.");
             return;
         }
 
-        if (currentRoomId == null) {
-            System.out.println("[Client] 채팅방에 먼저 입장을 해야 합니다.");
-            return;
-        }
-
-        if (args.length < 2) {
-            return;
-        }
-
-        String[] messageParts = Arrays.copyOfRange(args, 1, args.length);
-        String message = String.join(" ", messageParts);
-
-        if (message.trim().isEmpty()) {
-            return;
-        }
-
         MessageRequest request = new MessageRequest(
-                new MessageRequest.RequestHeader(MessageType.CHAT_MESSAGE, LocalDateTime.now().toString(), sessionId),
-                Map.of("roomId", currentRoomId, "message", message));
+                new MessageRequest.RequestHeader(MessageType.USER_LIST, LocalDateTime.now().toString(), sessionId),
+                Collections.emptyMap());
 
         try {
             MessageUtils.send(out, request);

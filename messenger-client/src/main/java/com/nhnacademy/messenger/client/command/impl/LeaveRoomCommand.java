@@ -20,10 +20,9 @@ import com.nhnacademy.messenger.common.util.MessageUtils;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.Map;
 
-public class ChatCommand implements ClientCommand {
+public class LeaveRoomCommand implements ClientCommand {
 
     @Override
     public void execute(String[] args, OutputStream out) {
@@ -36,24 +35,13 @@ public class ChatCommand implements ClientCommand {
         }
 
         if (currentRoomId == null) {
-            System.out.println("[Client] 채팅방에 먼저 입장을 해야 합니다.");
-            return;
-        }
-
-        if (args.length < 2) {
-            return;
-        }
-
-        String[] messageParts = Arrays.copyOfRange(args, 1, args.length);
-        String message = String.join(" ", messageParts);
-
-        if (message.trim().isEmpty()) {
+            System.out.println("[Client] 현재 참여 중인 채팅방이 없습니다.");
             return;
         }
 
         MessageRequest request = new MessageRequest(
-                new MessageRequest.RequestHeader(MessageType.CHAT_MESSAGE, LocalDateTime.now().toString(), sessionId),
-                Map.of("roomId", currentRoomId, "message", message));
+                new MessageRequest.RequestHeader(MessageType.CHAT_ROOM_EXIT, LocalDateTime.now().toString(), sessionId),
+                Map.of("roomId", currentRoomId));
 
         try {
             MessageUtils.send(out, request);

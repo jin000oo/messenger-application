@@ -13,12 +13,13 @@
 package com.nhnacademy.messenger.client.observer;
 
 import com.nhnacademy.messenger.client.subject.EventType;
+import com.nhnacademy.messenger.common.domain.MessageResponse;
 
 public interface Observer {
 
     EventType getEventType();
 
-    void updateMessage(String message);
+    void updateMessage(MessageResponse response);
 
     default boolean validate(EventType eventType) {
         return getEventType().equals(eventType);

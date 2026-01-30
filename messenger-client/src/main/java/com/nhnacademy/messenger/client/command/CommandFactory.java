@@ -13,8 +13,16 @@
 package com.nhnacademy.messenger.client.command;
 
 import com.nhnacademy.messenger.client.command.impl.ChatCommand;
+import com.nhnacademy.messenger.client.command.impl.CreateRoomCommand;
+import com.nhnacademy.messenger.client.command.impl.EnterRoomCommand;
+import com.nhnacademy.messenger.client.command.impl.HelpCommand;
+import com.nhnacademy.messenger.client.command.impl.HistoryCommand;
+import com.nhnacademy.messenger.client.command.impl.LeaveRoomCommand;
 import com.nhnacademy.messenger.client.command.impl.LoginCommand;
 import com.nhnacademy.messenger.client.command.impl.LogoutCommand;
+import com.nhnacademy.messenger.client.command.impl.RoomListCommand;
+import com.nhnacademy.messenger.client.command.impl.UserListCommand;
+import com.nhnacademy.messenger.client.command.impl.WhisperCommand;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -23,9 +31,17 @@ public class CommandFactory {
     private final Map<String, ClientCommand> commands = new HashMap<>();
 
     public CommandFactory() {
+        commands.put("/help", new HelpCommand());
         commands.put("/login", new LoginCommand());
         commands.put("/logout", new LogoutCommand());
+        commands.put("/users", new UserListCommand());
         commands.put("/chat", new ChatCommand());
+        commands.put("/whisper", new WhisperCommand());
+        commands.put("/create", new CreateRoomCommand());
+        commands.put("/list", new RoomListCommand());
+        commands.put("/enter", new EnterRoomCommand());
+        commands.put("/leave", new LeaveRoomCommand());
+        commands.put("/history", new HistoryCommand());
     }
 
     public ClientCommand getCommand(String commandName) {
