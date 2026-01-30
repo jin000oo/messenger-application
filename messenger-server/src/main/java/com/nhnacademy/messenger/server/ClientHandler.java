@@ -15,28 +15,26 @@ package com.nhnacademy.messenger.server;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nhnacademy.messenger.common.domain.MessageRequest;
 import com.nhnacademy.messenger.common.domain.MessageResponse;
-import com.nhnacademy.messenger.common.domain.MessageType;
 import com.nhnacademy.messenger.common.util.MessageUtils;
+import com.nhnacademy.messenger.server.handler.MessageDispatcher;
+import lombok.extern.slf4j.Slf4j;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
-import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
-import java.util.Map;
-import java.util.UUID;
-import lombok.NoArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@NoArgsConstructor
 public class ClientHandler implements Runnable {
 
     private Socket client;
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
-    public ClientHandler(Socket client) {
+    private final MessageDispatcher messageDispatcher;
+
+    public ClientHandler(Socket client, MessageDispatcher messageDispatcher) {
         this.client = client;
+        this.messageDispatcher = messageDispatcher;
     }
 
     @Override
@@ -45,25 +43,14 @@ public class ClientHandler implements Runnable {
              OutputStream out = client.getOutputStream();
         ) {
             MessageRequest request;
-            MessageResponse response;
             while ((request = MessageUtils.readRequest(in)) != null) {
-                log.debug("request: {}", objectMapper.writeValueAsString(request));
+                MessageResponse response = messageDispatcher.dispatch(request, client);
+                log.debug("[{}:{}] Request: {}",
+                        client.getInetAddress().getHostName(),
+                        client.getPort(),
+                        objectMapper.writeValueAsString(request));
 
-                if (request.getHeader().getType() == MessageType.LOGIN) {
-                    response = new MessageResponse(
-                            new MessageResponse.ResponseHeader(
-                                    MessageType.LOGIN_SUCCESS,
-                                    LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS).toString(),
-                                    true),
-                            Map.of(
-                                    "userId", request.getData().get("userId"),
-                                    "sessionId", UUID.randomUUID().toString(),
-                                    "message", "welcome"
-                            )
-                    );
-
-                    MessageUtils.send(out, response);
-                }
+                MessageUtils.send(out, response);
             }
 
         } catch (IOException e) {
