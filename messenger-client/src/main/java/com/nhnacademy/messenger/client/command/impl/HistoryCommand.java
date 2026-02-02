@@ -14,6 +14,7 @@ package com.nhnacademy.messenger.client.command.impl;
 
 import com.nhnacademy.messenger.client.command.ClientCommand;
 import com.nhnacademy.messenger.client.session.ClientSession;
+import com.nhnacademy.messenger.client.ui.ClientUI;
 import com.nhnacademy.messenger.common.domain.MessageRequest;
 import com.nhnacademy.messenger.common.domain.MessageType;
 import com.nhnacademy.messenger.common.util.MessageUtils;
@@ -24,7 +25,12 @@ import java.util.Map;
 
 public class HistoryCommand implements ClientCommand {
 
+    private final ClientUI clientUI;
     private static final int DEFAULT_LIMIT = 50;
+
+    public HistoryCommand(ClientUI clientUI) {
+        this.clientUI = clientUI;
+    }
 
     @Override
     public void execute(String[] args, OutputStream out) {
@@ -32,13 +38,25 @@ public class HistoryCommand implements ClientCommand {
         Long currentRoomId = ClientSession.getCurrentRoomId();
 
         if (sessionId == null) {
-            System.out.println("[Client] 해당 서비스를 이용하려면 로그인이 필요합니다.");
+            clientUI.displayMessage("해당 서비스를 이용하려면 로그인이 필요합니다.");
             return;
         }
 
         if (currentRoomId == null) {
-            System.out.println("[Client] 해당 서비스를 이용하려면 채팅방에 먼저 입장을 해야 합니다.");
+            clientUI.displayMessage("해당 서비스를 이용하려면 채팅방에 먼저 입장을 해야 합니다.");
             return;
+        }
+
+        // 가장 큰 값 = 최신순
+        long beforeMessageId = Long.MAX_VALUE;
+
+        if (args.length >= 2) {
+            try {
+                beforeMessageId = Long.parseLong(args[1]);
+
+            } catch (NumberFormatException e) {
+                clientUI.displayMessage("메시지 ID는 숫자여야 합니다.");
+            }
         }
 
         MessageRequest request = new MessageRequest(
@@ -46,15 +64,14 @@ public class HistoryCommand implements ClientCommand {
                         MessageType.CHAT_MESSAGE_HISTORY,
                         LocalDateTime.now().toString(),
                         sessionId),
-                // messageId가 있어야 되는데 일단 생략
-                Map.of("roomId", currentRoomId, "limit", DEFAULT_LIMIT)
+                Map.of("roomId", currentRoomId, "limit", DEFAULT_LIMIT, "beforeMessageId", beforeMessageId)
         );
 
         try {
             MessageUtils.send(out, request);
 
         } catch (IOException e) {
-            System.out.printf("[Client] 예상치 못한 오류: %s\n", e.getMessage());
+            clientUI.displayMessage(String.format("예상치 못한 오류: %s", e.getMessage()));
         }
     }
 

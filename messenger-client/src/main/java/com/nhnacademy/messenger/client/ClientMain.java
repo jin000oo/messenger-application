@@ -28,6 +28,7 @@ import java.util.Scanner;
 
 public class ClientMain {
 
+    private static final ClientUI clientUI = new ConsoleUI();
     private static final String DEFAULT_SERVER_ADDRESS = "localhost";
     private static final int DEFAULT_PORT = 12345;
 
@@ -42,14 +43,12 @@ public class ClientMain {
                 System.out.println("/help 명령어 입력시 모든 명령어 목록을 볼 수 있습니다.");
             }
 
-            ClientUI clientUI = new ConsoleUI();
-
             Subject subject = new MessageSubject();
-            subject.register(EventType.RECV, new ClientSessionObserver());
+            subject.register(EventType.RECV, new ClientSessionObserver(clientUI));
             subject.register(EventType.RECV, new UIUpdateObserver(clientUI));
 
             // 서버로부터 오는 메시지를 받는 스레드
-            Thread receiverThread = new Thread(new ReceivedMessageClient(socket, subject));
+            Thread receiverThread = new Thread(new ReceivedMessageClient(socket, subject, clientUI));
             receiverThread.start();
 
             // 사용자 입력을 받아 서버로 전송
@@ -62,7 +61,7 @@ public class ClientMain {
                 String input = scanner.nextLine();
 
                 if (input.trim().isEmpty()) {
-                    System.out.println("[Client] 입력값이 비어있습니다.");
+                    clientUI.displayMessage("입력값이 비어있습니다.");
                 }
 
                 String[] parts = input.split(" ");
@@ -73,14 +72,14 @@ public class ClientMain {
                     // 명령어 싪행
                     command.execute(parts, socket.getOutputStream());
                 } else {
-                    System.out.println("[Client] 지원하지 않는 명령어입니다.");
+                    clientUI.displayMessage("지원하지 않는 명령어입니다.");
                 }
 
                 System.out.print("> ");
             }
 
         } catch (IOException e) {
-            System.out.printf("[Client] 예상치 못한 오류: %s\n", e.getMessage());
+            clientUI.displayMessage(String.format("예상치 못한 오류: %s", e.getMessage()));
             throw new RuntimeException(e);
         }
     }

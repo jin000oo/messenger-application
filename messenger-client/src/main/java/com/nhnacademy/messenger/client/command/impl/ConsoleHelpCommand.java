@@ -15,7 +15,7 @@ package com.nhnacademy.messenger.client.command.impl;
 import com.nhnacademy.messenger.client.command.ClientCommand;
 import java.io.OutputStream;
 
-public class HelpCommand implements ClientCommand {
+public class ConsoleHelpCommand implements ClientCommand {
 
     @Override
     public void execute(String[] args, OutputStream out) {
@@ -29,7 +29,7 @@ public class HelpCommand implements ClientCommand {
         System.out.println("/list");
         System.out.println("/enter <room-id>");
         System.out.println("/leave");
-        System.out.println("/history");
+        System.out.println("/history <message-id>");
         System.out.println("==================================");
     }
 

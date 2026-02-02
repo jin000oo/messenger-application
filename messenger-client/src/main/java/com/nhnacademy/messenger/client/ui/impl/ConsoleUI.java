@@ -43,22 +43,22 @@ public class ConsoleUI implements ClientUI {
 
         // 채팅 메시지
         if (type == MessageType.CHAT_MESSAGE) {
-            String sender = (String) data.get("senderId");
+            String senderId = (String) data.get("senderId");
             String message = (String) data.get("message");
 
-            System.out.printf("[%s] %s\n", sender, message);
+            System.out.printf("[%s] %s\n", senderId, message);
         }
 
         // 귓속말
         else if (type == MessageType.PRIVATE_MESSAGE || type == MessageType.PRIVATE_MESSAGE_SUCCESS) {
-            String sender = (String) data.getOrDefault("senderId", "System");
-            String receiver = (String) data.getOrDefault("receiverId", "System");
+            String senderId = (String) data.getOrDefault("senderId", "System");
+            String receiverId = (String) data.getOrDefault("receiverId", "System");
             String message = (String) data.get("message");
 
             if (type == MessageType.PRIVATE_MESSAGE_SUCCESS) {
-                System.out.printf("[Me > %s] %s\n", receiver, message);
+                System.out.printf("[Me > %s] %s\n", receiverId, message);
             } else {
-                System.out.printf("[%s > Me] %s\n", sender, message);
+                System.out.printf("[%s > Me] %s\n", senderId, message);
             }
         }
 
@@ -75,19 +75,44 @@ public class ConsoleUI implements ClientUI {
     }
 
     private void printLists(MessageType type, Map<String, Object> data) {
+        // 방 목록
         if (type == MessageType.CHAT_ROOM_LIST_SUCCESS) {
             List<Map<String, Object>> rooms = (List<Map<String, Object>>) data.get("rooms");
 
             if (rooms != null) {
                 rooms.forEach(room -> System.out.printf("[%s] %s (%s명)\n",
                         room.get("roomId"), room.get("roomName"), room.get("userCount")));
+            } else {
+                System.out.println("[System] 현재 생성된 채팅방이 없습니다.");
             }
-        } else if (type == MessageType.USER_LIST_SUCCESS) {
+        }
+
+        // 유저 목록
+        else if (type == MessageType.USER_LIST_SUCCESS) {
             List<Map<String, Object>> users = (List<Map<String, Object>>) data.get("users");
 
             if (users != null) {
                 users.forEach(user -> System.out.printf("- %s (%s)\n",
                         user.get("id"), user.get("name")));
+            } else {
+                System.out.println("[System] 현재 접속 중인 유저가 없습니다.");
+            }
+        }
+
+        // 과거 채팅 기록
+        else if (type == MessageType.CHAT_MESSAGE_HISTORY_SUCCESS) {
+            List<Map<String, Object>> messages = (List<Map<String, Object>>) data.get("messages");
+
+            if (messages != null) {
+                messages.forEach(message -> {
+                    String senderId = (String) message.get("senderId");
+                    String content = (String) message.get("content");
+                    String timestamp = (String) message.get("timestamp");
+
+                    System.out.printf("[%s] %s: %s\n", timestamp, senderId, content);
+                });
+            } else {
+                System.out.println("[System] 과거 채팅 기록이 없습니다.");
             }
         }
     }
