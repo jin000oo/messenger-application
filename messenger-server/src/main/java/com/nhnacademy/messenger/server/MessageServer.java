@@ -15,30 +15,36 @@ package com.nhnacademy.messenger.server;
 import com.nhnacademy.messenger.server.handler.MessageDispatcher;
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 
 @Slf4j
 public class MessageServer implements Runnable {
 
-    private final int SERVER_PORT = 12345;
+    private static final int SERVER_PORT = 12345;
     private final MessageDispatcher messageDispatcher = new MessageDispatcher();
 
     @Override
     public void run() {
         try (ServerSocket serverSocket = new ServerSocket(SERVER_PORT)) {
-            log.debug("서버가 성공적으로 실행되었습니다.");
+            log.info("서버 시작 [port={}]", SERVER_PORT);
 
-            while (true) {
-                Socket client = serverSocket.accept();
-                Thread clientThread = new Thread(new ClientHandler(client, messageDispatcher));
-                clientThread.start();
+            while (!Thread.currentThread().isInterrupted()) {
+                try {
+                    Socket client = serverSocket.accept();
+                    log.info("[{}:{}] 클라이언트 접속", client.getInetAddress().getHostAddress(), client.getPort());
 
-                log.debug("[+] {}:{}", client.getInetAddress().getHostName(), client.getPort());
+                    Thread clientThread = new Thread(new ClientHandler(client, messageDispatcher));
+                    clientThread.start();
+                } catch (IOException e) {
+                    log.warn("클라이언트 연결 중 오류 발생", e);
+                }
             }
-
-        } catch (Exception e) {
-            log.debug("Exception: {}", e.getMessage());
+        } catch (IOException e) {
+            log.error("서버 실행 실패 [port={}]", SERVER_PORT, e);
+        } finally {
+            log.info("서버 종료 [port={}]", SERVER_PORT);
         }
     }
 }

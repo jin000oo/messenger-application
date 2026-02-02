@@ -44,6 +44,10 @@ public class MessageDispatcher {
             return ResponseFactory.error(validationError.getCode(), validationError.getMessage());
         }
 
+        if (request.getData() == null) {
+            return ResponseFactory.error("COMMON.BAD_REQUEST", "데이터 형식이 올바르지 않습니다.");
+        }
+
         MessageType messageType = request.getHeader().getType();
         Handler handler = handlerMap.get(messageType);
 
@@ -58,9 +62,10 @@ public class MessageDispatcher {
         }
 
         // 재접속 시 소켓 업데이트
+        // + 소켓 업데이트 시 user Online true로 변경.
         Session session = SessionManager.findBySessionId(request.getHeader().getSessionId());
         if (session.getSocket() != socket) {
-            session.updateSocket(socket);
+            session.setSocket(socket);
         }
 
         return handler.handle(request);

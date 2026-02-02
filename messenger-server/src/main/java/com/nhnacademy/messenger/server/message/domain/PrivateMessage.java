@@ -10,12 +10,18 @@
  * +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  */
 
-package com.nhnacademy.messenger.server;
+package com.nhnacademy.messenger.server.message.domain;
 
-public class ServerMain {
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 
-    public static void main(String[] args) {
-        Thread thread = new Thread(new MessageServer());
-        thread.start();
-    }
+@AllArgsConstructor
+@Getter
+public class PrivateMessage {
+
+    private final long messageId;
+    private final String senderId;
+    private final String receiverId;
+    private final String timestamp;
+    private final String content;
 }

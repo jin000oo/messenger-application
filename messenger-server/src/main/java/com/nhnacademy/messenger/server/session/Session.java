@@ -14,6 +14,7 @@ package com.nhnacademy.messenger.server.session;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.net.Socket;
 
@@ -22,9 +23,6 @@ import java.net.Socket;
 public class Session {
     private final String sessionId;
     private final String userId;
+    @Setter
     private volatile Socket socket;
-
-    public void updateSocket(Socket socket) {
-        this.socket = socket;
-    }
 }

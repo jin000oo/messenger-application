@@ -23,11 +23,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.net.SocketException;
 
 @Slf4j
 public class ClientHandler implements Runnable {
 
-    private Socket client;
+    private final Socket client;
     private final MessageDispatcher messageDispatcher;
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
@@ -39,35 +40,31 @@ public class ClientHandler implements Runnable {
 
     @Override
     public void run() {
-        try (InputStream in = client.getInputStream();
-             OutputStream out = client.getOutputStream();
+        String ip = client.getInetAddress().getHostAddress();
+        int port = client.getPort();
+
+        try (client;
+             InputStream in = client.getInputStream();
+             OutputStream out = client.getOutputStream()
         ) {
             MessageRequest request;
+            // null 클라이언트 정상 종료
             while ((request = MessageUtils.readRequest(in)) != null) {
                 MessageResponse response = messageDispatcher.dispatch(request, client);
-                log.debug("[{}:{}] Client Request: {}",
-                        client.getInetAddress().getHostName(),
-                        client.getPort(),
-                        objectMapper.writeValueAsString(request));
+                log.debug("[{}:{}] 요청: {}", ip, port, objectMapper.writeValueAsString(request));
 
                 MessageUtils.send(out, response);
-                log.debug("[{}:{}] Server Response: {}",
-                        client.getInetAddress().getHostName(),
-                        client.getPort(),
-                        objectMapper.writeValueAsString(response));
+                log.debug("[{}:{}] 응답: {}", ip, port, objectMapper.writeValueAsString(response));
             }
 
+            log.info("[{}:{}] 클라이언트 연결 종료", ip, port);
+            // SocketException 클라이언트 비정상 종료
+        } catch (SocketException e) {
+            log.debug("[{}:{}] 클라이언트 연결 끊김: {}", ip, port, e.getMessage());
+        } catch (RuntimeException e) {
+            log.warn("[{}:{}] 클라이언트 통신 중 예기치 않은 오류 발생", ip, port, e);
         } catch (IOException e) {
-            log.debug(e.getMessage());
-
-        } finally {
-            try {
-                log.debug("[-] {}:{}", client.getInetAddress().getHostName(), client.getPort());
-                client.close();
-
-            } catch (IOException e) {
-                log.debug(e.getMessage());
-            }
+            log.warn("[{}:{}] 클라이언트 통신 중 오류 발생", ip, port, e);
         }
     }
 }
