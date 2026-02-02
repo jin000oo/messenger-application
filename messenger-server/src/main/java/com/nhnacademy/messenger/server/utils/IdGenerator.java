@@ -10,12 +10,17 @@
  * +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  */
 
-package com.nhnacademy.messenger.server;
+package com.nhnacademy.messenger.server.utils;
 
-public class ServerMain {
+import java.util.concurrent.ThreadLocalRandom;
 
-    public static void main(String[] args) {
-        Thread thread = new Thread(new MessageServer());
-        thread.start();
+public class IdGenerator {
+
+    public static long randomRoomIdGenerator() {
+        return ThreadLocalRandom.current().nextLong(10_000_000L, 100_000_000L);
+    }
+
+    public static long randomMessageIdGenerator() {
+        return ThreadLocalRandom.current().nextLong(1_000_000_000L, 10_000_000_000L);
     }
 }

@@ -58,9 +58,10 @@ public class MessageDispatcher {
         }
 
         // 재접속 시 소켓 업데이트
+        // + 소켓 업데이트 시 user Online true로 변경.
         Session session = SessionManager.findBySessionId(request.getHeader().getSessionId());
         if (session.getSocket() != socket) {
-            session.updateSocket(socket);
+            session.setSocket(socket);
         }
 
         return handler.handle(request);

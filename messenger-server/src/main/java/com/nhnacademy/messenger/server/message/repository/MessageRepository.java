@@ -10,12 +10,15 @@
  * +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  */
 
-package com.nhnacademy.messenger.server;
+package com.nhnacademy.messenger.server.message.repository;
 
-public class ServerMain {
+import com.nhnacademy.messenger.server.message.domain.ChatMessage;
 
-    public static void main(String[] args) {
-        Thread thread = new Thread(new MessageServer());
-        thread.start();
-    }
+import java.util.List;
+
+public interface MessageRepository {
+
+    void save(ChatMessage chatMessage);
+
+    List<ChatMessage> findAll(long roomId, int limit);
 }
