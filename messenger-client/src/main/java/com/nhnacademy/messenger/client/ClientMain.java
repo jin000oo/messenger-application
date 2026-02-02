@@ -14,12 +14,14 @@ package com.nhnacademy.messenger.client;
 
 import com.nhnacademy.messenger.client.command.ClientCommand;
 import com.nhnacademy.messenger.client.command.CommandFactory;
-import com.nhnacademy.messenger.client.observer.ClientSessionObserver;
-import com.nhnacademy.messenger.client.observer.console.ConsoleRecvObserver;
+import com.nhnacademy.messenger.client.observer.impl.ClientSessionObserver;
+import com.nhnacademy.messenger.client.observer.impl.UIUpdateObserver;
 import com.nhnacademy.messenger.client.runnable.ReceivedMessageClient;
 import com.nhnacademy.messenger.client.subject.EventType;
 import com.nhnacademy.messenger.client.subject.MessageSubject;
 import com.nhnacademy.messenger.client.subject.Subject;
+import com.nhnacademy.messenger.client.ui.ClientUI;
+import com.nhnacademy.messenger.client.ui.impl.ConsoleUI;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.Scanner;
@@ -35,14 +37,16 @@ public class ClientMain {
             Socket socket = new Socket(DEFAULT_SERVER_ADDRESS, DEFAULT_PORT);
 
             if (socket.isConnected()) {
-                System.out.printf("[%s:%d] 서버 연결에 성공했습니다.%s",
-                        DEFAULT_SERVER_ADDRESS, DEFAULT_PORT, System.lineSeparator());
+                System.out.printf("[%s:%d] 서버 연결에 성공했습니다.\n",
+                        DEFAULT_SERVER_ADDRESS, DEFAULT_PORT);
                 System.out.println("/help 명령어 입력시 모든 명령어 목록을 볼 수 있습니다.");
             }
 
+            ClientUI clientUI = new ConsoleUI();
+
             Subject subject = new MessageSubject();
             subject.register(EventType.RECV, new ClientSessionObserver());
-            subject.register(EventType.RECV, new ConsoleRecvObserver());
+            subject.register(EventType.RECV, new UIUpdateObserver(clientUI));
 
             // 서버로부터 오는 메시지를 받는 스레드
             Thread receiverThread = new Thread(new ReceivedMessageClient(socket, subject));
@@ -76,7 +80,7 @@ public class ClientMain {
             }
 
         } catch (IOException e) {
-            System.out.printf("[Client] 예상치 못한 오류: %s%s", e.getMessage(), System.lineSeparator());
+            System.out.printf("[Client] 예상치 못한 오류: %s\n", e.getMessage());
             throw new RuntimeException(e);
         }
     }

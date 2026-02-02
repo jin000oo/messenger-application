@@ -51,7 +51,7 @@ public class ReceivedMessageClient implements Runnable {
                 subject.receiveMessage(response);
 
             } catch (IOException e) {
-                System.out.printf("[Client] 예상치 못한 오류: %s%s", e.getMessage(), System.lineSeparator());
+                System.out.printf("[Client] 예상치 못한 오류: %s\n", e.getMessage());
                 throw new RuntimeException(e);
             }
         }

@@ -34,14 +34,18 @@ public class UserListCommand implements ClientCommand {
         }
 
         MessageRequest request = new MessageRequest(
-                new MessageRequest.RequestHeader(MessageType.USER_LIST, LocalDateTime.now().toString(), sessionId),
-                Collections.emptyMap());
+                new MessageRequest.RequestHeader(
+                        MessageType.USER_LIST,
+                        LocalDateTime.now().toString(),
+                        sessionId),
+                Collections.emptyMap()
+        );
 
         try {
             MessageUtils.send(out, request);
 
         } catch (IOException e) {
-            System.out.printf("[Client] 예상치 못한 오류: %s%s", e.getMessage(), System.lineSeparator());
+            System.out.printf("[Client] 예상치 못한 오류: %s\n", e.getMessage());
         }
     }
 

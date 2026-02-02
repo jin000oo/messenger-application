@@ -41,9 +41,12 @@ public class EnterRoomCommand implements ClientCommand {
             long roomId = Long.parseLong(args[1]);
 
             MessageRequest request = new MessageRequest(
-                    new MessageRequest.RequestHeader(MessageType.CHAT_ROOM_ENTER, LocalDateTime.now().toString(),
+                    new MessageRequest.RequestHeader(
+                            MessageType.CHAT_ROOM_ENTER,
+                            LocalDateTime.now().toString(),
                             sessionId),
-                    Map.of("roomId", roomId));
+                    Map.of("roomId", roomId)
+            );
 
             MessageUtils.send(out, request);
 
@@ -51,7 +54,7 @@ public class EnterRoomCommand implements ClientCommand {
             System.out.println("[Client] 방 번호는 숫자여야 합니다.");
 
         } catch (IOException e) {
-            System.out.printf("[Client] 예상치 못한 오류: %s%s", e.getMessage(), System.lineSeparator());
+            System.out.printf("[Client] 예상치 못한 오류: %s\n", e.getMessage());
         }
     }
 

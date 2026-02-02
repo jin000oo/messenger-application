@@ -35,19 +35,23 @@ public class LeaveRoomCommand implements ClientCommand {
         }
 
         if (currentRoomId == null) {
-            System.out.println("[Client] 현재 참여 중인 채팅방이 없습니다.");
+            System.out.println("[Client] 해당 서비스를 이용하려면 채팅방에 먼저 입장을 해야 합니다.");
             return;
         }
 
         MessageRequest request = new MessageRequest(
-                new MessageRequest.RequestHeader(MessageType.CHAT_ROOM_EXIT, LocalDateTime.now().toString(), sessionId),
-                Map.of("roomId", currentRoomId));
+                new MessageRequest.RequestHeader(
+                        MessageType.CHAT_ROOM_EXIT,
+                        LocalDateTime.now().toString(),
+                        sessionId),
+                Map.of("roomId", currentRoomId)
+        );
 
         try {
             MessageUtils.send(out, request);
 
         } catch (IOException e) {
-            System.out.printf("[Client] 예상치 못한 오류: %s%s", e.getMessage(), System.lineSeparator());
+            System.out.printf("[Client] 예상치 못한 오류: %s\n", e.getMessage());
         }
     }
 

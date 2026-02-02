@@ -26,12 +26,13 @@ public class LoginCommand implements ClientCommand {
 
     @Override
     public void execute(String[] args, OutputStream out) {
-        if (ClientSession.getSessionId() != null) {
-            System.out.println("[Client] 이미 로그인되어 있습니다. 로그아웃 후 다시 시도해주세요.");
+        String sessionId = ClientSession.getSessionId();
+
+        if (sessionId != null) {
+            System.out.println("[Client] 이미 로그인되어 있습니다.");
             return;
         }
 
-        // 입력값 검증
         if (args.length < 3) {
             System.out.println("[Client] 사용법: /login <id> <password>");
             return;
@@ -41,14 +42,18 @@ public class LoginCommand implements ClientCommand {
         String password = args[2];
 
         MessageRequest request = new MessageRequest(
-                new MessageRequest.RequestHeader(MessageType.LOGIN, LocalDateTime.now().toString(), null),
-                Map.of("userId", userId, "password", password));
+                new MessageRequest.RequestHeader(
+                        MessageType.LOGIN,
+                        LocalDateTime.now().toString(),
+                        null),
+                Map.of("userId", userId, "password", password)
+        );
 
         try {
             MessageUtils.send(out, request);
 
         } catch (IOException e) {
-            System.out.printf("[Client] 예상치 못한 오류: %s%s", e.getMessage(), System.lineSeparator());
+            System.out.printf("[Client] 예상치 못한 오류: %s\n", e.getMessage());
         }
     }
 

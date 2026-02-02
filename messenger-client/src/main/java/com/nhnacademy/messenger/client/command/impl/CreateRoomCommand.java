@@ -40,15 +40,18 @@ public class CreateRoomCommand implements ClientCommand {
         String roomName = args[1];
 
         MessageRequest request = new MessageRequest(
-                new MessageRequest.RequestHeader(MessageType.CHAT_ROOM_CREATE, LocalDateTime.now().toString(),
+                new MessageRequest.RequestHeader(
+                        MessageType.CHAT_ROOM_CREATE,
+                        LocalDateTime.now().toString(),
                         sessionId),
-                Map.of("roomName", roomName));
+                Map.of("roomName", roomName)
+        );
 
         try {
             MessageUtils.send(out, request);
 
         } catch (IOException e) {
-            System.out.printf("[Client] 예상치 못한 오류: %s%s", e.getMessage(), System.lineSeparator());
+            System.out.printf("[Client] 예상치 못한 오류: %s\n", e.getMessage());
         }
     }
 

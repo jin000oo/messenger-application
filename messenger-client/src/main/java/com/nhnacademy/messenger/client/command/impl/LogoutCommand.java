@@ -29,19 +29,23 @@ public class LogoutCommand implements ClientCommand {
         String sessionId = ClientSession.getSessionId();
 
         if (sessionId == null) {
-            System.out.println("[Client] 로그인 상태가 아닙니다.");
+            System.out.println("[Client] 해당 서비스를 이용하려면 로그인이 필요합니다.");
             return;
         }
 
         MessageRequest request = new MessageRequest(
-                new MessageRequest.RequestHeader(MessageType.LOGOUT, LocalDateTime.now().toString(), sessionId),
-                Collections.emptyMap());
+                new MessageRequest.RequestHeader(
+                        MessageType.LOGOUT,
+                        LocalDateTime.now().toString(),
+                        sessionId),
+                Collections.emptyMap()
+        );
 
         try {
             MessageUtils.send(out, request);
 
         } catch (IOException e) {
-            System.out.printf("[Client] 예상치 못한 오류: %s%s", e.getMessage(), System.lineSeparator());
+            System.out.printf("[Client] 예상치 못한 오류: %s\n", e.getMessage());
         }
     }
 

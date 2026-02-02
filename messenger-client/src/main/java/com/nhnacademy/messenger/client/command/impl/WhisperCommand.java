@@ -28,7 +28,6 @@ public class WhisperCommand implements ClientCommand {
     @Override
     public void execute(String[] args, OutputStream out) {
         String sessionId = ClientSession.getSessionId();
-        String userId = ClientSession.getUserId();
 
         if (sessionId == null) {
             System.out.println("[Client] 해당 서비스를 이용하려면 로그인이 필요합니다.");
@@ -39,20 +38,25 @@ public class WhisperCommand implements ClientCommand {
             return;
         }
 
+        String userId = ClientSession.getUserId();
+
         String targetId = args[1];
         String[] messageParts = Arrays.copyOfRange(args, 2, args.length);
         String message = String.join(" ", messageParts);
 
         MessageRequest request = new MessageRequest(
-                new MessageRequest.RequestHeader(MessageType.PRIVATE_MESSAGE, LocalDateTime.now().toString(),
+                new MessageRequest.RequestHeader(
+                        MessageType.PRIVATE_MESSAGE,
+                        LocalDateTime.now().toString(),
                         sessionId),
-                Map.of("senderId", userId, "receiverId", targetId, "message", message));
+                Map.of("senderId", userId, "receiverId", targetId, "message", message)
+        );
 
         try {
             MessageUtils.send(out, request);
 
         } catch (IOException e) {
-            System.out.printf("[Client] 예상치 못한 오류: %s%s", e.getMessage(), System.lineSeparator());
+            System.out.printf("[Client] 예상치 못한 오류: %s\n", e.getMessage());
         }
     }
 
