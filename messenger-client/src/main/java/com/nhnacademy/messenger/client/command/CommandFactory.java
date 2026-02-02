@@ -13,6 +13,7 @@
 package com.nhnacademy.messenger.client.command;
 
 import com.nhnacademy.messenger.client.command.impl.ChatCommand;
+import com.nhnacademy.messenger.client.command.impl.HelpCommand;
 import com.nhnacademy.messenger.client.command.impl.LoginCommand;
 import com.nhnacademy.messenger.client.command.impl.LogoutCommand;
 import java.util.HashMap;
@@ -23,6 +24,7 @@ public class CommandFactory {
     private final Map<String, ClientCommand> commands = new HashMap<>();
 
     public CommandFactory() {
+        commands.put("/help", new HelpCommand());
         commands.put("/login", new LoginCommand());
         commands.put("/logout", new LogoutCommand());
         commands.put("/chat", new ChatCommand());

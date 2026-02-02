@@ -13,6 +13,7 @@
 package com.nhnacademy.messenger.client.subject;
 
 import com.nhnacademy.messenger.client.observer.Observer;
+import com.nhnacademy.messenger.common.domain.MessageResponse;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -36,10 +37,10 @@ public class MessageSubject implements Subject {
     }
 
     @Override
-    public void notifyObservers(EventType eventType, String message) {
+    public void notifyObservers(EventType eventType, MessageResponse response) {
         for (Observer observer : observers) {
             if (observer.validate(eventType)) {
-                observer.updateMessage(message);
+                observer.updateMessage(response);
             }
         }
     }
