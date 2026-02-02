@@ -13,21 +13,38 @@
 package com.nhnacademy.messenger.client.command;
 
 import com.nhnacademy.messenger.client.command.impl.ChatCommand;
-import com.nhnacademy.messenger.client.command.impl.HelpCommand;
+import com.nhnacademy.messenger.client.command.impl.ConsoleHelpCommand;
+import com.nhnacademy.messenger.client.command.impl.CreateRoomCommand;
+import com.nhnacademy.messenger.client.command.impl.EnterRoomCommand;
+import com.nhnacademy.messenger.client.command.impl.HistoryCommand;
+import com.nhnacademy.messenger.client.command.impl.LeaveRoomCommand;
 import com.nhnacademy.messenger.client.command.impl.LoginCommand;
 import com.nhnacademy.messenger.client.command.impl.LogoutCommand;
+import com.nhnacademy.messenger.client.command.impl.RoomListCommand;
+import com.nhnacademy.messenger.client.command.impl.UserListCommand;
+import com.nhnacademy.messenger.client.command.impl.WhisperCommand;
+import com.nhnacademy.messenger.client.ui.ClientUI;
+import com.nhnacademy.messenger.client.ui.impl.ConsoleUI;
 import java.util.HashMap;
 import java.util.Map;
 
 public class CommandFactory {
 
+    private final ClientUI clientUI = new ConsoleUI();
     private final Map<String, ClientCommand> commands = new HashMap<>();
 
     public CommandFactory() {
-        commands.put("/help", new HelpCommand());
-        commands.put("/login", new LoginCommand());
-        commands.put("/logout", new LogoutCommand());
-        commands.put("/chat", new ChatCommand());
+        commands.put("/help", new ConsoleHelpCommand());
+        commands.put("/login", new LoginCommand(clientUI));
+        commands.put("/logout", new LogoutCommand(clientUI));
+        commands.put("/users", new UserListCommand(clientUI));
+        commands.put("/chat", new ChatCommand(clientUI));
+        commands.put("/whisper", new WhisperCommand(clientUI));
+        commands.put("/create", new CreateRoomCommand(clientUI));
+        commands.put("/list", new RoomListCommand(clientUI));
+        commands.put("/enter", new EnterRoomCommand(clientUI));
+        commands.put("/leave", new LeaveRoomCommand(clientUI));
+        commands.put("/history", new HistoryCommand(clientUI));
     }
 
     public ClientCommand getCommand(String commandName) {

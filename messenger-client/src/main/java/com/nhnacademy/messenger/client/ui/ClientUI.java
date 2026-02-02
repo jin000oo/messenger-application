@@ -10,21 +10,19 @@
  * +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  */
 
-package com.nhnacademy.messenger.client.command.impl;
+package com.nhnacademy.messenger.client.ui;
 
-import com.nhnacademy.messenger.client.command.ClientCommand;
-import java.io.OutputStream;
+import com.nhnacademy.messenger.common.domain.MessageResponse;
 
-public class HelpCommand implements ClientCommand {
+public interface ClientUI {
 
-    @Override
-    public void execute(String[] args, OutputStream out) {
-        System.out.println("========== [ 명령어 목록 ] ==========");
-        System.out.println("/login <id> <pw>");
-        System.out.println("/logout");
-        System.out.println("/chat <message>");
-        System.out.println("/exit");
-        System.out.println("==================================");
-    }
+    // 일반 메시지 출력
+    void displayMessage(String message);
+
+    // 에러 메시지 출력
+    void displayError(String message);
+
+    // 서버 응답 처리
+    void handleResponse(MessageResponse response);
 
 }

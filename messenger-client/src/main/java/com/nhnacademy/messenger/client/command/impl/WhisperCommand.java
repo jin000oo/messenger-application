@@ -21,13 +21,14 @@ import com.nhnacademy.messenger.common.util.MessageUtils;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.Map;
 
-public class LoginCommand implements ClientCommand {
+public class WhisperCommand implements ClientCommand {
 
     private final ClientUI clientUI;
 
-    public LoginCommand(ClientUI clientUI) {
+    public WhisperCommand(ClientUI clientUI) {
         this.clientUI = clientUI;
     }
 
@@ -35,8 +36,8 @@ public class LoginCommand implements ClientCommand {
     public void execute(String[] args, OutputStream out) {
         String sessionId = ClientSession.getSessionId();
 
-        if (sessionId != null) {
-            clientUI.displayMessage("이미 로그인되어 있습니다.");
+        if (sessionId == null) {
+            clientUI.displayMessage("해당 서비스를 이용하려면 로그인이 필요합니다.");
             return;
         }
 
@@ -44,15 +45,18 @@ public class LoginCommand implements ClientCommand {
             return;
         }
 
-        String userId = args[1];
-        String password = args[2];
+        String userId = ClientSession.getUserId();
+
+        String targetId = args[1];
+        String[] messageParts = Arrays.copyOfRange(args, 2, args.length);
+        String message = String.join(" ", messageParts);
 
         MessageRequest request = new MessageRequest(
                 new MessageRequest.RequestHeader(
-                        MessageType.LOGIN,
+                        MessageType.PRIVATE_MESSAGE,
                         LocalDateTime.now().toString(),
-                        null),
-                Map.of("userId", userId, "password", password)
+                        sessionId),
+                Map.of("senderId", userId, "receiverId", targetId, "message", message)
         );
 
         try {

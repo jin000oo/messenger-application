@@ -23,36 +23,48 @@ import java.io.OutputStream;
 import java.time.LocalDateTime;
 import java.util.Map;
 
-public class LoginCommand implements ClientCommand {
+public class HistoryCommand implements ClientCommand {
 
     private final ClientUI clientUI;
+    private static final int DEFAULT_LIMIT = 50;
 
-    public LoginCommand(ClientUI clientUI) {
+    public HistoryCommand(ClientUI clientUI) {
         this.clientUI = clientUI;
     }
 
     @Override
     public void execute(String[] args, OutputStream out) {
         String sessionId = ClientSession.getSessionId();
+        Long currentRoomId = ClientSession.getCurrentRoomId();
 
-        if (sessionId != null) {
-            clientUI.displayMessage("이미 로그인되어 있습니다.");
+        if (sessionId == null) {
+            clientUI.displayMessage("해당 서비스를 이용하려면 로그인이 필요합니다.");
             return;
         }
 
-        if (args.length < 3) {
+        if (currentRoomId == null) {
+            clientUI.displayMessage("해당 서비스를 이용하려면 채팅방에 먼저 입장을 해야 합니다.");
             return;
         }
 
-        String userId = args[1];
-        String password = args[2];
+        // 가장 큰 값 = 최신순
+        long beforeMessageId = Long.MAX_VALUE;
+
+        if (args.length >= 2) {
+            try {
+                beforeMessageId = Long.parseLong(args[1]);
+
+            } catch (NumberFormatException e) {
+                clientUI.displayMessage("메시지 ID는 숫자여야 합니다.");
+            }
+        }
 
         MessageRequest request = new MessageRequest(
                 new MessageRequest.RequestHeader(
-                        MessageType.LOGIN,
+                        MessageType.CHAT_MESSAGE_HISTORY,
                         LocalDateTime.now().toString(),
-                        null),
-                Map.of("userId", userId, "password", password)
+                        sessionId),
+                Map.of("roomId", currentRoomId, "limit", DEFAULT_LIMIT, "beforeMessageId", beforeMessageId)
         );
 
         try {

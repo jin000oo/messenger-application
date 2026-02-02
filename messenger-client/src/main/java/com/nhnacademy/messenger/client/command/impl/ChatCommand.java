@@ -14,6 +14,7 @@ package com.nhnacademy.messenger.client.command.impl;
 
 import com.nhnacademy.messenger.client.command.ClientCommand;
 import com.nhnacademy.messenger.client.session.ClientSession;
+import com.nhnacademy.messenger.client.ui.ClientUI;
 import com.nhnacademy.messenger.common.domain.MessageRequest;
 import com.nhnacademy.messenger.common.domain.MessageType;
 import com.nhnacademy.messenger.common.util.MessageUtils;
@@ -25,12 +26,24 @@ import java.util.Map;
 
 public class ChatCommand implements ClientCommand {
 
+    private final ClientUI clientUI;
+
+    public ChatCommand(ClientUI clientUI) {
+        this.clientUI = clientUI;
+    }
+
     @Override
     public void execute(String[] args, OutputStream out) {
         String sessionId = ClientSession.getSessionId();
+        Long currentRoomId = ClientSession.getCurrentRoomId();
 
         if (sessionId == null) {
-            System.out.println("[Client] 채팅 서비스를 이용하려면 로그인이 필요합니다.");
+            clientUI.displayMessage("해당 서비스를 이용하려면 로그인이 필요합니다.");
+            return;
+        }
+
+        if (currentRoomId == null) {
+            clientUI.displayMessage("해당 서비스를 이용하려면 채팅방에 먼저 입장을 해야 합니다.");
             return;
         }
 
@@ -45,18 +58,19 @@ public class ChatCommand implements ClientCommand {
             return;
         }
 
-        // 임시
-        long chatRoomId = 123456789L;
-
         MessageRequest request = new MessageRequest(
-                new MessageRequest.RequestHeader(MessageType.CHAT_MESSAGE, LocalDateTime.now().toString(), sessionId),
-                Map.of("roomId", chatRoomId, "message", message));
+                new MessageRequest.RequestHeader(
+                        MessageType.CHAT_MESSAGE,
+                        LocalDateTime.now().toString(),
+                        sessionId),
+                Map.of("roomId", currentRoomId, "message", message)
+        );
 
         try {
             MessageUtils.send(out, request);
 
         } catch (IOException e) {
-            System.out.printf("[Client] 예상치 못한 오류: %s%s", e.getMessage(), System.lineSeparator());
+            clientUI.displayMessage(String.format("예상치 못한 오류: %s", e.getMessage()));
         }
     }
 
