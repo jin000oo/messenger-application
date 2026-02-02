@@ -56,4 +56,8 @@ public class MemoryChatRoomRepository implements ChatRoomRepository {
     public boolean exists(long roomId) {
         return rooms.containsKey(roomId);
     }
+
+    public boolean existsByRoomName(String roomName) {
+        return rooms.values().stream().anyMatch(room -> room.getRoomName().equals(roomName));
+    }
 }

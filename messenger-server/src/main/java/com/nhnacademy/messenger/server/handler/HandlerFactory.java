@@ -13,9 +13,7 @@
 package com.nhnacademy.messenger.server.handler;
 
 import com.nhnacademy.messenger.common.domain.MessageType;
-import com.nhnacademy.messenger.server.handler.impl.LoginHandler;
-import com.nhnacademy.messenger.server.handler.impl.LogoutHandler;
-import com.nhnacademy.messenger.server.handler.impl.UserListHandler;
+import com.nhnacademy.messenger.server.handler.impl.*;
 
 import java.util.EnumMap;
 import java.util.Map;
@@ -28,6 +26,12 @@ public class HandlerFactory {
         Handlers.put(MessageType.LOGIN, new LoginHandler());
         Handlers.put(MessageType.LOGOUT, new LogoutHandler());
         Handlers.put(MessageType.USER_LIST, new UserListHandler());
+        Handlers.put(MessageType.PRIVATE_MESSAGE, new PrivateMessageHandler());
+        Handlers.put(MessageType.CHAT_ROOM_CREATE, new ChatRoomCreateHandler());
+        Handlers.put(MessageType.CHAT_ROOM_LIST, new ChatRoomListHandler());
+        Handlers.put(MessageType.CHAT_ROOM_ENTER, new ChatRoomEnterHandler());
+        Handlers.put(MessageType.CHAT_ROOM_EXIT, new ChatRoomExitHandler());
+        Handlers.put(MessageType.CHAT_MESSAGE_HISTORY, new ChatMessageHistoryHandler());
     }
 
     public static Map<MessageType, Handler> getHandler() {

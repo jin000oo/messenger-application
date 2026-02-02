@@ -83,6 +83,7 @@ public class ChatMessageHandler implements Handler {
 
         // 수정 필요.
         long messageId = IdGenerator.randomMessageIdGenerator();
+
         messageRepository.save(new ChatMessage(
                 messageId,
                 roomId,

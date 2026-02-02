@@ -44,6 +44,10 @@ public class MessageDispatcher {
             return ResponseFactory.error(validationError.getCode(), validationError.getMessage());
         }
 
+        if (request.getData() == null) {
+            return ResponseFactory.error("COMMON.BAD_REQUEST", "데이터 형식이 올바르지 않습니다.");
+        }
+
         MessageType messageType = request.getHeader().getType();
         Handler handler = handlerMap.get(messageType);
 

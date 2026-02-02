@@ -37,6 +37,6 @@ public class MemoryMessageRepository implements MessageRepository {
             return Collections.emptyList();
         }
 
-        return List.copyOf(messages.get(roomId));
+        return List.copyOf(messages.get(roomId).subList(0, Math.min(limit, messages.get(roomId).size())));
     }
 }

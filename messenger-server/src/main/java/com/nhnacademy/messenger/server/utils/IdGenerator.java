@@ -13,14 +13,28 @@
 package com.nhnacademy.messenger.server.utils;
 
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class IdGenerator {
 
+    private static AtomicLong chatRoomId;
+    private static AtomicLong messageId;
+
+    static {
+        chatRoomId = new AtomicLong(
+                ThreadLocalRandom.current().nextLong(10_000_000L, 100_000_000L)
+        );
+        messageId = new AtomicLong(
+                ThreadLocalRandom.current().nextLong(1_000_000_000L, 10_000_000_000L)
+        );
+
+    }
+
     public static long randomRoomIdGenerator() {
-        return ThreadLocalRandom.current().nextLong(10_000_000L, 100_000_000L);
+        return chatRoomId.getAndIncrement();
     }
 
     public static long randomMessageIdGenerator() {
-        return ThreadLocalRandom.current().nextLong(1_000_000_000L, 10_000_000_000L);
+        return messageId.getAndIncrement();
     }
 }
