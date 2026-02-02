@@ -27,6 +27,8 @@ public class MemoryUserRepository implements UserRepository {
 
     static {
         users.put("marco", new User("marco", "nhnacademy123", "marco"));
+        users.put("test1", new User("test1", "1234", "test1"));
+        users.put("test2", new User("test2", "1234", "test2"));
         resetOnline();
     }
 

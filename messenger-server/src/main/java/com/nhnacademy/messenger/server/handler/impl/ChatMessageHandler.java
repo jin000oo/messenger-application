@@ -56,12 +56,21 @@ public class ChatMessageHandler implements Handler {
             return ResponseFactory.error("AUTH.INVALID_SESSION", "유효하지 않은 세션입니다.");
         }
 
-        Long roomId = (Long) request.getData().get("roomId");
-        String message = (String) request.getData().get("message");
+//        Long roomId = (Long) request.getData().get("roomId");
+//        String message = (String) request.getData().get("message");
 
-        if (roomId == null || message == null) {
+        Object obj1 = request.getData().get("roomId");
+        Object obj2 = request.getData().get("message");
+
+        if (obj1 == null || obj2 == null) {
             return ResponseFactory.error("COMMON.BAD_REQUEST", "데이터 형식이 올바르지 않습니다.");
         }
+        long roomId = Long.parseLong(String.valueOf(obj1));
+        String message = String.valueOf(obj2);
+
+//        if (roomId == null || message == null) {
+//            return ResponseFactory.error("COMMON.BAD_REQUEST", "데이터 형식이 올바르지 않습니다.");
+//        }
 
         if (!chatRoomRepository.exists(roomId)) {
             return ResponseFactory.error("ROOM.NOT_FOUND", "해당 채팅방을 찾을 수 없습니다.");
@@ -70,11 +79,24 @@ public class ChatMessageHandler implements Handler {
         ChatRoom chatRoom = chatRoomRepository.findById(roomId).get();
         Set<String> members = chatRoom.getAllMembers();
 
+        String senderId = session.getUserId();
+        MessageResponse response = ResponseFactory.success(
+                MessageType.CHAT_MESSAGE,
+                Map.of(
+                        "senderId", senderId,
+                        "message", message
+                )
+        );
+
         for (String userId : members) {
+            if (userId.equals(senderId)) {
+                continue;
+            }
+
             try {
                 MessageUtils.send(
                         SessionManager.findByUserId(userId).getSocket().getOutputStream(),
-                        message
+                        response
                 );
             } catch (IOException e) {
                 log.debug("메시지 전송 중 오류 발생: {}", e.getMessage());

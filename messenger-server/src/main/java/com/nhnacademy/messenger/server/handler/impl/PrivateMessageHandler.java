@@ -61,20 +61,30 @@ public class PrivateMessageHandler implements Handler {
             return ResponseFactory.error("COMMON.BAD_REQUEST", "데이터 형식이 올바르지 않습니다.");
         }
 
-        if (userRepository.exists(receiverId)) {
+        if (!userRepository.exists(receiverId)) {
             return ResponseFactory.error("USER.NOT_FOUND", "수신자를 찾을 수 없습니다.");
         }
+
+        long messageId = IdGenerator.randomMessageIdGenerator();
+        MessageResponse response = ResponseFactory.success(
+                MessageType.PRIVATE_MESSAGE_SUCCESS,
+                Map.of(
+                        "senderId", senderId,
+                        "receiverId", receiverId,
+                        "message", message,
+                        "messageId", messageId
+                )
+        );
 
         try {
             MessageUtils.send(
                     SessionManager.findByUserId(receiverId).getSocket().getOutputStream(),
-                    message
+                    response
             );
         } catch (IOException e) {
             log.debug("귓속말 메시지 전송 중 오류 발생: {}", e.getMessage());
         }
 
-        long messageId = IdGenerator.randomMessageIdGenerator();
         privateMessageRepository.save(new PrivateMessage(
                 messageId,
                 senderId,

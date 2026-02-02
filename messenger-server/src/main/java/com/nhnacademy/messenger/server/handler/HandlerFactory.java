@@ -26,6 +26,7 @@ public class HandlerFactory {
         Handlers.put(MessageType.LOGIN, new LoginHandler());
         Handlers.put(MessageType.LOGOUT, new LogoutHandler());
         Handlers.put(MessageType.USER_LIST, new UserListHandler());
+        Handlers.put(MessageType.CHAT_MESSAGE, new ChatMessageHandler());
         Handlers.put(MessageType.PRIVATE_MESSAGE, new PrivateMessageHandler());
         Handlers.put(MessageType.CHAT_ROOM_CREATE, new ChatRoomCreateHandler());
         Handlers.put(MessageType.CHAT_ROOM_LIST, new ChatRoomListHandler());
