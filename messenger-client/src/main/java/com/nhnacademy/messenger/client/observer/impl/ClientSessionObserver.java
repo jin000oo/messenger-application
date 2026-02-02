@@ -61,7 +61,7 @@ public class ClientSessionObserver implements Observer {
 
         // 채팅방 입장 성공 시 채팅방 ID 저장
         else if (type == MessageType.CHAT_ROOM_ENTER_SUCCESS) {
-            ClientSession.setCurrentRoomId((long) data.get("roomId"));
+            ClientSession.setCurrentRoomId(((Number) data.get("roomId")).longValue());
         }
 
         // 채팅방 나가면 방 번호 초기화

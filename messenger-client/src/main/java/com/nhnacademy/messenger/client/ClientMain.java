@@ -74,8 +74,6 @@ public class ClientMain {
                 } else {
                     clientUI.displayMessage("지원하지 않는 명령어입니다.");
                 }
-
-                System.out.print("> ");
             }
 
         } catch (IOException e) {
