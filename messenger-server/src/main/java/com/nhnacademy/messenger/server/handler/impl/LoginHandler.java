@@ -20,8 +20,8 @@ import com.nhnacademy.messenger.server.session.Session;
 import com.nhnacademy.messenger.server.session.SessionManager;
 import com.nhnacademy.messenger.server.user.domain.User;
 import com.nhnacademy.messenger.server.user.repository.UserRepository;
-import com.nhnacademy.messenger.server.user.repository.impl.MemoryUserRepository;
 import com.nhnacademy.messenger.server.utils.ResponseFactory;
+import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 
 import java.net.Socket;
@@ -30,9 +30,10 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
+@RequiredArgsConstructor
 public class LoginHandler implements Handler {
 
-    private final UserRepository userRepository = new MemoryUserRepository();
+    private final UserRepository userRepository;
 
     @Override
     public MessageResponse handle(MessageRequest request) {

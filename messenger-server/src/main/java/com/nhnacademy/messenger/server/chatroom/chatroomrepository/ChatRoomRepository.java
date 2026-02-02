@@ -28,4 +28,6 @@ public interface ChatRoomRepository {
     List<ChatRoom> findAll();
 
     boolean exists(long roomId);
+
+    boolean existsByRoomName(String roomName);
 }

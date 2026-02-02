@@ -19,22 +19,15 @@ import com.nhnacademy.messenger.server.session.Session;
 import com.nhnacademy.messenger.server.session.SessionManager;
 import com.nhnacademy.messenger.server.utils.HeaderValidator;
 import com.nhnacademy.messenger.server.utils.ResponseFactory;
+import lombok.RequiredArgsConstructor;
 
 import java.net.Socket;
-import java.util.Map;
 import java.util.Objects;
 
+@RequiredArgsConstructor
 public class MessageDispatcher {
 
-    private final Map<MessageType, Handler> handlerMap;
-
-    public MessageDispatcher() {
-        this.handlerMap = HandlerFactory.getHandler();
-    }
-
-    public MessageDispatcher(Map<MessageType, Handler> handlerMap) {
-        this.handlerMap = handlerMap;
-    }
+    private final HandlerFactory handlerFactory;
 
     public MessageResponse dispatch(MessageRequest request, Socket socket) {
         HeaderValidator.ValidationError validationError = HeaderValidator.validateHeader(request.getHeader());
@@ -49,7 +42,7 @@ public class MessageDispatcher {
         }
 
         MessageType messageType = request.getHeader().getType();
-        Handler handler = handlerMap.get(messageType);
+        Handler handler = handlerFactory.getHandler(messageType);
 
         // 메시지 타입에 따른 핸들러 확인.
         if (Objects.isNull(handler)) {

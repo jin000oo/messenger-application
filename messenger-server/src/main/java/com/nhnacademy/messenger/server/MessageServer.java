@@ -12,6 +12,7 @@
 
 package com.nhnacademy.messenger.server;
 
+import com.nhnacademy.messenger.server.handler.HandlerFactory;
 import com.nhnacademy.messenger.server.handler.MessageDispatcher;
 import lombok.extern.slf4j.Slf4j;
 
@@ -23,7 +24,7 @@ import java.net.Socket;
 public class MessageServer implements Runnable {
 
     private static final int SERVER_PORT = 12345;
-    private final MessageDispatcher messageDispatcher = new MessageDispatcher();
+    private final MessageDispatcher messageDispatcher = new MessageDispatcher(new HandlerFactory());
 
     @Override
     public void run() {

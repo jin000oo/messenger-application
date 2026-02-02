@@ -23,7 +23,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class MemoryPrivateMessageRepository implements PrivateMessageRepository {
 
-    private static final Map<String, List<PrivateMessage>> privateMessages = new ConcurrentHashMap<>();
+    private final Map<String, List<PrivateMessage>> privateMessages = new ConcurrentHashMap<>();
 
     @Override
     public void save(PrivateMessage privateMessage) {

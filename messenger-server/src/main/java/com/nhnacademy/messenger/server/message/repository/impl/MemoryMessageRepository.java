@@ -24,7 +24,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class MemoryMessageRepository implements MessageRepository {
 
     // roomId, ChatMessage List
-    private static final Map<Long, List<ChatMessage>> messages = new ConcurrentHashMap<>();
+    private final Map<Long, List<ChatMessage>> messages = new ConcurrentHashMap<>();
 
     @Override
     public void save(ChatMessage chatMessage) {

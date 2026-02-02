@@ -19,16 +19,17 @@ import com.nhnacademy.messenger.server.handler.Handler;
 import com.nhnacademy.messenger.server.session.Session;
 import com.nhnacademy.messenger.server.session.SessionManager;
 import com.nhnacademy.messenger.server.user.repository.UserRepository;
-import com.nhnacademy.messenger.server.user.repository.impl.MemoryUserRepository;
 import com.nhnacademy.messenger.server.utils.ResponseFactory;
+import lombok.RequiredArgsConstructor;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+@RequiredArgsConstructor
 public class UserListHandler implements Handler {
 
-    private final UserRepository userRepository = new MemoryUserRepository();
+    private final UserRepository userRepository;
 
     @Override
     public MessageResponse handle(MessageRequest request) {

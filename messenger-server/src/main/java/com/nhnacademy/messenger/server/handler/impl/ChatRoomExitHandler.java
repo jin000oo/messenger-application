@@ -15,18 +15,20 @@ package com.nhnacademy.messenger.server.handler.impl;
 import com.nhnacademy.messenger.common.domain.MessageRequest;
 import com.nhnacademy.messenger.common.domain.MessageResponse;
 import com.nhnacademy.messenger.common.domain.MessageType;
-import com.nhnacademy.messenger.server.chatroom.chatroomrepository.impl.MemoryChatRoomRepository;
+import com.nhnacademy.messenger.server.chatroom.chatroomrepository.ChatRoomRepository;
 import com.nhnacademy.messenger.server.handler.Handler;
 import com.nhnacademy.messenger.server.session.Session;
 import com.nhnacademy.messenger.server.session.SessionManager;
 import com.nhnacademy.messenger.server.utils.ResponseFactory;
+import lombok.RequiredArgsConstructor;
 
 import java.util.Map;
 import java.util.Objects;
 
+@RequiredArgsConstructor
 public class ChatRoomExitHandler implements Handler {
 
-    private final MemoryChatRoomRepository chatRoomRepository = new MemoryChatRoomRepository();
+    private final ChatRoomRepository chatRoomRepository;
 
     @Override
     public MessageResponse handle(MessageRequest request) {

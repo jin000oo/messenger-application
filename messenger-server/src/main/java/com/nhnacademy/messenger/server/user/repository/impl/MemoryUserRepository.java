@@ -23,13 +23,16 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class MemoryUserRepository implements UserRepository {
 
-    private static final Map<String, User> users = new ConcurrentHashMap<>();
+    private final Map<String, User> users = new ConcurrentHashMap<>();
 
-    static {
+    public MemoryUserRepository() {
+        init();
+    }
+
+    private void init() {
         users.put("marco", new User("marco", "nhnacademy123", "marco"));
         users.put("test1", new User("test1", "1234", "test1"));
         users.put("test2", new User("test2", "1234", "test2"));
-        resetOnline();
     }
 
     @Override
@@ -64,9 +67,5 @@ public class MemoryUserRepository implements UserRepository {
         if (user != null) {
             user.setOnline(online);
         }
-    }
-
-    private static void resetOnline() {
-        users.values().forEach(user -> user.setOnline(false));
     }
 }

@@ -19,13 +19,12 @@ import com.nhnacademy.messenger.common.util.MessageUtils;
 import com.nhnacademy.messenger.server.handler.Handler;
 import com.nhnacademy.messenger.server.message.domain.PrivateMessage;
 import com.nhnacademy.messenger.server.message.repository.PrivateMessageRepository;
-import com.nhnacademy.messenger.server.message.repository.impl.MemoryPrivateMessageRepository;
 import com.nhnacademy.messenger.server.session.Session;
 import com.nhnacademy.messenger.server.session.SessionManager;
 import com.nhnacademy.messenger.server.user.repository.UserRepository;
-import com.nhnacademy.messenger.server.user.repository.impl.MemoryUserRepository;
 import com.nhnacademy.messenger.server.utils.IdGenerator;
 import com.nhnacademy.messenger.server.utils.ResponseFactory;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
@@ -35,10 +34,11 @@ import java.util.Map;
 import java.util.Objects;
 
 @Slf4j
+@AllArgsConstructor
 public class PrivateMessageHandler implements Handler {
 
-    private final UserRepository userRepository = new MemoryUserRepository();
-    private final PrivateMessageRepository privateMessageRepository = new MemoryPrivateMessageRepository();
+    private final UserRepository userRepository;
+    private final PrivateMessageRepository privateMessageRepository;
 
     @Override
     public MessageResponse handle(MessageRequest request) {
