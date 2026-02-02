@@ -13,6 +13,7 @@
 package com.nhnacademy.messenger.client.runnable;
 
 import com.nhnacademy.messenger.client.subject.Subject;
+import com.nhnacademy.messenger.client.ui.ClientUI;
 import com.nhnacademy.messenger.common.domain.MessageResponse;
 import com.nhnacademy.messenger.common.util.MessageUtils;
 import java.io.IOException;
@@ -24,8 +25,9 @@ public class ReceivedMessageClient implements Runnable {
 
     private final Socket socket;
     private final Subject subject;
+    private final ClientUI clientUI;
 
-    public ReceivedMessageClient(Socket socket, Subject subject) {
+    public ReceivedMessageClient(Socket socket, Subject subject, ClientUI clientUI) {
         if (socket == null) {
             throw new IllegalArgumentException("[ReceivedMessageClient] Socket이 null입니다.");
         }
@@ -36,6 +38,7 @@ public class ReceivedMessageClient implements Runnable {
 
         this.socket = socket;
         this.subject = subject;
+        this.clientUI = clientUI;
     }
 
     @Override
@@ -51,7 +54,7 @@ public class ReceivedMessageClient implements Runnable {
                 subject.receiveMessage(response);
 
             } catch (IOException e) {
-                System.out.printf("[Client] 예상치 못한 오류: %s%s", e.getMessage(), System.lineSeparator());
+                clientUI.displayMessage(String.format("예상치 못한 오류: %s", e.getMessage()));
                 throw new RuntimeException(e);
             }
         }

@@ -14,6 +14,7 @@ package com.nhnacademy.messenger.client.command.impl;
 
 import com.nhnacademy.messenger.client.command.ClientCommand;
 import com.nhnacademy.messenger.client.session.ClientSession;
+import com.nhnacademy.messenger.client.ui.ClientUI;
 import com.nhnacademy.messenger.common.domain.MessageRequest;
 import com.nhnacademy.messenger.common.domain.MessageType;
 import com.nhnacademy.messenger.common.util.MessageUtils;
@@ -24,16 +25,22 @@ import java.util.Map;
 
 public class LoginCommand implements ClientCommand {
 
+    private final ClientUI clientUI;
+
+    public LoginCommand(ClientUI clientUI) {
+        this.clientUI = clientUI;
+    }
+
     @Override
     public void execute(String[] args, OutputStream out) {
-        if (ClientSession.getSessionId() != null) {
-            System.out.println("[Client] 이미 로그인되어 있습니다. 로그아웃 후 다시 시도해주세요.");
+        String sessionId = ClientSession.getSessionId();
+
+        if (sessionId != null) {
+            clientUI.displayMessage("이미 로그인되어 있습니다.");
             return;
         }
 
-        // 입력값 검증
         if (args.length < 3) {
-            System.out.println("[Client] 사용법: /login <id> <password>");
             return;
         }
 
@@ -41,14 +48,18 @@ public class LoginCommand implements ClientCommand {
         String password = args[2];
 
         MessageRequest request = new MessageRequest(
-                new MessageRequest.RequestHeader(MessageType.LOGIN, LocalDateTime.now().toString(), null),
-                Map.of("userId", userId, "password", password));
+                new MessageRequest.RequestHeader(
+                        MessageType.LOGIN,
+                        LocalDateTime.now().toString(),
+                        null),
+                Map.of("userId", userId, "password", password)
+        );
 
         try {
             MessageUtils.send(out, request);
 
         } catch (IOException e) {
-            System.out.printf("[Client] 예상치 못한 오류: %s%s", e.getMessage(), System.lineSeparator());
+            clientUI.displayMessage(String.format("예상치 못한 오류: %s", e.getMessage()));
         }
     }
 

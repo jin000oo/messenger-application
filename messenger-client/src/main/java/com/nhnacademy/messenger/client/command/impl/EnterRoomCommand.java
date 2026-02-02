@@ -14,6 +14,7 @@ package com.nhnacademy.messenger.client.command.impl;
 
 import com.nhnacademy.messenger.client.command.ClientCommand;
 import com.nhnacademy.messenger.client.session.ClientSession;
+import com.nhnacademy.messenger.client.ui.ClientUI;
 import com.nhnacademy.messenger.common.domain.MessageRequest;
 import com.nhnacademy.messenger.common.domain.MessageType;
 import com.nhnacademy.messenger.common.util.MessageUtils;
@@ -24,12 +25,18 @@ import java.util.Map;
 
 public class EnterRoomCommand implements ClientCommand {
 
+    private final ClientUI clientUI;
+
+    public EnterRoomCommand(ClientUI clientUI) {
+        this.clientUI = clientUI;
+    }
+
     @Override
     public void execute(String[] args, OutputStream out) {
         String sessionId = ClientSession.getSessionId();
 
         if (sessionId == null) {
-            System.out.println("[Client] 해당 서비스를 이용하려면 로그인이 필요합니다.");
+            clientUI.displayMessage("해당 서비스를 이용하려면 로그인이 필요합니다.");
             return;
         }
 
@@ -41,17 +48,20 @@ public class EnterRoomCommand implements ClientCommand {
             long roomId = Long.parseLong(args[1]);
 
             MessageRequest request = new MessageRequest(
-                    new MessageRequest.RequestHeader(MessageType.CHAT_ROOM_ENTER, LocalDateTime.now().toString(),
+                    new MessageRequest.RequestHeader(
+                            MessageType.CHAT_ROOM_ENTER,
+                            LocalDateTime.now().toString(),
                             sessionId),
-                    Map.of("roomId", roomId));
+                    Map.of("roomId", roomId)
+            );
 
             MessageUtils.send(out, request);
 
         } catch (NumberFormatException e) {
-            System.out.println("[Client] 방 번호는 숫자여야 합니다.");
+            clientUI.displayMessage("방 번호는 숫자여야 합니다.");
 
         } catch (IOException e) {
-            System.out.printf("[Client] 예상치 못한 오류: %s%s", e.getMessage(), System.lineSeparator());
+            clientUI.displayMessage(String.format("예상치 못한 오류: %s", e.getMessage()));
         }
     }
 

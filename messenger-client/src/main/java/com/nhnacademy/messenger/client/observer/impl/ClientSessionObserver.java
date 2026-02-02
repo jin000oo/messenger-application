@@ -10,15 +10,23 @@
  * +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  */
 
-package com.nhnacademy.messenger.client.observer;
+package com.nhnacademy.messenger.client.observer.impl;
 
+import com.nhnacademy.messenger.client.observer.Observer;
 import com.nhnacademy.messenger.client.session.ClientSession;
 import com.nhnacademy.messenger.client.subject.EventType;
+import com.nhnacademy.messenger.client.ui.ClientUI;
 import com.nhnacademy.messenger.common.domain.MessageResponse;
 import com.nhnacademy.messenger.common.domain.MessageType;
 import java.util.Map;
 
 public class ClientSessionObserver implements Observer {
+
+    private final ClientUI clientUI;
+
+    public ClientSessionObserver(ClientUI clientUI) {
+        this.clientUI = clientUI;
+    }
 
     @Override
     public EventType getEventType() {
@@ -40,7 +48,6 @@ public class ClientSessionObserver implements Observer {
                 ClientSession.setSessionId((String) data.get("sessionId"));
                 ClientSession.setUserId((String) data.get("userId"));
             }
-
         }
 
         // 로그아웃 성공 시 세션 ID 지우기
@@ -49,8 +56,7 @@ public class ClientSessionObserver implements Observer {
             ClientSession.setUserId(null);
             ClientSession.setCurrentRoomId(null);
 
-            System.out.println("[Client] 로그아웃 성공");
-
+            clientUI.displayMessage("로그아웃 성공");
         }
 
         // 채팅방 입장 성공 시 채팅방 ID 저장
