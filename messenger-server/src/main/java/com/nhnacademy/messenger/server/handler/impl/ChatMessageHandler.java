@@ -90,9 +90,8 @@ public class ChatMessageHandler implements Handler {
         );
 
         for (String userId : members) {
-            if (userId.equals(senderId)) {
-                continue;
-            }
+            // echo.
+            // if (userId.equals(senderId)) { continue; }
 
             try {
                 MessageUtils.send(
@@ -105,7 +104,7 @@ public class ChatMessageHandler implements Handler {
         }
 
         // 수정 필요.
-        long messageId = IdGenerator.randomMessageIdGenerator();
+        long messageId = IdGenerator.nextMessageId();
 
         messageRepository.save(new ChatMessage(
                 messageId,

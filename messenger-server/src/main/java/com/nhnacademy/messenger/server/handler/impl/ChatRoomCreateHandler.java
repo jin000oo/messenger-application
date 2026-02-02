@@ -55,7 +55,7 @@ public class ChatRoomCreateHandler implements Handler {
             return ResponseFactory.error("ROOM.ALREADY_EXISTS", "이미 존재하는 채팅방입니다.");
         }
 
-        long roomId = IdGenerator.randomRoomIdGenerator();
+        long roomId = IdGenerator.nextRoomId();
         chatRoomRepository.save(new ChatRoom(
                 roomId,
                 roomName

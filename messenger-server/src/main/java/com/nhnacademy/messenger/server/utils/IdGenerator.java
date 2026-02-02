@@ -17,24 +17,19 @@ import java.util.concurrent.atomic.AtomicLong;
 
 public class IdGenerator {
 
-    private static AtomicLong chatRoomId;
-    private static AtomicLong messageId;
+    private static final AtomicLong chatRoomId = new AtomicLong(
+            ThreadLocalRandom.current().nextLong(10_000_000L, 100_000_000L)
+    );
 
-    static {
-        chatRoomId = new AtomicLong(
-                ThreadLocalRandom.current().nextLong(10_000_000L, 100_000_000L)
-        );
-        messageId = new AtomicLong(
-                ThreadLocalRandom.current().nextLong(1_000_000_000L, 10_000_000_000L)
-        );
+    private static final AtomicLong messageId = new AtomicLong(
+            ThreadLocalRandom.current().nextLong(1_000_000_000L, 10_000_000_000L)
+    );
 
-    }
-
-    public static long randomRoomIdGenerator() {
+    public static long nextRoomId() {
         return chatRoomId.getAndIncrement();
     }
 
-    public static long randomMessageIdGenerator() {
+    public static long nextMessageId() {
         return messageId.getAndIncrement();
     }
 }

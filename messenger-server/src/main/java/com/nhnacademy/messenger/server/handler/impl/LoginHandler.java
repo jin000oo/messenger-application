@@ -68,9 +68,9 @@ public class LoginHandler implements Handler {
 
         // Online 이면 로그인 실패.
         User user = optionalUser.get();
-        if (user.isOnline()) {
-            return ResponseFactory.error("AUTH.ALREADY_LOGGED_IN", "이미 로그인 상태입니다.");
-        }
+//        if (user.isOnline()) {
+//            return ResponseFactory.error("AUTH.ALREADY_LOGGED_IN", "이미 로그인 상태입니다.");
+//        }
 
         // 아이디와 비밀번호 불일치.
         if (!user.getPassword().equals(password)) {

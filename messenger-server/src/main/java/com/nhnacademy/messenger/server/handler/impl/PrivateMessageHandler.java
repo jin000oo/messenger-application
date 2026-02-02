@@ -65,9 +65,9 @@ public class PrivateMessageHandler implements Handler {
             return ResponseFactory.error("USER.NOT_FOUND", "수신자를 찾을 수 없습니다.");
         }
 
-        long messageId = IdGenerator.randomMessageIdGenerator();
+        long messageId = IdGenerator.nextMessageId();
         MessageResponse response = ResponseFactory.success(
-                MessageType.PRIVATE_MESSAGE_SUCCESS,
+                MessageType.PRIVATE_MESSAGE,
                 Map.of(
                         "senderId", senderId,
                         "receiverId", receiverId,
