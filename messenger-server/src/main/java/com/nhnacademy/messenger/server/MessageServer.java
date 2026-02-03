@@ -12,8 +12,16 @@
 
 package com.nhnacademy.messenger.server;
 
+import com.nhnacademy.messenger.server.chatroom.chatroomrepository.ChatRoomRepository;
+import com.nhnacademy.messenger.server.chatroom.chatroomrepository.impl.MemoryChatRoomRepository;
 import com.nhnacademy.messenger.server.handler.HandlerFactory;
 import com.nhnacademy.messenger.server.handler.MessageDispatcher;
+import com.nhnacademy.messenger.server.message.repository.MessageRepository;
+import com.nhnacademy.messenger.server.message.repository.PrivateMessageRepository;
+import com.nhnacademy.messenger.server.message.repository.impl.MemoryMessageRepository;
+import com.nhnacademy.messenger.server.message.repository.impl.MemoryPrivateMessageRepository;
+import com.nhnacademy.messenger.server.user.repository.UserRepository;
+import com.nhnacademy.messenger.server.user.repository.impl.MemoryUserRepository;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
@@ -24,7 +32,23 @@ import java.net.Socket;
 public class MessageServer implements Runnable {
 
     private static final int SERVER_PORT = 12345;
-    private final MessageDispatcher messageDispatcher = new MessageDispatcher(new HandlerFactory());
+
+    private final UserRepository userRepo;
+    private final ChatRoomRepository chatRoomRepo;
+    private final MessageRepository messageRepo;
+    private final PrivateMessageRepository privateMessageRepo;
+    private final HandlerFactory handlerFactory;
+    private final MessageDispatcher messageDispatcher;
+
+    public MessageServer() {
+        userRepo = new MemoryUserRepository();
+        chatRoomRepo = new MemoryChatRoomRepository();
+        messageRepo = new MemoryMessageRepository();
+        privateMessageRepo = new MemoryPrivateMessageRepository();
+
+        handlerFactory = new HandlerFactory(userRepo, chatRoomRepo, messageRepo, privateMessageRepo);
+        messageDispatcher = new MessageDispatcher(handlerFactory);
+    }
 
     @Override
     public void run() {
