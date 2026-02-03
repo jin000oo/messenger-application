@@ -10,12 +10,19 @@
  * +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  */
 
-package com.nhnacademy.messenger.server;
+package com.nhnacademy.messenger.client.ui;
 
-public class ServerMain {
+import com.nhnacademy.messenger.common.domain.MessageResponse;
 
-    public static void main(String[] args) {
-        Thread thread = new Thread(new MessageServer());
-        thread.start();
-    }
+public interface ClientUI {
+
+    // 일반 메시지 출력
+    void displayMessage(String message);
+
+    // 에러 메시지 출력
+    void displayError(String message);
+
+    // 서버 응답 처리
+    void handleResponse(MessageResponse response);
+
 }

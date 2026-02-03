@@ -10,12 +10,20 @@
  * +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  */
 
-package com.nhnacademy.messenger.server;
+package com.nhnacademy.messenger.client.subject;
 
-public class ServerMain {
+import lombok.Getter;
 
-    public static void main(String[] args) {
-        Thread thread = new Thread(new MessageServer());
-        thread.start();
+public enum EventType {
+
+    SEND("송신"),
+    RECV("수신");
+
+    @Getter
+    private String value;
+
+    EventType(String value) {
+        this.value = value;
     }
+
 }

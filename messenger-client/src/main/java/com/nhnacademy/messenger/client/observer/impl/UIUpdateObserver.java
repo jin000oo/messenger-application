@@ -10,12 +10,29 @@
  * +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  */
 
-package com.nhnacademy.messenger.server;
+package com.nhnacademy.messenger.client.observer.impl;
 
-public class ServerMain {
+import com.nhnacademy.messenger.client.observer.Observer;
+import com.nhnacademy.messenger.client.subject.EventType;
+import com.nhnacademy.messenger.client.ui.ClientUI;
+import com.nhnacademy.messenger.common.domain.MessageResponse;
 
-    public static void main(String[] args) {
-        Thread thread = new Thread(new MessageServer());
-        thread.start();
+public class UIUpdateObserver implements Observer {
+
+    private final ClientUI clientUI;
+
+    public UIUpdateObserver(ClientUI clientUI) {
+        this.clientUI = clientUI;
     }
+
+    @Override
+    public EventType getEventType() {
+        return EventType.RECV;
+    }
+
+    @Override
+    public void updateMessage(MessageResponse response) {
+        clientUI.handleResponse(response);
+    }
+
 }

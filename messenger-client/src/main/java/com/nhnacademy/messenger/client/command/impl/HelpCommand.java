@@ -1,0 +1,46 @@
+/*
+ * +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ * + Copyright 2026. NHN Academy Corp. All rights reserved.
+ * + * While every precaution has been taken in the preparation of this resource,  assumes no
+ * + responsibility for errors or omissions, or for damages resulting from the use of the information
+ * + contained herein
+ * + No part of this resource may be reproduced, stored in a retrieval system, or transmitted, in any
+ * + form or by any means, electronic, mechanical, photocopying, recording, or otherwise, without the
+ * + prior written permission.
+ * +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ */
+
+package com.nhnacademy.messenger.client.command.impl;
+
+import com.nhnacademy.messenger.client.command.ClientCommand;
+import com.nhnacademy.messenger.client.ui.ClientUI;
+import java.io.OutputStream;
+
+public class HelpCommand implements ClientCommand {
+
+    private final ClientUI clientUI;
+
+    public HelpCommand(ClientUI clientUI) {
+        this.clientUI = clientUI;
+    }
+
+    @Override
+    public void execute(String[] args, OutputStream out) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("========== [ 명령어 목록 ] ==========\n");
+        sb.append("/login <id> <pw>\n");
+        sb.append("/logout\n");
+        sb.append("/users\n");
+        sb.append("/chat <message>\n");
+        sb.append("/whisper <target-id> <message>\n");
+        sb.append("/create <room-name>\n");
+        sb.append("/list\n");
+        sb.append("/enter <room-id>\n");
+        sb.append("/leave\n");
+        sb.append("/history\n");
+        sb.append("==================================");
+
+        clientUI.displayMessage(sb.toString());
+    }
+
+}

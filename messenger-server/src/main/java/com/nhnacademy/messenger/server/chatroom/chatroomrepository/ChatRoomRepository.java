@@ -10,12 +10,24 @@
  * +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  */
 
-package com.nhnacademy.messenger.server;
+package com.nhnacademy.messenger.server.chatroom.chatroomrepository;
 
-public class ServerMain {
+import com.nhnacademy.messenger.server.chatroom.domain.ChatRoom;
 
-    public static void main(String[] args) {
-        Thread thread = new Thread(new MessageServer());
-        thread.start();
-    }
+import java.util.List;
+import java.util.Optional;
+
+public interface ChatRoomRepository {
+
+    ChatRoom save(ChatRoom chatRoom);
+
+    void delete(long roomId);
+
+    Optional<ChatRoom> findById(long roomId);
+
+    List<ChatRoom> findAll();
+
+    boolean exists(long roomId);
+
+    boolean existsByRoomName(String roomName);
 }

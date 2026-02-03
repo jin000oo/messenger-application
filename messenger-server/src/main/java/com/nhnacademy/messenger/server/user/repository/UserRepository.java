@@ -10,12 +10,24 @@
  * +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  */
 
-package com.nhnacademy.messenger.server;
+package com.nhnacademy.messenger.server.user.repository;
 
-public class ServerMain {
+import com.nhnacademy.messenger.server.user.domain.User;
 
-    public static void main(String[] args) {
-        Thread thread = new Thread(new MessageServer());
-        thread.start();
-    }
+import java.util.List;
+import java.util.Optional;
+
+public interface UserRepository {
+
+    User save(User user);
+
+    void delete(User user);
+
+    boolean exists(String userId);
+
+    Optional<User> find(String userId);
+
+    List<User> findAll();
+
+    void setOnline(String userId, boolean online);
 }

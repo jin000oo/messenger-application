@@ -10,12 +10,13 @@
  * +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  */
 
-package com.nhnacademy.messenger.server;
+package com.nhnacademy.messenger.client.command;
 
-public class ServerMain {
+import java.io.OutputStream;
 
-    public static void main(String[] args) {
-        Thread thread = new Thread(new MessageServer());
-        thread.start();
-    }
+public interface ClientCommand {
+
+    // args: 사용자가 입력한 명령어 뒤의 인자들 (예: /login id pw -> ["id", "pw"])
+    void execute(String[] args, OutputStream out);
+
 }

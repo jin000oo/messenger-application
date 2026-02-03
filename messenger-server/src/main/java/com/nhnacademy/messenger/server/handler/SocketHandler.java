@@ -10,12 +10,19 @@
  * +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  */
 
-package com.nhnacademy.messenger.server;
+package com.nhnacademy.messenger.server.handler;
 
-public class ServerMain {
+import com.nhnacademy.messenger.common.domain.MessageRequest;
+import com.nhnacademy.messenger.common.domain.MessageResponse;
 
-    public static void main(String[] args) {
-        Thread thread = new Thread(new MessageServer());
-        thread.start();
+import java.net.Socket;
+
+public interface SocketHandler extends Handler {
+
+    MessageResponse handle(MessageRequest request, Socket socket);
+
+    @Override
+    default MessageResponse handle(MessageRequest request) {
+        throw new RuntimeException("SocketHandler의 잘못된 handle() 호출");
     }
 }

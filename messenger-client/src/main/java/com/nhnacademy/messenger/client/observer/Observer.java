@@ -10,12 +10,19 @@
  * +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  */
 
-package com.nhnacademy.messenger.server;
+package com.nhnacademy.messenger.client.observer;
 
-public class ServerMain {
+import com.nhnacademy.messenger.client.subject.EventType;
+import com.nhnacademy.messenger.common.domain.MessageResponse;
 
-    public static void main(String[] args) {
-        Thread thread = new Thread(new MessageServer());
-        thread.start();
+public interface Observer {
+
+    EventType getEventType();
+
+    void updateMessage(MessageResponse response);
+
+    default boolean validate(EventType eventType) {
+        return getEventType().equals(eventType);
     }
+
 }

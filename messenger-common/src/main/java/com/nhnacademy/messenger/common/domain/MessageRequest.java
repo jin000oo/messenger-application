@@ -10,12 +10,33 @@
  * +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  */
 
-package com.nhnacademy.messenger.server;
+package com.nhnacademy.messenger.common.domain;
 
-public class ServerMain {
+import java.util.Map;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
-    public static void main(String[] args) {
-        Thread thread = new Thread(new MessageServer());
-        thread.start();
+@Data
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
+public class MessageRequest {
+
+    private RequestHeader header;
+    private Map<String, Object> data;
+
+    @Data
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class RequestHeader {
+
+        private MessageType type;
+        private String timestamp;
+        private String sessionId;
+
     }
+
 }

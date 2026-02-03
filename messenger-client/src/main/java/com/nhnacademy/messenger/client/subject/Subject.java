@@ -10,12 +10,25 @@
  * +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  */
 
-package com.nhnacademy.messenger.server;
+package com.nhnacademy.messenger.client.subject;
 
-public class ServerMain {
+import com.nhnacademy.messenger.client.observer.Observer;
+import com.nhnacademy.messenger.common.domain.MessageResponse;
 
-    public static void main(String[] args) {
-        Thread thread = new Thread(new MessageServer());
-        thread.start();
+public interface Subject {
+
+    void register(EventType eventType, Observer observer);
+
+    void remove(EventType eventType, Observer observer);
+
+    void notifyObservers(EventType eventType, MessageResponse response);
+
+    default void sendMessage(MessageResponse response) {
+        notifyObservers(EventType.SEND, response);
     }
+
+    default void receiveMessage(MessageResponse response) {
+        notifyObservers(EventType.RECV, response);
+    }
+
 }

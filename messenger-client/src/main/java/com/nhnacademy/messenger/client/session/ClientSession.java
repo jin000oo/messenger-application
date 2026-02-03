@@ -10,12 +10,23 @@
  * +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  */
 
-package com.nhnacademy.messenger.server;
+package com.nhnacademy.messenger.client.session;
 
-public class ServerMain {
+import lombok.Getter;
+import lombok.Setter;
 
-    public static void main(String[] args) {
-        Thread thread = new Thread(new MessageServer());
-        thread.start();
-    }
+public class ClientSession {
+
+    @Getter
+    @Setter
+    private static String sessionId;
+
+    @Getter
+    @Setter
+    private static String userId;
+
+    @Getter
+    @Setter
+    private static Long currentRoomId;
+
 }

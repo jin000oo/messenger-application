@@ -10,12 +10,19 @@
  * +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  */
 
-package com.nhnacademy.messenger.server;
+package com.nhnacademy.messenger.server.session;
 
-public class ServerMain {
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 
-    public static void main(String[] args) {
-        Thread thread = new Thread(new MessageServer());
-        thread.start();
-    }
+import java.net.Socket;
+
+@AllArgsConstructor
+@Getter
+public class Session {
+    private final String sessionId;
+    private final String userId;
+    @Setter
+    private volatile Socket socket;
 }

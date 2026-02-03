@@ -10,12 +10,26 @@
  * +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  */
 
-package com.nhnacademy.messenger.server;
+package com.nhnacademy.messenger.server.utils;
 
-public class ServerMain {
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.atomic.AtomicLong;
 
-    public static void main(String[] args) {
-        Thread thread = new Thread(new MessageServer());
-        thread.start();
+public class IdGenerator {
+
+    private static final AtomicLong chatRoomId = new AtomicLong(
+            ThreadLocalRandom.current().nextLong(10_000_000L, 100_000_000L)
+    );
+
+    private static final AtomicLong messageId = new AtomicLong(
+            ThreadLocalRandom.current().nextLong(1_000_000_000L, 10_000_000_000L)
+    );
+
+    public static long nextRoomId() {
+        return chatRoomId.getAndIncrement();
+    }
+
+    public static long nextMessageId() {
+        return messageId.getAndIncrement();
     }
 }

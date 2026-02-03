@@ -10,12 +10,15 @@
  * +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  */
 
-package com.nhnacademy.messenger.server;
+package com.nhnacademy.messenger.server.message.repository;
 
-public class ServerMain {
+import com.nhnacademy.messenger.server.message.domain.PrivateMessage;
 
-    public static void main(String[] args) {
-        Thread thread = new Thread(new MessageServer());
-        thread.start();
-    }
+import java.util.List;
+
+public interface PrivateMessageRepository {
+
+    void save(PrivateMessage privateMessage);
+
+    List<PrivateMessage> findAll(String userId);
 }

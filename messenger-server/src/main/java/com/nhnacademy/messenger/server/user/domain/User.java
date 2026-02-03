@@ -10,12 +10,24 @@
  * +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  */
 
-package com.nhnacademy.messenger.server;
+package com.nhnacademy.messenger.server.user.domain;
 
-public class ServerMain {
+import lombok.Getter;
+import lombok.Setter;
 
-    public static void main(String[] args) {
-        Thread thread = new Thread(new MessageServer());
-        thread.start();
+@Getter
+@Setter
+public class User {
+
+    private final String userId;
+    private String password;
+    private String userName;
+    private boolean online;
+
+    public User(String userId, String password, String userName) {
+        this.userId = userId;
+        this.password = password;
+        this.userName = userName;
+        this.online = false;
     }
 }

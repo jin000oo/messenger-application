@@ -10,12 +10,12 @@
  * +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  */
 
-package com.nhnacademy.messenger.server;
+package com.nhnacademy.messenger.server.handler;
 
-public class ServerMain {
+import com.nhnacademy.messenger.common.domain.MessageRequest;
+import com.nhnacademy.messenger.common.domain.MessageResponse;
 
-    public static void main(String[] args) {
-        Thread thread = new Thread(new MessageServer());
-        thread.start();
-    }
+public interface Handler {
+
+    MessageResponse handle(MessageRequest request);
 }
