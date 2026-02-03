@@ -13,23 +13,30 @@
 package com.nhnacademy.messenger.client.ui.impl;
 
 import com.nhnacademy.messenger.client.ui.ClientUI;
+import com.nhnacademy.messenger.client.ui.swing.MessageClientForm;
 import com.nhnacademy.messenger.common.domain.MessageResponse;
 import com.nhnacademy.messenger.common.domain.MessageType;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
-public class ConsoleUI implements ClientUI {
+public class SwingUI implements ClientUI {
+
+    private final MessageClientForm form;
+
+    public SwingUI(Consumer<String> onInputReceived) {
+        this.form = new MessageClientForm(onInputReceived);
+        this.form.setVisible(true);
+    }
 
     @Override
     public void displayMessage(String message) {
-        System.out.printf("[Client] %s\n", message);
-        System.out.print("> ");
+        form.appendMessage(String.format("[Client] %s", message));
     }
 
     @Override
     public void displayError(String message) {
-        System.out.printf("[Error] %s\n", message);
-        System.out.print("> ");
+        form.appendMessage(String.format("[Error] %s", message));
     }
 
     @Override
@@ -45,7 +52,7 @@ public class ConsoleUI implements ClientUI {
 
         // 채팅 메시지
         if (type == MessageType.CHAT_MESSAGE) {
-            System.out.printf("[%s] %s\n", data.get("senderId"), data.get("message"));
+            form.appendMessage(String.format("[%s] %s", data.get("senderId"), data.get("message")));
         }
 
         // 귓속말
@@ -55,22 +62,20 @@ public class ConsoleUI implements ClientUI {
             String message = (String) data.get("message");
 
             if (type == MessageType.PRIVATE_MESSAGE_SUCCESS) {
-                System.out.printf("[Me > %s] %s\n", receiverId, message);
+                form.appendMessage(String.format("[Me > %s] %s", receiverId, message));
             } else {
-                System.out.printf("[%s > Me] %s\n", senderId, message);
+                form.appendMessage(String.format("[%s > Me] %s", senderId, message));
             }
         }
 
         // 목록 조회 (방/유저) 및 기타 시스템 메시지
         else {
             if (data != null && data.containsKey("message")) {
-                System.out.printf("[System] %s\n", data.get("message"));
+                form.appendMessage(String.format("[System] %s", data.get("message")));
             }
 
             printLists(type, data);
         }
-
-        System.out.print("> ");
     }
 
     private void printLists(MessageType type, Map<String, Object> data) {
@@ -79,10 +84,8 @@ public class ConsoleUI implements ClientUI {
             List<Map<String, Object>> rooms = (List<Map<String, Object>>) data.get("rooms");
 
             if (rooms != null) {
-                rooms.forEach(room -> System.out.printf("[%s] %s (%s명)\n",
-                        room.get("roomId"), room.get("roomName"), room.get("userCount")));
-            } else {
-                System.out.println("[System] 현재 생성된 채팅방이 없습니다.");
+                rooms.forEach(room -> form.appendMessage(String.format("[%s] %s (%s명)",
+                        room.get("roomId"), room.get("roomName"), room.get("userCount"))));
             }
         }
 
@@ -91,10 +94,8 @@ public class ConsoleUI implements ClientUI {
             List<Map<String, Object>> users = (List<Map<String, Object>>) data.get("users");
 
             if (users != null) {
-                users.forEach(user -> System.out.printf("- %s (%s)\n",
-                        user.get("id"), user.get("name")));
-            } else {
-                System.out.println("[System] 현재 접속 중인 유저가 없습니다.");
+                users.forEach(user -> form.appendMessage(String.format("- %s (%s)",
+                        user.get("id"), user.get("name"))));
             }
         }
 
@@ -108,10 +109,8 @@ public class ConsoleUI implements ClientUI {
                     String content = (String) message.get("content");
                     String timestamp = (String) message.get("timestamp");
 
-                    System.out.printf("[%s] %s: %s\n", timestamp, senderId, content);
+                    form.appendMessage(String.format("[%s] %s: %s", timestamp, senderId, content));
                 });
-            } else {
-                System.out.println("[System] 과거 채팅 기록이 없습니다.");
             }
         }
     }
