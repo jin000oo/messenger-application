@@ -86,6 +86,8 @@ public class SwingUI implements ClientUI {
             if (rooms != null) {
                 rooms.forEach(room -> form.appendMessage(String.format("[%s] %s (%s명)",
                         room.get("roomId"), room.get("roomName"), room.get("userCount"))));
+            } else {
+                form.appendMessage("[System] 현재 생성된 채팅방이 없습니다.");
             }
         }
 
@@ -96,6 +98,8 @@ public class SwingUI implements ClientUI {
             if (users != null) {
                 users.forEach(user -> form.appendMessage(String.format("- %s (%s)",
                         user.get("id"), user.get("name"))));
+            } else {
+                form.appendMessage("[System] 현재 접속 중인 유저가 없습니다.");
             }
         }
 
@@ -111,6 +115,8 @@ public class SwingUI implements ClientUI {
 
                     form.appendMessage(String.format("[%s] %s: %s", timestamp, senderId, content));
                 });
+            } else {
+                form.appendMessage("[System] 과거 채팅 기록이 없습니다.");
             }
         }
     }
