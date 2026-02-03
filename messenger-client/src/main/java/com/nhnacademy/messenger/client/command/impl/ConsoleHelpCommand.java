@@ -31,6 +31,8 @@ public class ConsoleHelpCommand implements ClientCommand {
         System.out.println("/leave");
         System.out.println("/history <message-id>");
         System.out.println("==================================");
+
+        System.out.print("> ");
     }
 
 }

@@ -24,16 +24,14 @@ import com.nhnacademy.messenger.client.command.impl.RoomListCommand;
 import com.nhnacademy.messenger.client.command.impl.UserListCommand;
 import com.nhnacademy.messenger.client.command.impl.WhisperCommand;
 import com.nhnacademy.messenger.client.ui.ClientUI;
-import com.nhnacademy.messenger.client.ui.impl.ConsoleUI;
 import java.util.HashMap;
 import java.util.Map;
 
 public class CommandFactory {
 
-    private final ClientUI clientUI = new ConsoleUI();
     private final Map<String, ClientCommand> commands = new HashMap<>();
 
-    public CommandFactory() {
+    public CommandFactory(ClientUI clientUI) {
         commands.put("/help", new ConsoleHelpCommand());
         commands.put("/login", new LoginCommand(clientUI));
         commands.put("/logout", new LogoutCommand(clientUI));

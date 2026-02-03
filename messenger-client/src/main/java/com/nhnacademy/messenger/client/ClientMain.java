@@ -53,7 +53,7 @@ public class ClientMain {
 
             // 사용자 입력을 받아 서버로 전송
             Scanner scanner = new Scanner(System.in);
-            CommandFactory commandFactory = new CommandFactory();
+            CommandFactory commandFactory = new CommandFactory(clientUI);
 
             System.out.print("> ");
 
