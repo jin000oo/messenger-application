@@ -51,6 +51,7 @@ public class ReceivedMessageClient implements Runnable {
                     break;
                 }
 
+                // TODO: 버퍼 역할 필요 ex. queue
                 subject.receiveMessage(response);
 
             } catch (IOException e) {

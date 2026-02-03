@@ -45,6 +45,7 @@ public class CommandFactory {
         commands.put("/history", new HistoryCommand(clientUI));
     }
 
+    // TODO: sessionId 확인하는 로직이 중복!!!!! > 화이트리스트/블랙리스트로 관리
     public ClientCommand getCommand(String commandName) {
         return commands.get(commandName);
     }

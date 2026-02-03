@@ -24,6 +24,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class MessageResponse {
 
+    // TODO: 제네릭 변경 고려
     private ResponseHeader header;
     private Map<String, Object> data;
 

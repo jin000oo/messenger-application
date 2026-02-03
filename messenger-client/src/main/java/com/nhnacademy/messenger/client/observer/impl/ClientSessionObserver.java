@@ -42,8 +42,9 @@ public class ClientSessionObserver implements Observer {
         MessageType type = response.getHeader().getType();
         Map<String, Object> data = response.getData();
 
+        // TODO: EventType 확장하면 여기가 좀 깔끔해짐 ex. EventType.LOGIN
         // 로그인 성공 시 세션 ID 저장
-        if (type == MessageType.LOGIN_SUCCESS) {
+        if (type.equals(MessageType.LOGIN_SUCCESS)) {
             if (data != null && data.containsKey("sessionId")) {
                 ClientSession.setSessionId((String) data.get("sessionId"));
                 ClientSession.setUserId((String) data.get("userId"));
@@ -51,7 +52,7 @@ public class ClientSessionObserver implements Observer {
         }
 
         // 로그아웃 성공 시 세션 ID 지우기
-        else if (type == MessageType.LOGOUT_SUCCESS) {
+        else if (type.equals(MessageType.LOGOUT_SUCCESS)) {
             ClientSession.setSessionId(null);
             ClientSession.setUserId(null);
             ClientSession.setCurrentRoomId(null);
@@ -60,12 +61,12 @@ public class ClientSessionObserver implements Observer {
         }
 
         // 채팅방 입장 성공 시 채팅방 ID 저장
-        else if (type == MessageType.CHAT_ROOM_ENTER_SUCCESS) {
+        else if (type.equals(MessageType.CHAT_ROOM_ENTER_SUCCESS)) {
             ClientSession.setCurrentRoomId(((Number) data.get("roomId")).longValue());
         }
 
         // 채팅방 나가면 방 번호 초기화
-        else if (type == MessageType.CHAT_ROOM_EXIT_SUCCESS) {
+        else if (type.equals(MessageType.CHAT_ROOM_EXIT_SUCCESS)) {
             ClientSession.setCurrentRoomId(null);
         }
     }

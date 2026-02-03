@@ -16,6 +16,7 @@ import java.io.OutputStream;
 
 public interface ClientCommand {
 
+    // TODO: args -> Object 고려
     // args: 사용자가 입력한 명령어 뒤의 인자들 (예: /login id pw -> ["id", "pw"])
     void execute(String[] args, OutputStream out);
 

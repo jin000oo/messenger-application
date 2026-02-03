@@ -23,6 +23,7 @@ import java.nio.charset.StandardCharsets;
 
 public class MessageUtils {
 
+    // TODO: ObjectMapper 싱글톤 패턴 or 주입 고려
     private static final ObjectMapper objectMapper = new ObjectMapper();
     private static final String LENGTH_PREFIX = "message-length: ";
 

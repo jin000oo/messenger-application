@@ -13,6 +13,7 @@
 package com.nhnacademy.messenger.client.command.impl;
 
 import com.nhnacademy.messenger.client.command.ClientCommand;
+import com.nhnacademy.messenger.client.command.Command;
 import com.nhnacademy.messenger.client.session.ClientSession;
 import com.nhnacademy.messenger.client.ui.ClientUI;
 import com.nhnacademy.messenger.common.domain.MessageRequest;
@@ -24,6 +25,8 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Map;
 
+// TODO: 이런식으로 하면 좋을듯
+@Command(method = "/chat")
 public class ChatCommand implements ClientCommand {
 
     private final ClientUI clientUI;
