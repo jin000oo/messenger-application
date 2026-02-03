@@ -13,26 +13,34 @@
 package com.nhnacademy.messenger.client.command.impl;
 
 import com.nhnacademy.messenger.client.command.ClientCommand;
+import com.nhnacademy.messenger.client.ui.ClientUI;
 import java.io.OutputStream;
 
-public class ConsoleHelpCommand implements ClientCommand {
+public class HelpCommand implements ClientCommand {
+
+    private final ClientUI clientUI;
+
+    public HelpCommand(ClientUI clientUI) {
+        this.clientUI = clientUI;
+    }
 
     @Override
     public void execute(String[] args, OutputStream out) {
-        System.out.println("========== [ 명령어 목록 ] ==========");
-        System.out.println("/login <id> <pw>");
-        System.out.println("/logout");
-        System.out.println("/users");
-        System.out.println("/chat <message>");
-        System.out.println("/whisper <target-id> <message>");
-        System.out.println("/create <room-name>");
-        System.out.println("/list");
-        System.out.println("/enter <room-id>");
-        System.out.println("/leave");
-        System.out.println("/history <message-id>");
-        System.out.println("==================================");
+        StringBuilder sb = new StringBuilder();
+        sb.append("========== [ 명령어 목록 ] ==========\n");
+        sb.append("/login <id> <pw>\n");
+        sb.append("/logout\n");
+        sb.append("/users\n");
+        sb.append("/chat <message>\n");
+        sb.append("/whisper <target-id> <message>\n");
+        sb.append("/create <room-name>\n");
+        sb.append("/list\n");
+        sb.append("/enter <room-id>\n");
+        sb.append("/leave\n");
+        sb.append("/history\n");
+        sb.append("==================================");
 
-        System.out.print("> ");
+        clientUI.displayMessage(sb.toString());
     }
 
 }
