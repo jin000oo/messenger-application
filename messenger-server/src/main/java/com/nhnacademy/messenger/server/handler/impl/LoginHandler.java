@@ -15,7 +15,7 @@ package com.nhnacademy.messenger.server.handler.impl;
 import com.nhnacademy.messenger.common.domain.MessageRequest;
 import com.nhnacademy.messenger.common.domain.MessageResponse;
 import com.nhnacademy.messenger.common.domain.MessageType;
-import com.nhnacademy.messenger.server.handler.Handler;
+import com.nhnacademy.messenger.server.handler.SocketHandler;
 import com.nhnacademy.messenger.server.session.Session;
 import com.nhnacademy.messenger.server.session.SessionManager;
 import com.nhnacademy.messenger.server.user.domain.User;
@@ -31,17 +31,12 @@ import java.util.Optional;
 import java.util.UUID;
 
 @RequiredArgsConstructor
-public class LoginHandler implements Handler {
+public class LoginHandler implements SocketHandler {
 
     private final UserRepository userRepository;
 
     @Override
-    public MessageResponse handle(MessageRequest request) {
-        return null;
-    }
-
-    @Override
-    public MessageResponse handleWithSocket(MessageRequest request, Socket socket) {
+    public MessageResponse handle(MessageRequest request, Socket socket) {
         if (Objects.isNull(request) || Objects.isNull(request.getData())) {
             return ResponseFactory.error("COMMON.BAD_REQUEST", "데이터 형식이 올바르지 않습니다.");
         }

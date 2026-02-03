@@ -14,34 +14,33 @@ package com.nhnacademy.messenger.server.handler;
 
 import com.nhnacademy.messenger.common.domain.MessageType;
 import com.nhnacademy.messenger.server.chatroom.chatroomrepository.ChatRoomRepository;
-import com.nhnacademy.messenger.server.chatroom.chatroomrepository.impl.MemoryChatRoomRepository;
 import com.nhnacademy.messenger.server.handler.impl.*;
 import com.nhnacademy.messenger.server.message.repository.MessageRepository;
 import com.nhnacademy.messenger.server.message.repository.PrivateMessageRepository;
-import com.nhnacademy.messenger.server.message.repository.impl.MemoryMessageRepository;
-import com.nhnacademy.messenger.server.message.repository.impl.MemoryPrivateMessageRepository;
 import com.nhnacademy.messenger.server.user.repository.UserRepository;
-import com.nhnacademy.messenger.server.user.repository.impl.MemoryUserRepository;
 
 import java.util.EnumMap;
 import java.util.Map;
 
 public class HandlerFactory {
 
-    private final Map<MessageType, Handler> handlers;
+    private final Map<MessageType, Handler> handlers = new EnumMap<>(MessageType.class);
 
     private final UserRepository userRepo;
     private final ChatRoomRepository chatRoomRepo;
     private final MessageRepository messageRepo;
     private final PrivateMessageRepository privateMessageRepo;
+    private final Handler unsupportedTypeHandler = new UnsupportedTypeHandler();
 
-    public HandlerFactory() {
-        handlers = new EnumMap<>(MessageType.class);
-
-        userRepo = new MemoryUserRepository();
-        chatRoomRepo = new MemoryChatRoomRepository();
-        messageRepo = new MemoryMessageRepository();
-        privateMessageRepo = new MemoryPrivateMessageRepository();
+    public HandlerFactory(UserRepository userRepo,
+                          ChatRoomRepository chatRoomRepo,
+                          MessageRepository messageRepo,
+                          PrivateMessageRepository privateMessageRepo
+    ) {
+        this.userRepo = userRepo;
+        this.chatRoomRepo = chatRoomRepo;
+        this.messageRepo = messageRepo;
+        this.privateMessageRepo = privateMessageRepo;
 
         initialize();
     }
@@ -63,6 +62,6 @@ public class HandlerFactory {
     }
 
     public Handler getHandler(MessageType messageType) {
-        return handlers.get(messageType);
+        return handlers.getOrDefault(messageType, unsupportedTypeHandler);
     }
 }

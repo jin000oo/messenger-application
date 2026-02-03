@@ -15,14 +15,12 @@ package com.nhnacademy.messenger.server.handler;
 import com.nhnacademy.messenger.common.domain.MessageRequest;
 import com.nhnacademy.messenger.common.domain.MessageResponse;
 import com.nhnacademy.messenger.common.domain.MessageType;
-import com.nhnacademy.messenger.server.session.Session;
 import com.nhnacademy.messenger.server.session.SessionManager;
 import com.nhnacademy.messenger.server.utils.HeaderValidator;
 import com.nhnacademy.messenger.server.utils.ResponseFactory;
 import lombok.RequiredArgsConstructor;
 
 import java.net.Socket;
-import java.util.Objects;
 
 @RequiredArgsConstructor
 public class MessageDispatcher {
@@ -32,11 +30,10 @@ public class MessageDispatcher {
     public MessageResponse dispatch(MessageRequest request, Socket socket) {
         HeaderValidator.ValidationError validationError = HeaderValidator.validateHeader(request.getHeader());
 
-        // 헤더 확인.
+        // request 확인
         if (validationError != null) {
             return ResponseFactory.error(validationError.getCode(), validationError.getMessage());
         }
-
         if (request.getData() == null) {
             return ResponseFactory.error("COMMON.BAD_REQUEST", "데이터 형식이 올바르지 않습니다.");
         }
@@ -44,22 +41,17 @@ public class MessageDispatcher {
         MessageType messageType = request.getHeader().getType();
         Handler handler = handlerFactory.getHandler(messageType);
 
-        // 메시지 타입에 따른 핸들러 확인.
-        if (Objects.isNull(handler)) {
-            return ResponseFactory.error("COMMON.UNSUPPORTED_TYPE", "아직 지원하지 않는 메시지 타입입니다.");
+//        // 로그인
+//        if (messageType == MessageType.LOGIN) {
+//            return handler.handleWithSocket(request, socket);
+//        }
+
+        if (handler instanceof SocketHandler socketHandler) {
+            return socketHandler.handle(request, socket);
         }
 
-        // 로그인
-        if (messageType == MessageType.LOGIN) {
-            return handler.handleWithSocket(request, socket);
-        }
-
-        // 재접속 시 소켓 업데이트
-        // + 소켓 업데이트 시 user Online true로 변경.
-        Session session = SessionManager.findBySessionId(request.getHeader().getSessionId());
-        if (session.getSocket() != socket) {
-            session.setSocket(socket);
-        }
+        // 소켓 업데이트
+        SessionManager.updateSocket(request.getHeader().getSessionId(), socket);
 
         return handler.handle(request);
     }
