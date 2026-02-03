@@ -18,14 +18,13 @@ import com.nhnacademy.messenger.client.session.ClientSession;
 import com.nhnacademy.messenger.client.ui.ClientUI;
 import com.nhnacademy.messenger.common.domain.MessageRequest;
 import com.nhnacademy.messenger.common.domain.MessageType;
+import com.nhnacademy.messenger.common.dto.request.ChatRequest;
 import com.nhnacademy.messenger.common.util.MessageUtils;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.time.LocalDateTime;
 import java.util.Arrays;
-import java.util.Map;
 
-// TODO: 이런식으로 하면 좋을듯
 @Command(method = "/chat")
 public class ChatCommand implements ClientCommand {
 
@@ -61,12 +60,12 @@ public class ChatCommand implements ClientCommand {
             return;
         }
 
-        MessageRequest request = new MessageRequest(
+        MessageRequest<ChatRequest> request = new MessageRequest<>(
                 new MessageRequest.RequestHeader(
                         MessageType.CHAT_MESSAGE,
                         LocalDateTime.now().toString(),
                         sessionId),
-                Map.of("roomId", currentRoomId, "message", message)
+                new ChatRequest(currentRoomId, message)
         );
 
         try {

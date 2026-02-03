@@ -16,8 +16,16 @@ import com.nhnacademy.messenger.client.ui.ClientUI;
 import com.nhnacademy.messenger.client.ui.swing.MessageClientForm;
 import com.nhnacademy.messenger.common.domain.MessageResponse;
 import com.nhnacademy.messenger.common.domain.MessageType;
-import java.util.List;
-import java.util.Map;
+import com.nhnacademy.messenger.common.dto.ChatMessage;
+import com.nhnacademy.messenger.common.dto.response.ErrorResponse;
+import com.nhnacademy.messenger.common.dto.response.HistoryResponse;
+import com.nhnacademy.messenger.common.dto.response.RoomListResponse;
+import com.nhnacademy.messenger.common.dto.response.UserListResponse;
+import com.nhnacademy.messenger.common.dto.response.WhisperResponse;
+import com.nhnacademy.messenger.common.dto.response.info.MessageInfo;
+import com.nhnacademy.messenger.common.dto.response.info.RoomInfo;
+import com.nhnacademy.messenger.common.dto.response.info.UserInfo;
+import com.nhnacademy.messenger.common.util.MessageUtils;
 import java.util.function.Consumer;
 
 public class SwingUI implements ClientUI {
@@ -42,79 +50,70 @@ public class SwingUI implements ClientUI {
     @Override
     public void handleResponse(MessageResponse response) {
         MessageType type = response.getHeader().getType();
-        Map<String, Object> data = response.getData();
 
         // 에러 처리
-        if (type == MessageType.ERROR) {
-            displayError(String.format("%s (Code: %s)", data.get("message"), data.get("code")));
+        if (type.equals(MessageType.ERROR)) {
+            ErrorResponse data = MessageUtils.convertData(response.getData(), ErrorResponse.class);
+
+            displayError(String.format("%s (Code: %s)", data.message(), data.code()));
             return;
         }
 
         // 채팅 메시지
-        if (type == MessageType.CHAT_MESSAGE) {
-            form.appendMessage(String.format("[%s] %s", data.get("senderId"), data.get("message")));
+        if (type.equals(MessageType.CHAT_MESSAGE)) {
+            ChatMessage message = MessageUtils.convertData(response.getData(), ChatMessage.class);
+
+            form.appendMessage(String.format("[%s] %s", message.senderId(), message.message()));
         }
 
         // 귓속말
-        else if (type == MessageType.PRIVATE_MESSAGE || type == MessageType.PRIVATE_MESSAGE_SUCCESS) {
-            String senderId = (String) data.getOrDefault("senderId", "System");
-            String receiverId = (String) data.getOrDefault("receiverId", "System");
-            String message = (String) data.get("message");
+        else if (type.equals(MessageType.PRIVATE_MESSAGE) || type.equals(MessageType.PRIVATE_MESSAGE_SUCCESS)) {
+            WhisperResponse data = MessageUtils.convertData(response.getData(), WhisperResponse.class);
 
-            if (type == MessageType.PRIVATE_MESSAGE_SUCCESS) {
-                form.appendMessage(String.format("[Me > %s] %s", receiverId, message));
+            if (type.equals(MessageType.PRIVATE_MESSAGE_SUCCESS)) {
+                form.appendMessage(String.format("[Me > %s] %s", data.receiverId(), data.message()));
             } else {
-                form.appendMessage(String.format("[%s > Me] %s", senderId, message));
+                form.appendMessage(String.format("[%s > Me] %s", data.senderId(), data.message()));
             }
         }
 
-        // 목록 조회 (방/유저) 및 기타 시스템 메시지
-        else {
-            if (data != null && data.containsKey("message")) {
-                form.appendMessage(String.format("[System] %s", data.get("message")));
-            }
-
-            printLists(type, data);
-        }
-    }
-
-    private void printLists(MessageType type, Map<String, Object> data) {
         // 방 목록
-        if (type == MessageType.CHAT_ROOM_LIST_SUCCESS) {
-            List<Map<String, Object>> rooms = (List<Map<String, Object>>) data.get("rooms");
+        else if (type.equals(MessageType.CHAT_ROOM_LIST_SUCCESS)) {
+            RoomListResponse rooms = MessageUtils.convertData(response.getData(), RoomListResponse.class);
 
-            if (rooms != null) {
-                rooms.forEach(room -> form.appendMessage(String.format("[%s] %s (%s명)",
-                        room.get("roomId"), room.get("roomName"), room.get("userCount"))));
+            if (rooms != null && !rooms.rooms().isEmpty()) {
+                for (RoomInfo room : rooms.rooms()) {
+                    form.appendMessage(String.format("[%s] %s (%s명)\n",
+                            room.roomId(), room.roomName(), room.userCount()));
+                }
             } else {
                 form.appendMessage("[System] 현재 생성된 채팅방이 없습니다.");
             }
         }
 
         // 유저 목록
-        else if (type == MessageType.USER_LIST_SUCCESS) {
-            List<Map<String, Object>> users = (List<Map<String, Object>>) data.get("users");
+        else if (type.equals(MessageType.USER_LIST_SUCCESS)) {
+            UserListResponse users = MessageUtils.convertData(response.getData(), UserListResponse.class);
 
-            if (users != null) {
-                users.forEach(user -> form.appendMessage(String.format("- %s (%s)",
-                        user.get("id"), user.get("name"))));
+            if (users != null && users.users().isEmpty()) {
+                for (UserInfo user : users.users()) {
+                    form.appendMessage(String.format("- %s (%s)\n", user.id(), user.name()));
+                }
             } else {
                 form.appendMessage("[System] 현재 접속 중인 유저가 없습니다.");
             }
         }
 
         // 과거 채팅 기록
-        else if (type == MessageType.CHAT_MESSAGE_HISTORY_SUCCESS) {
-            List<Map<String, Object>> messages = (List<Map<String, Object>>) data.get("messages");
+        else if (type.equals(MessageType.CHAT_MESSAGE_HISTORY_SUCCESS)) {
+            HistoryResponse messages = MessageUtils.convertData(response.getData(), HistoryResponse.class);
 
-            if (messages != null) {
-                messages.forEach(message -> {
-                    String senderId = (String) message.get("senderId");
-                    String content = (String) message.get("content");
-                    String timestamp = (String) message.get("timestamp");
+            if (messages != null && !messages.messages().isEmpty()) {
+                for (MessageInfo message : messages.messages()) {
+                    form.appendMessage(String.format("[%s] %s: %s\n",
+                            message.timestamp(), message.senderId(), message.content()));
 
-                    form.appendMessage(String.format("[%s] %s: %s", timestamp, senderId, content));
-                });
+                }
             } else {
                 form.appendMessage("[System] 과거 채팅 기록이 없습니다.");
             }

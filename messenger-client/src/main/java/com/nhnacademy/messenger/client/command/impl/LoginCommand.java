@@ -13,16 +13,18 @@
 package com.nhnacademy.messenger.client.command.impl;
 
 import com.nhnacademy.messenger.client.command.ClientCommand;
+import com.nhnacademy.messenger.client.command.Command;
 import com.nhnacademy.messenger.client.session.ClientSession;
 import com.nhnacademy.messenger.client.ui.ClientUI;
 import com.nhnacademy.messenger.common.domain.MessageRequest;
 import com.nhnacademy.messenger.common.domain.MessageType;
+import com.nhnacademy.messenger.common.dto.request.LoginRequest;
 import com.nhnacademy.messenger.common.util.MessageUtils;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.time.LocalDateTime;
-import java.util.Map;
 
+@Command(method = "/login")
 public class LoginCommand implements ClientCommand {
 
     private final ClientUI clientUI;
@@ -47,12 +49,12 @@ public class LoginCommand implements ClientCommand {
         String userId = args[1];
         String password = args[2];
 
-        MessageRequest request = new MessageRequest(
+        MessageRequest<LoginRequest> request = new MessageRequest<>(
                 new MessageRequest.RequestHeader(
                         MessageType.LOGIN,
                         LocalDateTime.now().toString(),
                         null),
-                Map.of("userId", userId, "password", password)
+                new LoginRequest(userId, password)
         );
 
         try {

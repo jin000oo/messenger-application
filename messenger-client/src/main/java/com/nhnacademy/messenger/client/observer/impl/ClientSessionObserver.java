@@ -18,7 +18,9 @@ import com.nhnacademy.messenger.client.subject.EventType;
 import com.nhnacademy.messenger.client.ui.ClientUI;
 import com.nhnacademy.messenger.common.domain.MessageResponse;
 import com.nhnacademy.messenger.common.domain.MessageType;
-import java.util.Map;
+import com.nhnacademy.messenger.common.dto.response.EnterChatRoomResponse;
+import com.nhnacademy.messenger.common.dto.response.LoginResponse;
+import com.nhnacademy.messenger.common.util.MessageUtils;
 
 public class ClientSessionObserver implements Observer {
 
@@ -40,14 +42,15 @@ public class ClientSessionObserver implements Observer {
         }
 
         MessageType type = response.getHeader().getType();
-        Map<String, Object> data = response.getData();
 
         // TODO: EventType 확장하면 여기가 좀 깔끔해짐 ex. EventType.LOGIN
         // 로그인 성공 시 세션 ID 저장
         if (type.equals(MessageType.LOGIN_SUCCESS)) {
-            if (data != null && data.containsKey("sessionId")) {
-                ClientSession.setSessionId((String) data.get("sessionId"));
-                ClientSession.setUserId((String) data.get("userId"));
+            LoginResponse data = MessageUtils.convertData(response.getData(), LoginResponse.class);
+
+            if (data != null) {
+                ClientSession.setSessionId(data.sessionId());
+                ClientSession.setUserId(data.userId());
             }
         }
 
@@ -62,7 +65,11 @@ public class ClientSessionObserver implements Observer {
 
         // 채팅방 입장 성공 시 채팅방 ID 저장
         else if (type.equals(MessageType.CHAT_ROOM_ENTER_SUCCESS)) {
-            ClientSession.setCurrentRoomId(((Number) data.get("roomId")).longValue());
+            EnterChatRoomResponse data = MessageUtils.convertData(response.getData(), EnterChatRoomResponse.class);
+
+            if (data != null) {
+                ClientSession.setCurrentRoomId(data.roomId());
+            }
         }
 
         // 채팅방 나가면 방 번호 초기화

@@ -13,17 +13,19 @@
 package com.nhnacademy.messenger.client.command.impl;
 
 import com.nhnacademy.messenger.client.command.ClientCommand;
+import com.nhnacademy.messenger.client.command.Command;
 import com.nhnacademy.messenger.client.session.ClientSession;
 import com.nhnacademy.messenger.client.ui.ClientUI;
 import com.nhnacademy.messenger.common.domain.MessageRequest;
 import com.nhnacademy.messenger.common.domain.MessageType;
+import com.nhnacademy.messenger.common.dto.request.WhisperRequest;
 import com.nhnacademy.messenger.common.util.MessageUtils;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.time.LocalDateTime;
 import java.util.Arrays;
-import java.util.Map;
 
+@Command(method = "/whisper")
 public class WhisperCommand implements ClientCommand {
 
     private final ClientUI clientUI;
@@ -51,12 +53,12 @@ public class WhisperCommand implements ClientCommand {
         String[] messageParts = Arrays.copyOfRange(args, 2, args.length);
         String message = String.join(" ", messageParts);
 
-        MessageRequest request = new MessageRequest(
+        MessageRequest<WhisperRequest> request = new MessageRequest<>(
                 new MessageRequest.RequestHeader(
                         MessageType.PRIVATE_MESSAGE,
                         LocalDateTime.now().toString(),
                         sessionId),
-                Map.of("senderId", userId, "receiverId", targetId, "message", message)
+                new WhisperRequest(userId, targetId, message)
         );
 
         try {

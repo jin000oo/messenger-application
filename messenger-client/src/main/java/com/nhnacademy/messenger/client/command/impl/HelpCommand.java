@@ -13,9 +13,11 @@
 package com.nhnacademy.messenger.client.command.impl;
 
 import com.nhnacademy.messenger.client.command.ClientCommand;
+import com.nhnacademy.messenger.client.command.Command;
 import com.nhnacademy.messenger.client.ui.ClientUI;
 import java.io.OutputStream;
 
+@Command(method = "/help")
 public class HelpCommand implements ClientCommand {
 
     private final ClientUI clientUI;

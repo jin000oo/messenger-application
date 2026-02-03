@@ -13,16 +13,18 @@
 package com.nhnacademy.messenger.client.command.impl;
 
 import com.nhnacademy.messenger.client.command.ClientCommand;
+import com.nhnacademy.messenger.client.command.Command;
 import com.nhnacademy.messenger.client.session.ClientSession;
 import com.nhnacademy.messenger.client.ui.ClientUI;
 import com.nhnacademy.messenger.common.domain.MessageRequest;
 import com.nhnacademy.messenger.common.domain.MessageType;
+import com.nhnacademy.messenger.common.dto.request.EnterChatRoomRequest;
 import com.nhnacademy.messenger.common.util.MessageUtils;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.time.LocalDateTime;
-import java.util.Map;
 
+@Command(method = "/enter")
 public class EnterRoomCommand implements ClientCommand {
 
     private final ClientUI clientUI;
@@ -47,12 +49,12 @@ public class EnterRoomCommand implements ClientCommand {
         try {
             long roomId = Long.parseLong(args[1]);
 
-            MessageRequest request = new MessageRequest(
+            MessageRequest<EnterChatRoomRequest> request = new MessageRequest<>(
                     new MessageRequest.RequestHeader(
                             MessageType.CHAT_ROOM_ENTER,
                             LocalDateTime.now().toString(),
                             sessionId),
-                    Map.of("roomId", roomId)
+                    new EnterChatRoomRequest(roomId)
             );
 
             MessageUtils.send(out, request);

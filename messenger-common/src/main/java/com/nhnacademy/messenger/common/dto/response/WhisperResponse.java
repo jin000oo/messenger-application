@@ -10,17 +10,10 @@
  * +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  */
 
-package com.nhnacademy.messenger.client.command;
+package com.nhnacademy.messenger.common.dto.response;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
-public @interface Command {
-
-    String method();
-
+public record WhisperResponse(String senderId,
+                              String receiverId,
+                              String message,
+                              Long messageId) {
 }

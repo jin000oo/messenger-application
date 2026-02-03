@@ -48,7 +48,7 @@ public class MessageUtils {
     }
 
     // 클라이언트가 보낸 요청을 받을 때 사용
-    public static MessageRequest readRequest(InputStream in) throws IOException {
+    public static MessageRequest<?> readRequest(InputStream in) throws IOException {
         byte[] data = readStream(in);
 
         if (data == null) {
@@ -59,7 +59,7 @@ public class MessageUtils {
     }
 
     // 서버가 보낸 응답을 받을 때 사용
-    public static MessageResponse readResponse(InputStream in) throws IOException {
+    public static MessageResponse<?> readResponse(InputStream in) throws IOException {
         byte[] data = readStream(in);
 
         if (data == null) {
@@ -67,6 +67,10 @@ public class MessageUtils {
         }
 
         return objectMapper.readValue(data, MessageResponse.class);
+    }
+
+    public static <T> T convertData(Object data, Class<T> clazz) {
+        return objectMapper.convertValue(data, clazz);
     }
 
     // 실제 스트림에서 바이트를 읽어오는 메소드

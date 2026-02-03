@@ -13,16 +13,18 @@
 package com.nhnacademy.messenger.client.command.impl;
 
 import com.nhnacademy.messenger.client.command.ClientCommand;
+import com.nhnacademy.messenger.client.command.Command;
 import com.nhnacademy.messenger.client.session.ClientSession;
 import com.nhnacademy.messenger.client.ui.ClientUI;
 import com.nhnacademy.messenger.common.domain.MessageRequest;
 import com.nhnacademy.messenger.common.domain.MessageType;
+import com.nhnacademy.messenger.common.dto.request.HistoryRequest;
 import com.nhnacademy.messenger.common.util.MessageUtils;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.time.LocalDateTime;
-import java.util.Map;
 
+@Command(method = "/history")
 public class HistoryCommand implements ClientCommand {
 
     private final ClientUI clientUI;
@@ -59,12 +61,12 @@ public class HistoryCommand implements ClientCommand {
             }
         }
 
-        MessageRequest request = new MessageRequest(
+        MessageRequest<HistoryRequest> request = new MessageRequest<>(
                 new MessageRequest.RequestHeader(
                         MessageType.CHAT_MESSAGE_HISTORY,
                         LocalDateTime.now().toString(),
                         sessionId),
-                Map.of("roomId", currentRoomId, "limit", DEFAULT_LIMIT, "beforeMessageId", beforeMessageId)
+                new HistoryRequest(currentRoomId, DEFAULT_LIMIT, beforeMessageId)
         );
 
         try {
