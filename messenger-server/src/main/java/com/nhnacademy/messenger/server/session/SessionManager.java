@@ -12,11 +12,14 @@
 
 package com.nhnacademy.messenger.server.session;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.io.IOException;
 import java.net.Socket;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+@Slf4j
 public class SessionManager {
 
     private static final Map<String, Session> sessionsById = new ConcurrentHashMap<>();
@@ -24,8 +27,8 @@ public class SessionManager {
 
     private static final Object LOCK = new Object();
 
-    // 로그인 상태에서 로그인 요청 시 기존 세션 삭제하고, 세션 교체한다.
-    // 유효한 세션으로 요청, 소켓 변경 시, 소켓 업데이트한다.
+    // 로그인 상태에서 로그인 요청 시 기존 세션 삭제하고, 세션 업데이트
+    // 로그아웃 하지 않고, 비정상 종료 후 다시 로그인 시 세션 업데이트
     public static void addSession(Session session) {
         synchronized (LOCK) {
             Session previousSession = sessionsByUserId.put(session.getUserId(), session);
@@ -38,6 +41,7 @@ public class SessionManager {
                     try {
                         previousSession.getSocket().close();
                     } catch (IOException e) {
+                        log.debug("세션 추가 중 소켓 종료 실패 (userId={}): {}", session.getUserId(), e.getMessage());
                     }
                 }
             }
@@ -72,19 +76,26 @@ public class SessionManager {
         return sessionsByUserId.get(userId);
     }
 
-    public static boolean updateSocket(String sessionId, Socket newSocket) {
+    // 재접속 시 소켓 업데이트
+    // 소켓 변경 시 소켓 업데이트
+    // 다시 로그인 하지 않고, 유효한 세션Id로 요청 시 소켓 업데이트
+    public static void updateSocket(String sessionId, Socket newSocket) {
         synchronized (LOCK) {
             Session session = sessionsById.get(sessionId);
-            if (session != null) {
-                return false;
-            }
+            if (session == null) return;
 
             Socket socket = session.getSocket();
-            if (socket != null && socket != newSocket) {
-                session.setSocket(newSocket);
-            }
+            if (socket == newSocket) return;
 
-            return true;
+            session.setSocket(newSocket);
+
+            if (socket != null) {
+                try {
+                    socket.close();
+                } catch (IOException e) {
+                    log.debug("소켓 업데이트 중 소켓 종료 실패 (userId={}): {}", session.getUserId(), e.getMessage());
+                }
+            }
         }
     }
 }

@@ -10,12 +10,17 @@
  * +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  */
 
-package com.nhnacademy.messenger.server.handler;
+package com.nhnacademy.messenger.server.handler.impl;
 
 import com.nhnacademy.messenger.common.domain.MessageRequest;
 import com.nhnacademy.messenger.common.domain.MessageResponse;
+import com.nhnacademy.messenger.server.handler.Handler;
+import com.nhnacademy.messenger.server.utils.ResponseFactory;
 
-public interface Handler {
+public class UnsupportedTypeHandler implements Handler {
 
-    MessageResponse handle(MessageRequest request);
+    @Override
+    public MessageResponse handle(MessageRequest request) {
+        return ResponseFactory.error("COMMON.UNSUPPORTED_TYPE", "지원하지 않는 메시지 타입입니다.");
+    }
 }

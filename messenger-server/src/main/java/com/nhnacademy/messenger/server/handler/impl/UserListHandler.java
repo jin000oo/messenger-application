@@ -18,17 +18,19 @@ import com.nhnacademy.messenger.common.domain.MessageType;
 import com.nhnacademy.messenger.server.handler.Handler;
 import com.nhnacademy.messenger.server.session.Session;
 import com.nhnacademy.messenger.server.session.SessionManager;
+import com.nhnacademy.messenger.server.user.domain.User;
 import com.nhnacademy.messenger.server.user.repository.UserRepository;
-import com.nhnacademy.messenger.server.user.repository.impl.MemoryUserRepository;
 import com.nhnacademy.messenger.server.utils.ResponseFactory;
+import lombok.RequiredArgsConstructor;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+@RequiredArgsConstructor
 public class UserListHandler implements Handler {
 
-    private final UserRepository userRepository = new MemoryUserRepository();
+    private final UserRepository userRepository;
 
     @Override
     public MessageResponse handle(MessageRequest request) {
@@ -45,6 +47,7 @@ public class UserListHandler implements Handler {
 
         // 유저 목록.
         List<Map<String, Object>> users = userRepository.findAll().stream()
+                .filter(User::isOnline) // Online 상태만
                 .map(user -> Map.<String, Object>of(
                         "id", user.getUserId(),
                         "name", Objects.toString(user.getUserName(), ""),

@@ -22,11 +22,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class MemoryChatRoomRepository implements ChatRoomRepository {
 
-    private static final Map<Long, ChatRoom> rooms = new ConcurrentHashMap<>();
-
-    static {
-        rooms.put(12345678L, new ChatRoom(12345678L, "testChatRoom"));
-    }
+    private final Map<Long, ChatRoom> rooms = new ConcurrentHashMap<>();
 
     @Override
     public ChatRoom save(ChatRoom chatRoom) {
@@ -57,6 +53,7 @@ public class MemoryChatRoomRepository implements ChatRoomRepository {
         return rooms.containsKey(roomId);
     }
 
+    @Override
     public boolean existsByRoomName(String roomName) {
         return rooms.values().stream().anyMatch(room -> room.getRoomName().equals(roomName));
     }

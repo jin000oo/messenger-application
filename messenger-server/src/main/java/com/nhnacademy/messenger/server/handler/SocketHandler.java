@@ -15,7 +15,14 @@ package com.nhnacademy.messenger.server.handler;
 import com.nhnacademy.messenger.common.domain.MessageRequest;
 import com.nhnacademy.messenger.common.domain.MessageResponse;
 
-public interface Handler {
+import java.net.Socket;
 
-    MessageResponse handle(MessageRequest request);
+public interface SocketHandler extends Handler {
+
+    MessageResponse handle(MessageRequest request, Socket socket);
+
+    @Override
+    default MessageResponse handle(MessageRequest request) {
+        throw new RuntimeException("SocketHandler의 잘못된 handle() 호출");
+    }
 }

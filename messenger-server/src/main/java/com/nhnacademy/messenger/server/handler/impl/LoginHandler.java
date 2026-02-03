@@ -15,13 +15,13 @@ package com.nhnacademy.messenger.server.handler.impl;
 import com.nhnacademy.messenger.common.domain.MessageRequest;
 import com.nhnacademy.messenger.common.domain.MessageResponse;
 import com.nhnacademy.messenger.common.domain.MessageType;
-import com.nhnacademy.messenger.server.handler.Handler;
+import com.nhnacademy.messenger.server.handler.SocketHandler;
 import com.nhnacademy.messenger.server.session.Session;
 import com.nhnacademy.messenger.server.session.SessionManager;
 import com.nhnacademy.messenger.server.user.domain.User;
 import com.nhnacademy.messenger.server.user.repository.UserRepository;
-import com.nhnacademy.messenger.server.user.repository.impl.MemoryUserRepository;
 import com.nhnacademy.messenger.server.utils.ResponseFactory;
+import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 
 import java.net.Socket;
@@ -30,17 +30,13 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
-public class LoginHandler implements Handler {
+@RequiredArgsConstructor
+public class LoginHandler implements SocketHandler {
 
-    private final UserRepository userRepository = new MemoryUserRepository();
-
-    @Override
-    public MessageResponse handle(MessageRequest request) {
-        return null;
-    }
+    private final UserRepository userRepository;
 
     @Override
-    public MessageResponse handleWithSocket(MessageRequest request, Socket socket) {
+    public MessageResponse handle(MessageRequest request, Socket socket) {
         if (Objects.isNull(request) || Objects.isNull(request.getData())) {
             return ResponseFactory.error("COMMON.BAD_REQUEST", "데이터 형식이 올바르지 않습니다.");
         }
@@ -67,9 +63,9 @@ public class LoginHandler implements Handler {
 
         // Online 이면 로그인 실패.
         User user = optionalUser.get();
-        if (user.isOnline()) {
-            return ResponseFactory.error("AUTH.ALREADY_LOGGED_IN", "이미 로그인 상태입니다.");
-        }
+//        if (user.isOnline()) {
+//            return ResponseFactory.error("AUTH.ALREADY_LOGGED_IN", "이미 로그인 상태입니다.");
+//        }
 
         // 아이디와 비밀번호 불일치.
         if (!user.getPassword().equals(password)) {

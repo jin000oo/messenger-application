@@ -22,28 +22,44 @@ import com.nhnacademy.messenger.client.subject.MessageSubject;
 import com.nhnacademy.messenger.client.subject.Subject;
 import com.nhnacademy.messenger.client.ui.ClientUI;
 import com.nhnacademy.messenger.client.ui.impl.ConsoleUI;
+import com.nhnacademy.messenger.client.ui.impl.SwingUI;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.Scanner;
 
 public class ClientMain {
 
-    private static final ClientUI clientUI = new ConsoleUI();
     private static final String DEFAULT_SERVER_ADDRESS = "localhost";
     private static final int DEFAULT_PORT = 12345;
 
-    public static void main(String[] args) {
-        try {
-            // 서버 접속 시도
-            Socket socket = new Socket(DEFAULT_SERVER_ADDRESS, DEFAULT_PORT);
+    private static CommandFactory commandFactory;
+    private static Socket socket;
+    private static ClientUI clientUI;
 
-            if (socket.isConnected()) {
-                System.out.printf("[%s:%d] 서버 연결에 성공했습니다.\n",
-                        DEFAULT_SERVER_ADDRESS, DEFAULT_PORT);
-                System.out.println("/help 명령어 입력시 모든 명령어 목록을 볼 수 있습니다.");
+    public static void main(String[] args) {
+        // 실행 방법
+        // 콘솔 모드: java -jar client-shade.jar
+        // GUI 모드: java -jar client-shade.jar gui
+        boolean isGui = args.length > 0 && args[0].equalsIgnoreCase("gui");
+
+        try {
+            socket = new Socket(DEFAULT_SERVER_ADDRESS, DEFAULT_PORT);
+
+            if (isGui) {
+                clientUI = new SwingUI(ClientMain::processCommand);
+            } else {
+                clientUI = new ConsoleUI();
             }
 
+            if (socket.isConnected()) {
+                clientUI.displayMessage(String.format("%s:%d 서버 연결에 성공했습니다.\n",
+                        DEFAULT_SERVER_ADDRESS, DEFAULT_PORT));
+                clientUI.displayMessage("/help 명령어 입력시 모든 명령어 목록을 볼 수 있습니다.");
+            }
+
+            commandFactory = new CommandFactory(clientUI);
             Subject subject = new MessageSubject();
+
             subject.register(EventType.RECV, new ClientSessionObserver(clientUI));
             subject.register(EventType.RECV, new UIUpdateObserver(clientUI));
 
@@ -51,34 +67,43 @@ public class ClientMain {
             Thread receiverThread = new Thread(new ReceivedMessageClient(socket, subject, clientUI));
             receiverThread.start();
 
-            // 사용자 입력을 받아 서버로 전송
-            Scanner scanner = new Scanner(System.in);
-            CommandFactory commandFactory = new CommandFactory();
-
-            System.out.print("> ");
-
-            while (true) {
-                String input = scanner.nextLine();
-
-                if (input.trim().isEmpty()) {
-                    clientUI.displayMessage("입력값이 비어있습니다.");
-                }
-
-                String[] parts = input.split(" ");
-
-                ClientCommand command = commandFactory.getCommand(parts[0]);
-
-                if (command != null) {
-                    // 명령어 싪행
-                    command.execute(parts, socket.getOutputStream());
-                } else {
-                    clientUI.displayMessage("지원하지 않는 명령어입니다.");
-                }
+            // 입력 로직 분기
+            if (!isGui) {
+                runConsoleLoop();
             }
 
         } catch (IOException e) {
             clientUI.displayMessage(String.format("예상치 못한 오류: %s", e.getMessage()));
-            throw new RuntimeException(e);
+        }
+    }
+
+    private static void processCommand(String input) {
+        if (input == null || input.trim().isEmpty()) {
+            return;
+        }
+
+        try {
+            String[] parts = input.split(" ");
+            ClientCommand command = commandFactory.getCommand(parts[0]);
+
+            if (command != null) {
+                command.execute(parts, socket.getOutputStream());
+            } else {
+                clientUI.displayMessage("지원하지 않는 명령어입니다.");
+            }
+
+        } catch (IOException e) {
+            clientUI.displayError(String.format("명령어 전송 실패: %s", e.getMessage()));
+        }
+    }
+
+    private static void runConsoleLoop() {
+        Scanner scanner = new Scanner(System.in);
+
+        System.out.print("> ");
+
+        while (true) {
+            processCommand(scanner.nextLine());
         }
     }
 

@@ -13,29 +13,55 @@
 package com.nhnacademy.messenger.server.handler;
 
 import com.nhnacademy.messenger.common.domain.MessageType;
+import com.nhnacademy.messenger.server.chatroom.chatroomrepository.ChatRoomRepository;
 import com.nhnacademy.messenger.server.handler.impl.*;
+import com.nhnacademy.messenger.server.message.repository.MessageRepository;
+import com.nhnacademy.messenger.server.message.repository.PrivateMessageRepository;
+import com.nhnacademy.messenger.server.user.repository.UserRepository;
 
 import java.util.EnumMap;
 import java.util.Map;
 
 public class HandlerFactory {
 
-    private static final Map<MessageType, Handler> Handlers = new EnumMap<>(MessageType.class);
+    private final Map<MessageType, Handler> handlers = new EnumMap<>(MessageType.class);
 
-    static {
-        Handlers.put(MessageType.LOGIN, new LoginHandler());
-        Handlers.put(MessageType.LOGOUT, new LogoutHandler());
-        Handlers.put(MessageType.USER_LIST, new UserListHandler());
-        Handlers.put(MessageType.CHAT_MESSAGE, new ChatMessageHandler());
-        Handlers.put(MessageType.PRIVATE_MESSAGE, new PrivateMessageHandler());
-        Handlers.put(MessageType.CHAT_ROOM_CREATE, new ChatRoomCreateHandler());
-        Handlers.put(MessageType.CHAT_ROOM_LIST, new ChatRoomListHandler());
-        Handlers.put(MessageType.CHAT_ROOM_ENTER, new ChatRoomEnterHandler());
-        Handlers.put(MessageType.CHAT_ROOM_EXIT, new ChatRoomExitHandler());
-        Handlers.put(MessageType.CHAT_MESSAGE_HISTORY, new ChatMessageHistoryHandler());
+    private final UserRepository userRepo;
+    private final ChatRoomRepository chatRoomRepo;
+    private final MessageRepository messageRepo;
+    private final PrivateMessageRepository privateMessageRepo;
+    private final Handler unsupportedTypeHandler = new UnsupportedTypeHandler();
+
+    public HandlerFactory(UserRepository userRepo,
+                          ChatRoomRepository chatRoomRepo,
+                          MessageRepository messageRepo,
+                          PrivateMessageRepository privateMessageRepo
+    ) {
+        this.userRepo = userRepo;
+        this.chatRoomRepo = chatRoomRepo;
+        this.messageRepo = messageRepo;
+        this.privateMessageRepo = privateMessageRepo;
+
+        initialize();
     }
 
-    public static Map<MessageType, Handler> getHandler() {
-        return new EnumMap<MessageType, Handler>(Handlers);
+    private void initialize() {
+        handlers.put(MessageType.LOGIN, new LoginHandler(userRepo));
+        handlers.put(MessageType.LOGOUT, new LogoutHandler(userRepo));
+        handlers.put(MessageType.USER_LIST, new UserListHandler(userRepo));
+
+        handlers.put(MessageType.CHAT_MESSAGE, new ChatMessageHandler(userRepo, chatRoomRepo, messageRepo));
+        handlers.put(MessageType.PRIVATE_MESSAGE, new PrivateMessageHandler(userRepo, privateMessageRepo));
+
+        handlers.put(MessageType.CHAT_ROOM_CREATE, new ChatRoomCreateHandler(chatRoomRepo));
+        handlers.put(MessageType.CHAT_ROOM_ENTER, new ChatRoomEnterHandler(chatRoomRepo));
+        handlers.put(MessageType.CHAT_ROOM_EXIT, new ChatRoomExitHandler(chatRoomRepo));
+        handlers.put(MessageType.CHAT_ROOM_LIST, new ChatRoomListHandler(chatRoomRepo));
+
+        handlers.put(MessageType.CHAT_MESSAGE_HISTORY, new ChatMessageHistoryHandler(messageRepo));
+    }
+
+    public Handler getHandler(MessageType messageType) {
+        return handlers.getOrDefault(messageType, unsupportedTypeHandler);
     }
 }

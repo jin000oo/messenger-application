@@ -17,19 +17,21 @@ import com.nhnacademy.messenger.common.domain.MessageResponse;
 import com.nhnacademy.messenger.common.domain.MessageType;
 import com.nhnacademy.messenger.server.handler.Handler;
 import com.nhnacademy.messenger.server.message.domain.ChatMessage;
-import com.nhnacademy.messenger.server.message.repository.impl.MemoryMessageRepository;
+import com.nhnacademy.messenger.server.message.repository.MessageRepository;
 import com.nhnacademy.messenger.server.session.Session;
 import com.nhnacademy.messenger.server.session.SessionManager;
 import com.nhnacademy.messenger.server.utils.ResponseFactory;
+import lombok.RequiredArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+@RequiredArgsConstructor
 public class ChatMessageHistoryHandler implements Handler {
 
-    private final MemoryMessageRepository messageRepository = new MemoryMessageRepository();
+    private final MessageRepository messageRepository;
 
     @Override
     public MessageResponse handle(MessageRequest request) {

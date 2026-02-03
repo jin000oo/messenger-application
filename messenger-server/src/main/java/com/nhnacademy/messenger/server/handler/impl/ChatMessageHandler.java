@@ -16,17 +16,17 @@ import com.nhnacademy.messenger.common.domain.MessageRequest;
 import com.nhnacademy.messenger.common.domain.MessageResponse;
 import com.nhnacademy.messenger.common.domain.MessageType;
 import com.nhnacademy.messenger.common.util.MessageUtils;
-import com.nhnacademy.messenger.server.chatroom.chatroomrepository.impl.MemoryChatRoomRepository;
+import com.nhnacademy.messenger.server.chatroom.chatroomrepository.ChatRoomRepository;
 import com.nhnacademy.messenger.server.chatroom.domain.ChatRoom;
 import com.nhnacademy.messenger.server.handler.Handler;
 import com.nhnacademy.messenger.server.message.domain.ChatMessage;
-import com.nhnacademy.messenger.server.message.repository.impl.MemoryMessageRepository;
+import com.nhnacademy.messenger.server.message.repository.MessageRepository;
 import com.nhnacademy.messenger.server.session.Session;
 import com.nhnacademy.messenger.server.session.SessionManager;
 import com.nhnacademy.messenger.server.user.repository.UserRepository;
-import com.nhnacademy.messenger.server.user.repository.impl.MemoryUserRepository;
 import com.nhnacademy.messenger.server.utils.IdGenerator;
 import com.nhnacademy.messenger.server.utils.ResponseFactory;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
@@ -37,11 +37,12 @@ import java.util.Objects;
 import java.util.Set;
 
 @Slf4j
+@RequiredArgsConstructor
 public class ChatMessageHandler implements Handler {
 
-    private final UserRepository userRepository = new MemoryUserRepository();
-    private final MemoryChatRoomRepository chatRoomRepository = new MemoryChatRoomRepository();
-    private final MemoryMessageRepository messageRepository = new MemoryMessageRepository();
+    private final UserRepository userRepository;
+    private final ChatRoomRepository chatRoomRepository;
+    private final MessageRepository messageRepository;
 
     @Override
     public MessageResponse handle(MessageRequest request) {
@@ -89,9 +90,8 @@ public class ChatMessageHandler implements Handler {
         );
 
         for (String userId : members) {
-            if (userId.equals(senderId)) {
-                continue;
-            }
+            // echo.
+            // if (userId.equals(senderId)) { continue; }
 
             try {
                 MessageUtils.send(
@@ -104,7 +104,7 @@ public class ChatMessageHandler implements Handler {
         }
 
         // 수정 필요.
-        long messageId = IdGenerator.randomMessageIdGenerator();
+        long messageId = IdGenerator.nextMessageId();
 
         messageRepository.save(new ChatMessage(
                 messageId,
