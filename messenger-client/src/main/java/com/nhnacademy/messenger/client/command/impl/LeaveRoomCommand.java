@@ -35,11 +35,6 @@ public class LeaveRoomCommand implements ClientCommand<Void> {
     public void execute(Void params, ClientContext context) {
         ClientUI clientUI = context.getClientUI();
 
-        if (!context.getClientSession().isAuthenticated()) {
-            clientUI.displayMessage("해당 서비스를 이용하려면 로그인이 필요합니다.");
-            return;
-        }
-
         String sessionId = context.getClientSession().getSessionId();
         Long currentRoomId = context.getClientSession().getCurrentRoomId();
 

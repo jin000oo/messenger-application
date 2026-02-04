@@ -25,10 +25,17 @@ import com.nhnacademy.messenger.client.command.impl.UserListCommand;
 import com.nhnacademy.messenger.client.command.impl.WhisperCommand;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 public class CommandFactory {
 
-    private final Map<String, ClientCommand> commands = new HashMap<>();
+    private final Map<String, ClientCommand<?>> commands = new HashMap<>();
+
+    // 로그인 없이 실행 가능한 명령어 목록 (화이트리스트)
+    private static final Set<String> PUBLIC_COMMANDS = Set.of(
+            "/login",
+            "/help"
+    );
 
     public CommandFactory() {
         commands.put("/help", new HelpCommand());
@@ -44,9 +51,12 @@ public class CommandFactory {
         commands.put("/history", new HistoryCommand());
     }
 
-    // TODO: sessionId 확인하는 로직이 중복!!!!! > 화이트리스트/블랙리스트로 관리
-    public ClientCommand getCommand(String commandName) {
+    public ClientCommand<?> getCommand(String commandName) {
         return commands.get(commandName);
+    }
+
+    public boolean isPublicCommand(String commandName) {
+        return PUBLIC_COMMANDS.contains(commandName);
     }
 
 }

@@ -49,11 +49,6 @@ public class WhisperCommand implements ClientCommand<WhisperParams> {
     public void execute(WhisperParams params, ClientContext context) {
         ClientUI clientUI = context.getClientUI();
 
-        if (!context.getClientSession().isAuthenticated()) {
-            clientUI.displayMessage("해당 서비스를 이용하려면 로그인이 필요합니다.");
-            return;
-        }
-
         String userId = context.getClientSession().getUserId();
         String sessionId = context.getClientSession().getSessionId();
 

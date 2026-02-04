@@ -107,9 +107,16 @@ public class ClientMain {
 
         try {
             String[] parts = input.split(" ");
-            ClientCommand<?> command = commandFactory.getCommand(parts[0]);
+            String commandKey = parts[0];
+
+            ClientCommand<?> command = commandFactory.getCommand(commandKey);
 
             if (command != null) {
+                if (!commandFactory.isPublicCommand(commandKey) && !clientSession.isAuthenticated()) {
+                    clientUI.displayMessage("해당 서비스를 이용하려면 로그인이 필요합니다.");
+                    return;
+                }
+
                 executeGenericCommand(command, parts);
             } else {
                 clientUI.displayMessage("지원하지 않는 명령어입니다.");
