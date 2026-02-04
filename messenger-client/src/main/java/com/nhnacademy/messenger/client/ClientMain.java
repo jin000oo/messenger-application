@@ -17,6 +17,7 @@ import com.nhnacademy.messenger.client.command.CommandFactory;
 import com.nhnacademy.messenger.client.context.ClientContext;
 import com.nhnacademy.messenger.client.observer.impl.ClientSessionObserver;
 import com.nhnacademy.messenger.client.observer.impl.UIUpdateObserver;
+import com.nhnacademy.messenger.client.runnable.MessageProcessor;
 import com.nhnacademy.messenger.client.runnable.ReceivedMessageClient;
 import com.nhnacademy.messenger.client.session.ClientSession;
 import com.nhnacademy.messenger.client.subject.EventType;
@@ -25,9 +26,12 @@ import com.nhnacademy.messenger.client.subject.Subject;
 import com.nhnacademy.messenger.client.ui.ClientUI;
 import com.nhnacademy.messenger.client.ui.impl.ConsoleUI;
 import com.nhnacademy.messenger.client.ui.impl.SwingUI;
+import com.nhnacademy.messenger.common.domain.MessageResponse;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.Scanner;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 public class ClientMain {
 
@@ -74,9 +78,15 @@ public class ClientMain {
             subject.register(EventType.RECV, new ClientSessionObserver(clientUI, clientSession));
             subject.register(EventType.RECV, new UIUpdateObserver(clientUI));
 
-            // 서버로부터 오는 메시지를 받는 스레드
-            Thread receiverThread = new Thread(new ReceivedMessageClient(socket, subject, clientUI));
+            BlockingQueue<MessageResponse> messageQueue = new LinkedBlockingQueue<>();
+
+            // 생산자: 수신 스레드
+            Thread receiverThread = new Thread(new ReceivedMessageClient(socket, messageQueue, clientUI));
             receiverThread.start();
+
+            // 소비자: 처리 스레드
+            Thread processorThread = new Thread(new MessageProcessor(messageQueue, subject));
+            processorThread.start();
 
             commandFactory = new CommandFactory();
 

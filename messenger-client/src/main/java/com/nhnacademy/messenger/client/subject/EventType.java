@@ -14,7 +14,6 @@ package com.nhnacademy.messenger.client.subject;
 
 import lombok.Getter;
 
-// TODO: 이벤트 타입 확장
 public enum EventType {
 
     SEND("송신"),

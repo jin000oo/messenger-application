@@ -12,51 +12,33 @@
 
 package com.nhnacademy.messenger.client.runnable;
 
-import com.nhnacademy.messenger.client.ui.ClientUI;
+import com.nhnacademy.messenger.client.subject.Subject;
 import com.nhnacademy.messenger.common.domain.MessageResponse;
-import com.nhnacademy.messenger.common.util.MessageUtils;
-import java.io.IOException;
-import java.net.Socket;
 import java.util.concurrent.BlockingQueue;
-import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
-public class ReceivedMessageClient implements Runnable {
+public class MessageProcessor implements Runnable {
 
-    private final Socket socket;
     private final BlockingQueue<MessageResponse> messageQueue;
-    private final ClientUI clientUI;
+    private final Subject subject;
 
-    public ReceivedMessageClient(Socket socket, BlockingQueue<MessageResponse> messageQueue, ClientUI clientUI) {
-        if (socket == null) {
-            throw new IllegalArgumentException("[ReceivedMessageClient] Socket이 null입니다.");
-        }
-
-        this.socket = socket;
+    public MessageProcessor(BlockingQueue<MessageResponse> messageQueue, Subject subject) {
         this.messageQueue = messageQueue;
-        this.clientUI = clientUI;
+        this.subject = subject;
     }
 
     @Override
     public void run() {
         while (!Thread.currentThread().isInterrupted()) {
             try {
-                MessageResponse response = MessageUtils.readResponse(socket.getInputStream());
-
-                if (response == null) {
-                    break;
-                }
-
-                messageQueue.put(response);
-
-            } catch (IOException e) {
-                clientUI.displayMessage(String.format("예상치 못한 오류: %s", e.getMessage()));
-                break;
+                MessageResponse response = messageQueue.take();
+                subject.receiveMessage(response);
 
             } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
                 break;
             }
         }
+
     }
 
 }

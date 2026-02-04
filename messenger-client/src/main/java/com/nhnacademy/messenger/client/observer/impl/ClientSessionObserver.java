@@ -46,7 +46,6 @@ public class ClientSessionObserver implements Observer {
 
         MessageType type = response.getHeader().getType();
 
-        // TODO: EventType 확장하면 여기가 좀 깔끔해짐 ex. EventType.LOGIN
         // 로그인 성공 시 세션 ID 저장
         if (type.equals(MessageType.LOGIN_SUCCESS)) {
             LoginResponse data = MessageUtils.convertData(response.getData(), LoginResponse.class);
