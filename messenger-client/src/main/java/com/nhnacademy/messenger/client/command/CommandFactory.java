@@ -23,7 +23,6 @@ import com.nhnacademy.messenger.client.command.impl.LogoutCommand;
 import com.nhnacademy.messenger.client.command.impl.RoomListCommand;
 import com.nhnacademy.messenger.client.command.impl.UserListCommand;
 import com.nhnacademy.messenger.client.command.impl.WhisperCommand;
-import com.nhnacademy.messenger.client.ui.ClientUI;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -31,7 +30,7 @@ public class CommandFactory {
 
     private final Map<String, ClientCommand> commands = new HashMap<>();
 
-    public CommandFactory(ClientUI clientUI) {
+    public CommandFactory() {
         commands.put("/help", new HelpCommand());
         commands.put("/login", new LoginCommand());
         commands.put("/logout", new LogoutCommand());

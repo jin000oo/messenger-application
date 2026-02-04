@@ -78,7 +78,7 @@ public class ClientMain {
             Thread receiverThread = new Thread(new ReceivedMessageClient(socket, subject, clientUI));
             receiverThread.start();
 
-            commandFactory = new CommandFactory(clientUI);
+            commandFactory = new CommandFactory();
 
             // 입력 로직 분기
             if (!isGui) {
