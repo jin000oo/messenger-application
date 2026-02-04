@@ -18,14 +18,19 @@ import com.nhnacademy.messenger.client.subject.EventType;
 import com.nhnacademy.messenger.client.ui.ClientUI;
 import com.nhnacademy.messenger.common.domain.MessageResponse;
 import com.nhnacademy.messenger.common.domain.MessageType;
-import java.util.Map;
+import com.nhnacademy.messenger.common.dto.response.EnterChatRoomResponse;
+import com.nhnacademy.messenger.common.dto.response.LoginResponse;
+import com.nhnacademy.messenger.common.util.MessageUtils;
 
 public class ClientSessionObserver implements Observer {
 
     private final ClientUI clientUI;
 
-    public ClientSessionObserver(ClientUI clientUI) {
+    private final ClientSession clientSession;
+
+    public ClientSessionObserver(ClientUI clientUI, ClientSession clientSession) {
         this.clientUI = clientUI;
+        this.clientSession = clientSession;
     }
 
     @Override
@@ -40,33 +45,38 @@ public class ClientSessionObserver implements Observer {
         }
 
         MessageType type = response.getHeader().getType();
-        Map<String, Object> data = response.getData();
 
         // 로그인 성공 시 세션 ID 저장
-        if (type == MessageType.LOGIN_SUCCESS) {
-            if (data != null && data.containsKey("sessionId")) {
-                ClientSession.setSessionId((String) data.get("sessionId"));
-                ClientSession.setUserId((String) data.get("userId"));
+        if (type.equals(MessageType.LOGIN_SUCCESS)) {
+            LoginResponse data = MessageUtils.convertData(response.getData(), LoginResponse.class);
+
+            if (data != null) {
+                clientSession.setSessionId(data.sessionId());
+                clientSession.setUserId(data.userId());
             }
         }
 
         // 로그아웃 성공 시 세션 ID 지우기
-        else if (type == MessageType.LOGOUT_SUCCESS) {
-            ClientSession.setSessionId(null);
-            ClientSession.setUserId(null);
-            ClientSession.setCurrentRoomId(null);
+        else if (type.equals(MessageType.LOGOUT_SUCCESS)) {
+            clientSession.setSessionId(null);
+            clientSession.setUserId(null);
+            clientSession.setCurrentRoomId(null);
 
             clientUI.displayMessage("로그아웃 성공");
         }
 
         // 채팅방 입장 성공 시 채팅방 ID 저장
-        else if (type == MessageType.CHAT_ROOM_ENTER_SUCCESS) {
-            ClientSession.setCurrentRoomId(((Number) data.get("roomId")).longValue());
+        else if (type.equals(MessageType.CHAT_ROOM_ENTER_SUCCESS)) {
+            EnterChatRoomResponse data = MessageUtils.convertData(response.getData(), EnterChatRoomResponse.class);
+
+            if (data != null) {
+                clientSession.setCurrentRoomId(data.roomId());
+            }
         }
 
         // 채팅방 나가면 방 번호 초기화
-        else if (type == MessageType.CHAT_ROOM_EXIT_SUCCESS) {
-            ClientSession.setCurrentRoomId(null);
+        else if (type.equals(MessageType.CHAT_ROOM_EXIT_SUCCESS)) {
+            clientSession.setCurrentRoomId(null);
         }
     }
 

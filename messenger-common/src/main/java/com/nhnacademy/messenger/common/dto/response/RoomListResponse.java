@@ -10,19 +10,10 @@
  * +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  */
 
-package com.nhnacademy.messenger.client.subject;
+package com.nhnacademy.messenger.common.dto.response;
 
-import com.nhnacademy.messenger.client.observer.Observer;
-import com.nhnacademy.messenger.common.domain.MessageResponse;
+import com.nhnacademy.messenger.common.dto.response.info.RoomInfo;
+import java.util.List;
 
-public interface Subject {
-
-    void register(EventType eventType, Observer observer);
-
-    void notifyObservers(EventType eventType, MessageResponse response);
-
-    default void receiveMessage(MessageResponse response) {
-        notifyObservers(EventType.RECV, response);
-    }
-
+public record RoomListResponse(List<RoomInfo> rooms) {
 }

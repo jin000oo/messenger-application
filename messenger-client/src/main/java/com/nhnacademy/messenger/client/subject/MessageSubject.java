@@ -32,11 +32,6 @@ public class MessageSubject implements Subject {
     }
 
     @Override
-    public void remove(EventType eventType, Observer observer) {
-        observers.remove(observer);
-    }
-
-    @Override
     public void notifyObservers(EventType eventType, MessageResponse response) {
         synchronized (observers) {
             for (Observer observer : observers) {

@@ -23,30 +23,40 @@ import com.nhnacademy.messenger.client.command.impl.LogoutCommand;
 import com.nhnacademy.messenger.client.command.impl.RoomListCommand;
 import com.nhnacademy.messenger.client.command.impl.UserListCommand;
 import com.nhnacademy.messenger.client.command.impl.WhisperCommand;
-import com.nhnacademy.messenger.client.ui.ClientUI;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 public class CommandFactory {
 
-    private final Map<String, ClientCommand> commands = new HashMap<>();
+    private final Map<String, ClientCommand<?>> commands = new HashMap<>();
 
-    public CommandFactory(ClientUI clientUI) {
-        commands.put("/help", new HelpCommand(clientUI));
-        commands.put("/login", new LoginCommand(clientUI));
-        commands.put("/logout", new LogoutCommand(clientUI));
-        commands.put("/users", new UserListCommand(clientUI));
-        commands.put("/chat", new ChatCommand(clientUI));
-        commands.put("/whisper", new WhisperCommand(clientUI));
-        commands.put("/create", new CreateRoomCommand(clientUI));
-        commands.put("/list", new RoomListCommand(clientUI));
-        commands.put("/enter", new EnterRoomCommand(clientUI));
-        commands.put("/leave", new LeaveRoomCommand(clientUI));
-        commands.put("/history", new HistoryCommand(clientUI));
+    // 로그인 없이 실행 가능한 명령어 목록 (화이트리스트)
+    private static final Set<String> PUBLIC_COMMANDS = Set.of(
+            "/login",
+            "/help"
+    );
+
+    public CommandFactory() {
+        commands.put("/help", new HelpCommand());
+        commands.put("/login", new LoginCommand());
+        commands.put("/logout", new LogoutCommand());
+        commands.put("/users", new UserListCommand());
+        commands.put("/chat", new ChatCommand());
+        commands.put("/whisper", new WhisperCommand());
+        commands.put("/create", new CreateRoomCommand());
+        commands.put("/list", new RoomListCommand());
+        commands.put("/enter", new EnterRoomCommand());
+        commands.put("/leave", new LeaveRoomCommand());
+        commands.put("/history", new HistoryCommand());
     }
 
-    public ClientCommand getCommand(String commandName) {
+    public ClientCommand<?> getCommand(String commandName) {
         return commands.get(commandName);
+    }
+
+    public boolean isPublicCommand(String commandName) {
+        return PUBLIC_COMMANDS.contains(commandName);
     }
 
 }

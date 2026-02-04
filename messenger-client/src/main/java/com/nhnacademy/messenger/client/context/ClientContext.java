@@ -10,19 +10,22 @@
  * +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  */
 
-package com.nhnacademy.messenger.client.subject;
+package com.nhnacademy.messenger.client.context;
 
-import com.nhnacademy.messenger.client.observer.Observer;
-import com.nhnacademy.messenger.common.domain.MessageResponse;
+import com.nhnacademy.messenger.client.session.ClientSession;
+import com.nhnacademy.messenger.client.ui.ClientUI;
+import java.net.Socket;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
-public interface Subject {
+@Getter
+@RequiredArgsConstructor
+public class ClientContext {
 
-    void register(EventType eventType, Observer observer);
+    private final ClientSession clientSession;
 
-    void notifyObservers(EventType eventType, MessageResponse response);
+    private final ClientUI clientUI;
 
-    default void receiveMessage(MessageResponse response) {
-        notifyObservers(EventType.RECV, response);
-    }
+    private final Socket socket;
 
 }

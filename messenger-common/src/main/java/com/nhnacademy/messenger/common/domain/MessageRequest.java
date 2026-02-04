@@ -12,7 +12,6 @@
 
 package com.nhnacademy.messenger.common.domain;
 
-import java.util.Map;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
@@ -22,10 +21,10 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class MessageRequest {
+public class MessageRequest<T> {
 
     private RequestHeader header;
-    private Map<String, Object> data;
+    private T data;
 
     @Data
     @Getter

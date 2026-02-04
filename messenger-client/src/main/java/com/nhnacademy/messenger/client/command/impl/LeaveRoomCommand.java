@@ -13,49 +13,46 @@
 package com.nhnacademy.messenger.client.command.impl;
 
 import com.nhnacademy.messenger.client.command.ClientCommand;
-import com.nhnacademy.messenger.client.session.ClientSession;
+import com.nhnacademy.messenger.client.command.Command;
+import com.nhnacademy.messenger.client.context.ClientContext;
 import com.nhnacademy.messenger.client.ui.ClientUI;
 import com.nhnacademy.messenger.common.domain.MessageRequest;
 import com.nhnacademy.messenger.common.domain.MessageType;
+import com.nhnacademy.messenger.common.dto.request.LeaveChatRoomRequest;
 import com.nhnacademy.messenger.common.util.MessageUtils;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.time.LocalDateTime;
-import java.util.Map;
 
-public class LeaveRoomCommand implements ClientCommand {
+@Command(method = "/leave")
+public class LeaveRoomCommand implements ClientCommand<Void> {
 
-    private final ClientUI clientUI;
-
-    public LeaveRoomCommand(ClientUI clientUI) {
-        this.clientUI = clientUI;
+    @Override
+    public Void parse(String[] args) {
+        return null;
     }
 
     @Override
-    public void execute(String[] args, OutputStream out) {
-        String sessionId = ClientSession.getSessionId();
-        Long currentRoomId = ClientSession.getCurrentRoomId();
+    public void execute(Void params, ClientContext context) {
+        ClientUI clientUI = context.getClientUI();
 
-        if (sessionId == null) {
-            clientUI.displayMessage("해당 서비스를 이용하려면 로그인이 필요합니다.");
-            return;
-        }
+        String sessionId = context.getClientSession().getSessionId();
+        Long currentRoomId = context.getClientSession().getCurrentRoomId();
 
         if (currentRoomId == null) {
             clientUI.displayMessage("해당 서비스를 이용하려면 채팅방에 먼저 입장을 해야 합니다.");
             return;
         }
 
-        MessageRequest request = new MessageRequest(
+        MessageRequest<LeaveChatRoomRequest> request = new MessageRequest<>(
                 new MessageRequest.RequestHeader(
                         MessageType.CHAT_ROOM_EXIT,
                         LocalDateTime.now().toString(),
                         sessionId),
-                Map.of("roomId", currentRoomId)
+                new LeaveChatRoomRequest(currentRoomId)
         );
 
         try {
-            MessageUtils.send(out, request);
+            MessageUtils.send(context.getSocket().getOutputStream(), request);
 
         } catch (IOException e) {
             clientUI.displayMessage(String.format("예상치 못한 오류: %s", e.getMessage()));

@@ -10,19 +10,17 @@
  * +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  */
 
-package com.nhnacademy.messenger.client.subject;
+package com.nhnacademy.messenger.client.command;
 
-import com.nhnacademy.messenger.client.observer.Observer;
-import com.nhnacademy.messenger.common.domain.MessageResponse;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-public interface Subject {
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.TYPE)
+public @interface Command {
 
-    void register(EventType eventType, Observer observer);
-
-    void notifyObservers(EventType eventType, MessageResponse response);
-
-    default void receiveMessage(MessageResponse response) {
-        notifyObservers(EventType.RECV, response);
-    }
+    String method();
 
 }

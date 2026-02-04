@@ -10,19 +10,7 @@
  * +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  */
 
-package com.nhnacademy.messenger.client.subject;
+package com.nhnacademy.messenger.client.dto;
 
-import com.nhnacademy.messenger.client.observer.Observer;
-import com.nhnacademy.messenger.common.domain.MessageResponse;
-
-public interface Subject {
-
-    void register(EventType eventType, Observer observer);
-
-    void notifyObservers(EventType eventType, MessageResponse response);
-
-    default void receiveMessage(MessageResponse response) {
-        notifyObservers(EventType.RECV, response);
-    }
-
+public record HistoryParams(Long beforeMessageId) {
 }
