@@ -12,6 +12,7 @@
 
 package com.nhnacademy.messenger.common.util;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nhnacademy.messenger.common.domain.MessageRequest;
 import com.nhnacademy.messenger.common.domain.MessageResponse;
 import com.nhnacademy.messenger.common.domain.MessageType;
@@ -26,6 +27,8 @@ import org.junit.jupiter.api.Test;
 
 public class MessageUtilsTest {
 
+    MessageUtils messageUtils = new MessageUtils(new ObjectMapper());
+
     @Test
     @DisplayName("Request 객체를 전송하고 다시 읽었을 때 값 유지")
     void sendAndReadRequestTest() throws IOException {
@@ -36,17 +39,20 @@ public class MessageUtilsTest {
 
         // 가짜 네트워크(ByteArrayStream)에 전송 (직렬화)
         ByteArrayOutputStream output = new ByteArrayOutputStream();
-        MessageUtils.send(output, originalRequest);
+        messageUtils.send(output, originalRequest);
 
         // 전송된 데이터를 다시 읽기 (역직렬화)
         ByteArrayInputStream input = new ByteArrayInputStream(output.toByteArray());
-        MessageRequest receivedRequest = MessageUtils.readRequest(input);
+        MessageRequest receivedRequest = messageUtils.readRequest(input);
+
+        Object receivedData = receivedRequest.getData();
+        Map<String, Object> map = (Map<String, Object>) receivedData;
 
         // 보낸 것 == 받은 것
         Assertions.assertNotNull(receivedRequest);
         Assertions.assertEquals(MessageType.LOGIN, receivedRequest.getHeader().getType());
         Assertions.assertEquals("test-session-id", receivedRequest.getHeader().getSessionId());
-        Assertions.assertEquals("marco", receivedRequest.getData().get("userId"));
+        Assertions.assertEquals("marco", map.get("userId"));
     }
 
     @Test
@@ -59,17 +65,46 @@ public class MessageUtilsTest {
 
         // 가짜 네트워크(ByteArrayStream)에 전송 (직렬화)
         ByteArrayOutputStream output = new ByteArrayOutputStream();
-        MessageUtils.send(output, originalResponse);
+        messageUtils.send(output, originalResponse);
 
         // 전송된 데이터를 다시 읽기 (역직렬화)
         ByteArrayInputStream input = new ByteArrayInputStream(output.toByteArray());
-        MessageResponse receivedResponse = MessageUtils.readResponse(input);
+        MessageResponse receivedResponse = messageUtils.readResponse(input);
+
+        Object receivedData = receivedResponse.getData();
+        Map<String, Object> map = (Map<String, Object>) receivedData;
 
         // 보낸 것 == 받은 것
         Assertions.assertNotNull(receivedResponse);
         Assertions.assertTrue(receivedResponse.getHeader().isSuccess());
         Assertions.assertEquals(MessageType.LOGIN_SUCCESS, receivedResponse.getHeader().getType());
-        Assertions.assertEquals("로그인 성공", receivedResponse.getData().get("message"));
+        Assertions.assertEquals("로그인 성공", map.get("message"));
+    }
+
+    @Test
+    @DisplayName("잘못된 헤더가 들어오면 IOException 발생")
+    void invalidHeaderTest() {
+        String invalidData = "invalid-header: 100\n{...}";
+        ByteArrayInputStream input = new ByteArrayInputStream(invalidData.getBytes());
+
+        Assertions.assertThrows(IOException.class, () ->
+                messageUtils.readRequest(input));
+    }
+
+    @Test
+    @DisplayName("헤더에 명시된 길이보다 실제 데이터가 부족하면 IOException 발생")
+    void insufficientDataTest() throws IOException {
+        String header = "message-length: 50\n";
+        String shortBody = "1234567890";
+
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        output.write(header.getBytes());
+        output.write(shortBody.getBytes());
+
+        ByteArrayInputStream input = new ByteArrayInputStream(output.toByteArray());
+
+        Assertions.assertThrows(IOException.class, () ->
+                messageUtils.readRequest(input));
     }
 
 }
