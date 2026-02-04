@@ -30,9 +30,11 @@ import java.util.function.Consumer;
 
 public class SwingUI implements ClientUI {
 
+    private final MessageUtils messageUtils;
     private final MessageClientForm form;
 
-    public SwingUI(Consumer<String> onInputReceived) {
+    public SwingUI(Consumer<String> onInputReceived, MessageUtils messageUtils) {
+        this.messageUtils = messageUtils;
         this.form = new MessageClientForm(onInputReceived);
         this.form.setVisible(true);
     }
@@ -53,7 +55,7 @@ public class SwingUI implements ClientUI {
 
         // 에러 처리
         if (type.equals(MessageType.ERROR)) {
-            ErrorResponse data = MessageUtils.convertData(response.getData(), ErrorResponse.class);
+            ErrorResponse data = messageUtils.convertData(response.getData(), ErrorResponse.class);
 
             displayError(String.format("%s (Code: %s)", data.message(), data.code()));
             return;
@@ -61,14 +63,14 @@ public class SwingUI implements ClientUI {
 
         // 채팅 메시지
         if (type.equals(MessageType.CHAT_MESSAGE)) {
-            ChatMessage message = MessageUtils.convertData(response.getData(), ChatMessage.class);
+            ChatMessage message = messageUtils.convertData(response.getData(), ChatMessage.class);
 
             form.appendMessage(String.format("[%s] %s", message.senderId(), message.message()));
         }
 
         // 귓속말
         else if (type.equals(MessageType.PRIVATE_MESSAGE) || type.equals(MessageType.PRIVATE_MESSAGE_SUCCESS)) {
-            WhisperResponse data = MessageUtils.convertData(response.getData(), WhisperResponse.class);
+            WhisperResponse data = messageUtils.convertData(response.getData(), WhisperResponse.class);
 
             if (type.equals(MessageType.PRIVATE_MESSAGE_SUCCESS)) {
                 form.appendMessage(String.format("[Me > %s] %s", data.receiverId(), data.message()));
@@ -79,7 +81,7 @@ public class SwingUI implements ClientUI {
 
         // 방 목록
         else if (type.equals(MessageType.CHAT_ROOM_LIST_SUCCESS)) {
-            RoomListResponse rooms = MessageUtils.convertData(response.getData(), RoomListResponse.class);
+            RoomListResponse rooms = messageUtils.convertData(response.getData(), RoomListResponse.class);
 
             if (rooms != null && !rooms.rooms().isEmpty()) {
                 for (RoomInfo room : rooms.rooms()) {
@@ -93,9 +95,9 @@ public class SwingUI implements ClientUI {
 
         // 유저 목록
         else if (type.equals(MessageType.USER_LIST_SUCCESS)) {
-            UserListResponse users = MessageUtils.convertData(response.getData(), UserListResponse.class);
+            UserListResponse users = messageUtils.convertData(response.getData(), UserListResponse.class);
 
-            if (users != null && users.users().isEmpty()) {
+            if (users != null && !users.users().isEmpty()) {
                 for (UserInfo user : users.users()) {
                     form.appendMessage(String.format("- %s (%s)\n", user.id(), user.name()));
                 }
@@ -106,7 +108,7 @@ public class SwingUI implements ClientUI {
 
         // 과거 채팅 기록
         else if (type.equals(MessageType.CHAT_MESSAGE_HISTORY_SUCCESS)) {
-            HistoryResponse messages = MessageUtils.convertData(response.getData(), HistoryResponse.class);
+            HistoryResponse messages = messageUtils.convertData(response.getData(), HistoryResponse.class);
 
             if (messages != null && !messages.messages().isEmpty()) {
                 for (MessageInfo message : messages.messages()) {
