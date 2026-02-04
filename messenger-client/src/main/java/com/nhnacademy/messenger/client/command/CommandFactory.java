@@ -12,43 +12,48 @@
 
 package com.nhnacademy.messenger.client.command;
 
-import com.nhnacademy.messenger.client.command.impl.ChatCommand;
-import com.nhnacademy.messenger.client.command.impl.CreateRoomCommand;
-import com.nhnacademy.messenger.client.command.impl.EnterRoomCommand;
-import com.nhnacademy.messenger.client.command.impl.HelpCommand;
-import com.nhnacademy.messenger.client.command.impl.HistoryCommand;
-import com.nhnacademy.messenger.client.command.impl.LeaveRoomCommand;
-import com.nhnacademy.messenger.client.command.impl.LoginCommand;
-import com.nhnacademy.messenger.client.command.impl.LogoutCommand;
-import com.nhnacademy.messenger.client.command.impl.RoomListCommand;
-import com.nhnacademy.messenger.client.command.impl.UserListCommand;
-import com.nhnacademy.messenger.client.command.impl.WhisperCommand;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import lombok.extern.slf4j.Slf4j;
+import org.reflections.Reflections;
 
+@Slf4j
 public class CommandFactory {
 
     private final Map<String, ClientCommand<?>> commands = new HashMap<>();
 
     // 로그인 없이 실행 가능한 명령어 목록 (화이트리스트)
-    private static final Set<String> PUBLIC_COMMANDS = Set.of(
-            "/login",
-            "/help"
-    );
+    private final Set<String> publicCommands = new HashSet<>();
 
     public CommandFactory() {
-        commands.put("/help", new HelpCommand());
-        commands.put("/login", new LoginCommand());
-        commands.put("/logout", new LogoutCommand());
-        commands.put("/users", new UserListCommand());
-        commands.put("/chat", new ChatCommand());
-        commands.put("/whisper", new WhisperCommand());
-        commands.put("/create", new CreateRoomCommand());
-        commands.put("/list", new RoomListCommand());
-        commands.put("/enter", new EnterRoomCommand());
-        commands.put("/leave", new LeaveRoomCommand());
-        commands.put("/history", new HistoryCommand());
+        Reflections reflections = new Reflections("com.nhnacademy.messenger.client.command.impl");
+
+        Set<Class<?>> annotatedClasses = reflections.getTypesAnnotatedWith(Command.class);
+
+        for (Class<?> clazz : annotatedClasses) {
+            registerCommand(clazz);
+        }
+    }
+
+    private void registerCommand(Class<?> clazz) {
+        try {
+            Command commandAnnotation = clazz.getAnnotation(Command.class);
+
+            String commandMethod = commandAnnotation.method();
+
+            if (commandAnnotation.isPublic()) {
+                publicCommands.add(commandMethod);
+            }
+
+            ClientCommand<?> commandInstance = (ClientCommand<?>) clazz.getDeclaredConstructor().newInstance();
+
+            commands.put(commandMethod, commandInstance);
+
+        } catch (Exception e) {
+            log.error("커맨드 등록 실패 (Class: {}): {}", clazz.getName(), e.getMessage());
+        }
     }
 
     public ClientCommand<?> getCommand(String commandName) {
@@ -56,7 +61,7 @@ public class CommandFactory {
     }
 
     public boolean isPublicCommand(String commandName) {
-        return PUBLIC_COMMANDS.contains(commandName);
+        return publicCommands.contains(commandName);
     }
 
 }

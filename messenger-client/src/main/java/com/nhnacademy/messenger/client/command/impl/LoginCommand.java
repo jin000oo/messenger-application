@@ -23,7 +23,7 @@ import com.nhnacademy.messenger.common.dto.request.LoginRequest;
 import java.io.IOException;
 import java.time.LocalDateTime;
 
-@Command(method = "/login")
+@Command(method = "/login", isPublic = true)
 public class LoginCommand implements ClientCommand<LoginParams> {
 
     @Override

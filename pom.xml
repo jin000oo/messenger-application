@@ -89,6 +89,13 @@
             <scope>test</scope>
         </dependency>
 
+        <!-- Reflections -->
+        <dependency>
+            <groupId>org.reflections</groupId>
+            <artifactId>reflections</artifactId>
+            <version>0.10.2</version>
+        </dependency>
+
         <!-- logging -->
         <dependency>
             <groupId>org.projectlombok</groupId>

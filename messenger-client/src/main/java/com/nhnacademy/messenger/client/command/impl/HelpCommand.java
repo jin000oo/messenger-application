@@ -16,7 +16,7 @@ import com.nhnacademy.messenger.client.command.ClientCommand;
 import com.nhnacademy.messenger.client.command.Command;
 import com.nhnacademy.messenger.client.context.ClientContext;
 
-@Command(method = "/help")
+@Command(method = "/help", isPublic = true)
 public class HelpCommand implements ClientCommand<Void> {
 
     @Override

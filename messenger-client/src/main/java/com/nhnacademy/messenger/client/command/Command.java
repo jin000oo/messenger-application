@@ -23,4 +23,6 @@ public @interface Command {
 
     String method();
 
+    boolean isPublic() default false;
+
 }
