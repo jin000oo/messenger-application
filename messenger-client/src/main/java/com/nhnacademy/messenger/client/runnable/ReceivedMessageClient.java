@@ -12,50 +12,49 @@
 
 package com.nhnacademy.messenger.client.runnable;
 
-import com.nhnacademy.messenger.client.subject.Subject;
 import com.nhnacademy.messenger.client.ui.ClientUI;
 import com.nhnacademy.messenger.common.domain.MessageResponse;
 import com.nhnacademy.messenger.common.util.MessageUtils;
 import java.io.IOException;
 import java.net.Socket;
+import java.util.concurrent.BlockingQueue;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class ReceivedMessageClient implements Runnable {
 
     private final Socket socket;
-    private final Subject subject;
+    private final BlockingQueue<MessageResponse> messageQueue;
     private final ClientUI clientUI;
 
-    public ReceivedMessageClient(Socket socket, Subject subject, ClientUI clientUI) {
-        if (socket == null) {
-            throw new IllegalArgumentException("[ReceivedMessageClient] Socket이 null입니다.");
-        }
+    private final MessageUtils messageUtils;
 
-        if (subject == null) {
-            throw new IllegalArgumentException("[ReceivedMessageClient] Subject가 null입니다.");
-        }
-
+    public ReceivedMessageClient(Socket socket, BlockingQueue<MessageResponse> messageQueue, ClientUI clientUI,
+                                 MessageUtils messageUtils) {
         this.socket = socket;
-        this.subject = subject;
+        this.messageQueue = messageQueue;
         this.clientUI = clientUI;
+        this.messageUtils = messageUtils;
     }
 
     @Override
     public void run() {
         while (!Thread.currentThread().isInterrupted()) {
             try {
-                MessageResponse response = MessageUtils.readResponse(socket.getInputStream());
+                MessageResponse response = messageUtils.readResponse(socket.getInputStream());
 
                 if (response == null) {
                     break;
                 }
 
-                subject.receiveMessage(response);
+                messageQueue.put(response);
 
             } catch (IOException e) {
                 clientUI.displayMessage(String.format("예상치 못한 오류: %s", e.getMessage()));
-                throw new RuntimeException(e);
+                break;
+
+            } catch (InterruptedException e) {
+                break;
             }
         }
     }

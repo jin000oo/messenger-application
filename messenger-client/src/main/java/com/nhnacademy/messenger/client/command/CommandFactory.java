@@ -12,41 +12,56 @@
 
 package com.nhnacademy.messenger.client.command;
 
-import com.nhnacademy.messenger.client.command.impl.ChatCommand;
-import com.nhnacademy.messenger.client.command.impl.CreateRoomCommand;
-import com.nhnacademy.messenger.client.command.impl.EnterRoomCommand;
-import com.nhnacademy.messenger.client.command.impl.HelpCommand;
-import com.nhnacademy.messenger.client.command.impl.HistoryCommand;
-import com.nhnacademy.messenger.client.command.impl.LeaveRoomCommand;
-import com.nhnacademy.messenger.client.command.impl.LoginCommand;
-import com.nhnacademy.messenger.client.command.impl.LogoutCommand;
-import com.nhnacademy.messenger.client.command.impl.RoomListCommand;
-import com.nhnacademy.messenger.client.command.impl.UserListCommand;
-import com.nhnacademy.messenger.client.command.impl.WhisperCommand;
-import com.nhnacademy.messenger.client.ui.ClientUI;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
+import lombok.extern.slf4j.Slf4j;
+import org.reflections.Reflections;
 
+@Slf4j
 public class CommandFactory {
 
-    private final Map<String, ClientCommand> commands = new HashMap<>();
+    private final Map<String, ClientCommand<?>> commands = new HashMap<>();
 
-    public CommandFactory(ClientUI clientUI) {
-        commands.put("/help", new HelpCommand(clientUI));
-        commands.put("/login", new LoginCommand(clientUI));
-        commands.put("/logout", new LogoutCommand(clientUI));
-        commands.put("/users", new UserListCommand(clientUI));
-        commands.put("/chat", new ChatCommand(clientUI));
-        commands.put("/whisper", new WhisperCommand(clientUI));
-        commands.put("/create", new CreateRoomCommand(clientUI));
-        commands.put("/list", new RoomListCommand(clientUI));
-        commands.put("/enter", new EnterRoomCommand(clientUI));
-        commands.put("/leave", new LeaveRoomCommand(clientUI));
-        commands.put("/history", new HistoryCommand(clientUI));
+    // 로그인 없이 실행 가능한 명령어 목록 (화이트리스트)
+    private final Set<String> publicCommands = new HashSet<>();
+
+    public CommandFactory() {
+        Reflections reflections = new Reflections("com.nhnacademy.messenger.client.command.impl");
+
+        Set<Class<?>> annotatedClasses = reflections.getTypesAnnotatedWith(Command.class);
+
+        for (Class<?> clazz : annotatedClasses) {
+            registerCommand(clazz);
+        }
     }
 
-    public ClientCommand getCommand(String commandName) {
+    private void registerCommand(Class<?> clazz) {
+        try {
+            Command commandAnnotation = clazz.getAnnotation(Command.class);
+
+            String commandMethod = commandAnnotation.method();
+
+            if (commandAnnotation.isPublic()) {
+                publicCommands.add(commandMethod);
+            }
+
+            ClientCommand<?> commandInstance = (ClientCommand<?>) clazz.getDeclaredConstructor().newInstance();
+
+            commands.put(commandMethod, commandInstance);
+
+        } catch (Exception e) {
+            log.error("커맨드 등록 실패 (Class: {}): {}", clazz.getName(), e.getMessage());
+        }
+    }
+
+    public ClientCommand<?> getCommand(String commandName) {
         return commands.get(commandName);
+    }
+
+    public boolean isPublicCommand(String commandName) {
+        return publicCommands.contains(commandName);
     }
 
 }

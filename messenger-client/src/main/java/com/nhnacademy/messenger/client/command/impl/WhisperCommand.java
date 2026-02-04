@@ -13,54 +13,54 @@
 package com.nhnacademy.messenger.client.command.impl;
 
 import com.nhnacademy.messenger.client.command.ClientCommand;
-import com.nhnacademy.messenger.client.session.ClientSession;
+import com.nhnacademy.messenger.client.command.Command;
+import com.nhnacademy.messenger.client.context.ClientContext;
+import com.nhnacademy.messenger.client.dto.WhisperParams;
 import com.nhnacademy.messenger.client.ui.ClientUI;
 import com.nhnacademy.messenger.common.domain.MessageRequest;
 import com.nhnacademy.messenger.common.domain.MessageType;
-import com.nhnacademy.messenger.common.util.MessageUtils;
+import com.nhnacademy.messenger.common.dto.request.WhisperRequest;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.time.LocalDateTime;
 import java.util.Arrays;
-import java.util.Map;
 
-public class WhisperCommand implements ClientCommand {
-
-    private final ClientUI clientUI;
-
-    public WhisperCommand(ClientUI clientUI) {
-        this.clientUI = clientUI;
-    }
+@Command(method = "/whisper")
+public class WhisperCommand implements ClientCommand<WhisperParams> {
 
     @Override
-    public void execute(String[] args, OutputStream out) {
-        String sessionId = ClientSession.getSessionId();
-
-        if (sessionId == null) {
-            clientUI.displayMessage("해당 서비스를 이용하려면 로그인이 필요합니다.");
-            return;
-        }
-
+    public WhisperParams parse(String[] args) {
         if (args.length < 3) {
-            return;
+            throw new IllegalArgumentException("[WhisperCommand] 보낼 사람의 아이디와 메시지를 입력해주세요.");
         }
-
-        String userId = ClientSession.getUserId();
 
         String targetId = args[1];
         String[] messageParts = Arrays.copyOfRange(args, 2, args.length);
         String message = String.join(" ", messageParts);
 
-        MessageRequest request = new MessageRequest(
+        if (message.trim().isEmpty()) {
+            throw new IllegalArgumentException("[WhisperCommand] 메시지 내용이 비어있습니다.");
+        }
+
+        return new WhisperParams(targetId, message);
+    }
+
+    @Override
+    public void execute(WhisperParams params, ClientContext context) {
+        ClientUI clientUI = context.getClientUI();
+
+        String userId = context.getClientSession().getUserId();
+        String sessionId = context.getClientSession().getSessionId();
+
+        MessageRequest<WhisperRequest> request = new MessageRequest<>(
                 new MessageRequest.RequestHeader(
                         MessageType.PRIVATE_MESSAGE,
                         LocalDateTime.now().toString(),
                         sessionId),
-                Map.of("senderId", userId, "receiverId", targetId, "message", message)
+                new WhisperRequest(userId, params.targetId(), params.message())
         );
 
         try {
-            MessageUtils.send(out, request);
+            context.getMessageUtils().send(context.getSocket().getOutputStream(), request);
 
         } catch (IOException e) {
             clientUI.displayMessage(String.format("예상치 못한 오류: %s", e.getMessage()));

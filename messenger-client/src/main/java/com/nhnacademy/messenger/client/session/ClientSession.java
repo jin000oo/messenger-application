@@ -15,18 +15,18 @@ package com.nhnacademy.messenger.client.session;
 import lombok.Getter;
 import lombok.Setter;
 
+@Getter
+@Setter
 public class ClientSession {
 
-    @Getter
-    @Setter
-    private static String sessionId;
+    private String sessionId;
 
-    @Getter
-    @Setter
-    private static String userId;
+    private String userId;
 
-    @Getter
-    @Setter
-    private static Long currentRoomId;
+    private Long currentRoomId;
+
+    public boolean isAuthenticated() {
+        return sessionId != null;
+    }
 
 }

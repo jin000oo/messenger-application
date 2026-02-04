@@ -12,11 +12,13 @@
 
 package com.nhnacademy.messenger.client.command;
 
-import java.io.OutputStream;
+import com.nhnacademy.messenger.client.context.ClientContext;
 
-public interface ClientCommand {
+public interface ClientCommand<T> {
 
     // args: 사용자가 입력한 명령어 뒤의 인자들 (예: /login id pw -> ["id", "pw"])
-    void execute(String[] args, OutputStream out);
+    T parse(String[] args);
+
+    void execute(T params, ClientContext context);
 
 }

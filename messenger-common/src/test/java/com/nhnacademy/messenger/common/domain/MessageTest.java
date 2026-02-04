@@ -38,7 +38,10 @@ public class MessageTest {
                 new MessageRequest.RequestHeader(MessageType.LOGIN, "2024-01-09T12:00:00Z", "UUID"),
                 Map.of("userId", "marco"));
 
-        System.out.println(objectMapper.writeValueAsString(request));
+        String json = objectMapper.writeValueAsString(request);
+
+        Assertions.assertTrue(json.contains("\"type\":\"LOGIN\""));
+        Assertions.assertTrue(json.contains("\"userId\":\"marco\""));
     }
 
 }
