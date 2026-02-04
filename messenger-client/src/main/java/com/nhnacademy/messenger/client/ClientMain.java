@@ -60,11 +60,6 @@ public class ClientMain {
         try {
             socket = new Socket(DEFAULT_SERVER_ADDRESS, DEFAULT_PORT);
 
-            if (socket.isConnected()) {
-                clientUI.displayMessage(String.format("%s:%d 서버 연결에 성공했습니다.\n",
-                        DEFAULT_SERVER_ADDRESS, DEFAULT_PORT));
-            }
-
             ObjectMapper objectMapper = new ObjectMapper();
             objectMapper.registerModule(new JavaTimeModule());
 
@@ -76,6 +71,11 @@ public class ClientMain {
                 clientUI = new ConsoleUI(messageUtils);
 
                 clientUI.displayMessage("/help 명령어 입력시 모든 명령어 목록을 볼 수 있습니다.");
+            }
+
+            if (socket.isConnected()) {
+                clientUI.displayMessage(String.format("%s:%d 서버 연결에 성공했습니다.\n",
+                        DEFAULT_SERVER_ADDRESS, DEFAULT_PORT));
             }
 
             clientSession = new ClientSession();
