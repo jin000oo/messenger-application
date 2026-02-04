@@ -14,20 +14,18 @@ package com.nhnacademy.messenger.client.command.impl;
 
 import com.nhnacademy.messenger.client.command.ClientCommand;
 import com.nhnacademy.messenger.client.command.Command;
-import com.nhnacademy.messenger.client.ui.ClientUI;
-import java.io.OutputStream;
+import com.nhnacademy.messenger.client.context.ClientContext;
 
 @Command(method = "/help")
-public class HelpCommand implements ClientCommand {
+public class HelpCommand implements ClientCommand<Void> {
 
-    private final ClientUI clientUI;
-
-    public HelpCommand(ClientUI clientUI) {
-        this.clientUI = clientUI;
+    @Override
+    public Void parse(String[] args) {
+        return null;
     }
 
     @Override
-    public void execute(String[] args, OutputStream out) {
+    public void execute(Void params, ClientContext context) {
         StringBuilder sb = new StringBuilder();
         sb.append("========== [ 명령어 목록 ] ==========\n");
         sb.append("/login <id> <pw>\n");
@@ -42,7 +40,7 @@ public class HelpCommand implements ClientCommand {
         sb.append("/history\n");
         sb.append("==================================");
 
-        clientUI.displayMessage(sb.toString());
+        context.getClientUI().displayMessage(sb.toString());
     }
 
 }

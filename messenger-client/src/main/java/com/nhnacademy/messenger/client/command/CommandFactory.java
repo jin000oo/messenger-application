@@ -32,17 +32,17 @@ public class CommandFactory {
     private final Map<String, ClientCommand> commands = new HashMap<>();
 
     public CommandFactory(ClientUI clientUI) {
-        commands.put("/help", new HelpCommand(clientUI));
-        commands.put("/login", new LoginCommand(clientUI));
-        commands.put("/logout", new LogoutCommand(clientUI));
-        commands.put("/users", new UserListCommand(clientUI));
-        commands.put("/chat", new ChatCommand(clientUI));
-        commands.put("/whisper", new WhisperCommand(clientUI));
-        commands.put("/create", new CreateRoomCommand(clientUI));
-        commands.put("/list", new RoomListCommand(clientUI));
-        commands.put("/enter", new EnterRoomCommand(clientUI));
-        commands.put("/leave", new LeaveRoomCommand(clientUI));
-        commands.put("/history", new HistoryCommand(clientUI));
+        commands.put("/help", new HelpCommand());
+        commands.put("/login", new LoginCommand());
+        commands.put("/logout", new LogoutCommand());
+        commands.put("/users", new UserListCommand());
+        commands.put("/chat", new ChatCommand());
+        commands.put("/whisper", new WhisperCommand());
+        commands.put("/create", new CreateRoomCommand());
+        commands.put("/list", new RoomListCommand());
+        commands.put("/enter", new EnterRoomCommand());
+        commands.put("/leave", new LeaveRoomCommand());
+        commands.put("/history", new HistoryCommand());
     }
 
     // TODO: sessionId 확인하는 로직이 중복!!!!! > 화이트리스트/블랙리스트로 관리

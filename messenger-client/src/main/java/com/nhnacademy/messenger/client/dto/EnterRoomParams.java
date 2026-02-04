@@ -10,23 +10,7 @@
  * +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  */
 
-package com.nhnacademy.messenger.client.session;
+package com.nhnacademy.messenger.client.dto;
 
-import lombok.Getter;
-import lombok.Setter;
-
-@Getter
-@Setter
-public class ClientSession {
-
-    private String sessionId;
-
-    private String userId;
-
-    private Long currentRoomId;
-
-    public boolean isAuthenticated() {
-        return sessionId != null;
-    }
-
+public record EnterRoomParams(Long roomId) {
 }

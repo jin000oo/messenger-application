@@ -14,53 +14,51 @@ package com.nhnacademy.messenger.client.command.impl;
 
 import com.nhnacademy.messenger.client.command.ClientCommand;
 import com.nhnacademy.messenger.client.command.Command;
-import com.nhnacademy.messenger.client.session.ClientSession;
+import com.nhnacademy.messenger.client.context.ClientContext;
+import com.nhnacademy.messenger.client.dto.EnterRoomParams;
 import com.nhnacademy.messenger.client.ui.ClientUI;
 import com.nhnacademy.messenger.common.domain.MessageRequest;
 import com.nhnacademy.messenger.common.domain.MessageType;
 import com.nhnacademy.messenger.common.dto.request.EnterChatRoomRequest;
 import com.nhnacademy.messenger.common.util.MessageUtils;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.time.LocalDateTime;
 
 @Command(method = "/enter")
-public class EnterRoomCommand implements ClientCommand {
+public class EnterRoomCommand implements ClientCommand<EnterRoomParams> {
 
-    private final ClientUI clientUI;
+    @Override
+    public EnterRoomParams parse(String[] args) {
+        if (args.length < 2) {
+            throw new IllegalArgumentException("[EnterRoomCommand] 참여할 채팅방의 아이디를 입력해주세요.");
+        }
 
-    public EnterRoomCommand(ClientUI clientUI) {
-        this.clientUI = clientUI;
+        long roomId = Long.parseLong(args[1]);
+
+        return new EnterRoomParams(roomId);
     }
 
     @Override
-    public void execute(String[] args, OutputStream out) {
-        String sessionId = ClientSession.getSessionId();
+    public void execute(EnterRoomParams params, ClientContext context) {
+        ClientUI clientUI = context.getClientUI();
 
-        if (sessionId == null) {
+        if (!context.getClientSession().isAuthenticated()) {
             clientUI.displayMessage("해당 서비스를 이용하려면 로그인이 필요합니다.");
             return;
         }
 
-        if (args.length < 2) {
-            return;
-        }
+        String sessionId = context.getClientSession().getSessionId();
+
+        MessageRequest<EnterChatRoomRequest> request = new MessageRequest<>(
+                new MessageRequest.RequestHeader(
+                        MessageType.CHAT_ROOM_ENTER,
+                        LocalDateTime.now().toString(),
+                        sessionId),
+                new EnterChatRoomRequest(params.roomId())
+        );
 
         try {
-            long roomId = Long.parseLong(args[1]);
-
-            MessageRequest<EnterChatRoomRequest> request = new MessageRequest<>(
-                    new MessageRequest.RequestHeader(
-                            MessageType.CHAT_ROOM_ENTER,
-                            LocalDateTime.now().toString(),
-                            sessionId),
-                    new EnterChatRoomRequest(roomId)
-            );
-
-            MessageUtils.send(out, request);
-
-        } catch (NumberFormatException e) {
-            clientUI.displayMessage("방 번호는 숫자여야 합니다.");
+            MessageUtils.send(context.getSocket().getOutputStream(), request);
 
         } catch (IOException e) {
             clientUI.displayMessage(String.format("예상치 못한 오류: %s", e.getMessage()));

@@ -14,49 +14,50 @@ package com.nhnacademy.messenger.client.command.impl;
 
 import com.nhnacademy.messenger.client.command.ClientCommand;
 import com.nhnacademy.messenger.client.command.Command;
-import com.nhnacademy.messenger.client.session.ClientSession;
+import com.nhnacademy.messenger.client.context.ClientContext;
+import com.nhnacademy.messenger.client.dto.ChatParams;
 import com.nhnacademy.messenger.client.ui.ClientUI;
 import com.nhnacademy.messenger.common.domain.MessageRequest;
 import com.nhnacademy.messenger.common.domain.MessageType;
 import com.nhnacademy.messenger.common.dto.request.ChatRequest;
 import com.nhnacademy.messenger.common.util.MessageUtils;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 
 @Command(method = "/chat")
-public class ChatCommand implements ClientCommand {
-
-    private final ClientUI clientUI;
-
-    public ChatCommand(ClientUI clientUI) {
-        this.clientUI = clientUI;
-    }
+public class ChatCommand implements ClientCommand<ChatParams> {
 
     @Override
-    public void execute(String[] args, OutputStream out) {
-        String sessionId = ClientSession.getSessionId();
-        Long currentRoomId = ClientSession.getCurrentRoomId();
-
-        if (sessionId == null) {
-            clientUI.displayMessage("해당 서비스를 이용하려면 로그인이 필요합니다.");
-            return;
-        }
-
-        if (currentRoomId == null) {
-            clientUI.displayMessage("해당 서비스를 이용하려면 채팅방에 먼저 입장을 해야 합니다.");
-            return;
-        }
-
+    public ChatParams parse(String[] args) {
         if (args.length < 2) {
-            return;
+            throw new IllegalArgumentException("[ChatCommand] 보낼 메시지를 입력해주세요.");
         }
 
         String[] messageParts = Arrays.copyOfRange(args, 1, args.length);
         String message = String.join(" ", messageParts);
 
         if (message.trim().isEmpty()) {
+            throw new IllegalArgumentException("[ChatCommand] 메시지 내용이 비어있습니다.");
+        }
+
+        return new ChatParams(message);
+    }
+
+    @Override
+    public void execute(ChatParams params, ClientContext context) {
+        ClientUI clientUI = context.getClientUI();
+
+        if (!context.getClientSession().isAuthenticated()) {
+            clientUI.displayMessage("해당 서비스를 이용하려면 로그인이 필요합니다.");
+            return;
+        }
+
+        String sessionId = context.getClientSession().getSessionId();
+        Long currentRoomId = context.getClientSession().getCurrentRoomId();
+
+        if (currentRoomId == null) {
+            clientUI.displayMessage("해당 서비스를 이용하려면 채팅방에 먼저 입장을 해야 합니다.");
             return;
         }
 
@@ -65,11 +66,11 @@ public class ChatCommand implements ClientCommand {
                         MessageType.CHAT_MESSAGE,
                         LocalDateTime.now().toString(),
                         sessionId),
-                new ChatRequest(currentRoomId, message)
+                new ChatRequest(currentRoomId, params.message())
         );
 
         try {
-            MessageUtils.send(out, request);
+            MessageUtils.send(context.getSocket().getOutputStream(), request);
 
         } catch (IOException e) {
             clientUI.displayMessage(String.format("예상치 못한 오류: %s", e.getMessage()));

@@ -10,23 +10,22 @@
  * +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  */
 
-package com.nhnacademy.messenger.client.session;
+package com.nhnacademy.messenger.client.context;
 
+import com.nhnacademy.messenger.client.session.ClientSession;
+import com.nhnacademy.messenger.client.ui.ClientUI;
+import java.net.Socket;
 import lombok.Getter;
-import lombok.Setter;
+import lombok.RequiredArgsConstructor;
 
 @Getter
-@Setter
-public class ClientSession {
+@RequiredArgsConstructor
+public class ClientContext {
 
-    private String sessionId;
+    private final ClientSession clientSession;
 
-    private String userId;
+    private final ClientUI clientUI;
 
-    private Long currentRoomId;
-
-    public boolean isAuthenticated() {
-        return sessionId != null;
-    }
+    private final Socket socket;
 
 }

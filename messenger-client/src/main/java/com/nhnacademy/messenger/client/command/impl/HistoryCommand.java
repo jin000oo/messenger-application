@@ -14,51 +14,48 @@ package com.nhnacademy.messenger.client.command.impl;
 
 import com.nhnacademy.messenger.client.command.ClientCommand;
 import com.nhnacademy.messenger.client.command.Command;
-import com.nhnacademy.messenger.client.session.ClientSession;
+import com.nhnacademy.messenger.client.context.ClientContext;
+import com.nhnacademy.messenger.client.dto.HistoryParams;
 import com.nhnacademy.messenger.client.ui.ClientUI;
 import com.nhnacademy.messenger.common.domain.MessageRequest;
 import com.nhnacademy.messenger.common.domain.MessageType;
 import com.nhnacademy.messenger.common.dto.request.HistoryRequest;
 import com.nhnacademy.messenger.common.util.MessageUtils;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.time.LocalDateTime;
 
 @Command(method = "/history")
-public class HistoryCommand implements ClientCommand {
+public class HistoryCommand implements ClientCommand<HistoryParams> {
 
-    private final ClientUI clientUI;
     private static final int DEFAULT_LIMIT = 50;
 
-    public HistoryCommand(ClientUI clientUI) {
-        this.clientUI = clientUI;
+    @Override
+    public HistoryParams parse(String[] args) {
+        // 기본 값: 가장 큰 값 (최신순)
+        long beforeMessageId = Long.MAX_VALUE;
+
+        if (args.length >= 2) {
+            beforeMessageId = Long.parseLong(args[1]);
+        }
+
+        return new HistoryParams(beforeMessageId);
     }
 
     @Override
-    public void execute(String[] args, OutputStream out) {
-        String sessionId = ClientSession.getSessionId();
-        Long currentRoomId = ClientSession.getCurrentRoomId();
+    public void execute(HistoryParams params, ClientContext context) {
+        ClientUI clientUI = context.getClientUI();
 
-        if (sessionId == null) {
+        if (!context.getClientSession().isAuthenticated()) {
             clientUI.displayMessage("해당 서비스를 이용하려면 로그인이 필요합니다.");
             return;
         }
 
+        String sessionId = context.getClientSession().getSessionId();
+        Long currentRoomId = context.getClientSession().getCurrentRoomId();
+
         if (currentRoomId == null) {
             clientUI.displayMessage("해당 서비스를 이용하려면 채팅방에 먼저 입장을 해야 합니다.");
             return;
-        }
-
-        // 가장 큰 값 = 최신순
-        long beforeMessageId = Long.MAX_VALUE;
-
-        if (args.length >= 2) {
-            try {
-                beforeMessageId = Long.parseLong(args[1]);
-
-            } catch (NumberFormatException e) {
-                clientUI.displayMessage("메시지 ID는 숫자여야 합니다.");
-            }
         }
 
         MessageRequest<HistoryRequest> request = new MessageRequest<>(
@@ -66,11 +63,11 @@ public class HistoryCommand implements ClientCommand {
                         MessageType.CHAT_MESSAGE_HISTORY,
                         LocalDateTime.now().toString(),
                         sessionId),
-                new HistoryRequest(currentRoomId, DEFAULT_LIMIT, beforeMessageId)
+                new HistoryRequest(currentRoomId, DEFAULT_LIMIT, params.beforeMessageId())
         );
 
         try {
-            MessageUtils.send(out, request);
+            MessageUtils.send(context.getSocket().getOutputStream(), request);
 
         } catch (IOException e) {
             clientUI.displayMessage(String.format("예상치 못한 오류: %s", e.getMessage()));

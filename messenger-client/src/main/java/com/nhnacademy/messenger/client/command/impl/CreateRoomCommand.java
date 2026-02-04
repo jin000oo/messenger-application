@@ -14,50 +14,51 @@ package com.nhnacademy.messenger.client.command.impl;
 
 import com.nhnacademy.messenger.client.command.ClientCommand;
 import com.nhnacademy.messenger.client.command.Command;
-import com.nhnacademy.messenger.client.session.ClientSession;
+import com.nhnacademy.messenger.client.context.ClientContext;
+import com.nhnacademy.messenger.client.dto.CreateRoomParams;
 import com.nhnacademy.messenger.client.ui.ClientUI;
 import com.nhnacademy.messenger.common.domain.MessageRequest;
 import com.nhnacademy.messenger.common.domain.MessageType;
 import com.nhnacademy.messenger.common.dto.request.CreateChatRoomRequest;
 import com.nhnacademy.messenger.common.util.MessageUtils;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.time.LocalDateTime;
 
 @Command(method = "/create")
-public class CreateRoomCommand implements ClientCommand {
+public class CreateRoomCommand implements ClientCommand<CreateRoomParams> {
 
-    private final ClientUI clientUI;
+    @Override
+    public CreateRoomParams parse(String[] args) {
+        if (args.length < 2) {
+            throw new IllegalArgumentException("[CreateRoomCommand] 생성할 채팅방의 이름을 입력해주세요.");
+        }
 
-    public CreateRoomCommand(ClientUI clientUI) {
-        this.clientUI = clientUI;
+        String roomName = args[1];
+
+        return new CreateRoomParams(roomName);
     }
 
     @Override
-    public void execute(String[] args, OutputStream out) {
-        String sessionId = ClientSession.getSessionId();
+    public void execute(CreateRoomParams params, ClientContext context) {
+        ClientUI clientUI = context.getClientUI();
 
-        if (sessionId == null) {
+        if (!context.getClientSession().isAuthenticated()) {
             clientUI.displayMessage("해당 서비스를 이용하려면 로그인이 필요합니다.");
             return;
         }
 
-        if (args.length < 2) {
-            return;
-        }
-
-        String roomName = args[1];
+        String sessionId = context.getClientSession().getSessionId();
 
         MessageRequest<CreateChatRoomRequest> request = new MessageRequest<>(
                 new MessageRequest.RequestHeader(
                         MessageType.CHAT_ROOM_CREATE,
                         LocalDateTime.now().toString(),
                         sessionId),
-                new CreateChatRoomRequest(roomName)
+                new CreateChatRoomRequest(params.roomName())
         );
 
         try {
-            MessageUtils.send(out, request);
+            MessageUtils.send(context.getSocket().getOutputStream(), request);
 
         } catch (IOException e) {
             clientUI.displayMessage(String.format("예상치 못한 오류: %s", e.getMessage()));

@@ -26,8 +26,11 @@ public class ClientSessionObserver implements Observer {
 
     private final ClientUI clientUI;
 
-    public ClientSessionObserver(ClientUI clientUI) {
+    private final ClientSession clientSession;
+
+    public ClientSessionObserver(ClientUI clientUI, ClientSession clientSession) {
         this.clientUI = clientUI;
+        this.clientSession = clientSession;
     }
 
     @Override
@@ -49,16 +52,16 @@ public class ClientSessionObserver implements Observer {
             LoginResponse data = MessageUtils.convertData(response.getData(), LoginResponse.class);
 
             if (data != null) {
-                ClientSession.setSessionId(data.sessionId());
-                ClientSession.setUserId(data.userId());
+                clientSession.setSessionId(data.sessionId());
+                clientSession.setUserId(data.userId());
             }
         }
 
         // 로그아웃 성공 시 세션 ID 지우기
         else if (type.equals(MessageType.LOGOUT_SUCCESS)) {
-            ClientSession.setSessionId(null);
-            ClientSession.setUserId(null);
-            ClientSession.setCurrentRoomId(null);
+            clientSession.setSessionId(null);
+            clientSession.setUserId(null);
+            clientSession.setCurrentRoomId(null);
 
             clientUI.displayMessage("로그아웃 성공");
         }
@@ -68,13 +71,13 @@ public class ClientSessionObserver implements Observer {
             EnterChatRoomResponse data = MessageUtils.convertData(response.getData(), EnterChatRoomResponse.class);
 
             if (data != null) {
-                ClientSession.setCurrentRoomId(data.roomId());
+                clientSession.setCurrentRoomId(data.roomId());
             }
         }
 
         // 채팅방 나가면 방 번호 초기화
         else if (type.equals(MessageType.CHAT_ROOM_EXIT_SUCCESS)) {
-            ClientSession.setCurrentRoomId(null);
+            clientSession.setCurrentRoomId(null);
         }
     }
 
