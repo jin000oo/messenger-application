@@ -19,7 +19,6 @@ import com.nhnacademy.messenger.server.handler.Handler;
 import com.nhnacademy.messenger.server.message.domain.ChatMessage;
 import com.nhnacademy.messenger.server.message.repository.MessageRepository;
 import com.nhnacademy.messenger.server.session.Session;
-import com.nhnacademy.messenger.server.session.SessionManager;
 import com.nhnacademy.messenger.server.utils.ResponseFactory;
 import lombok.RequiredArgsConstructor;
 

@@ -22,7 +22,6 @@ import com.nhnacademy.messenger.server.handler.Handler;
 import com.nhnacademy.messenger.server.message.domain.ChatMessage;
 import com.nhnacademy.messenger.server.message.repository.MessageRepository;
 import com.nhnacademy.messenger.server.session.Session;
-import com.nhnacademy.messenger.server.session.SessionManager;
 import com.nhnacademy.messenger.server.user.repository.UserRepository;
 import com.nhnacademy.messenger.server.utils.IdGenerator;
 import com.nhnacademy.messenger.server.utils.ResponseFactory;
@@ -103,7 +102,6 @@ public class ChatMessageHandler implements Handler {
             }
         }
 
-        // 수정 필요.
         long messageId = IdGenerator.nextMessageId();
 
         messageRepository.save(new ChatMessage(

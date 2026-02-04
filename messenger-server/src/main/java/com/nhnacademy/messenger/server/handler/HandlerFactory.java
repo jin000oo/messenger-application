@@ -17,6 +17,9 @@ import com.nhnacademy.messenger.server.chatroom.chatroomrepository.ChatRoomRepos
 import com.nhnacademy.messenger.server.handler.impl.*;
 import com.nhnacademy.messenger.server.message.repository.MessageRepository;
 import com.nhnacademy.messenger.server.message.repository.PrivateMessageRepository;
+import com.nhnacademy.messenger.server.session.AuthService;
+import com.nhnacademy.messenger.server.session.SessionRepository;
+import com.nhnacademy.messenger.server.thread.MessageSender;
 import com.nhnacademy.messenger.server.user.repository.UserRepository;
 
 import java.util.EnumMap;
@@ -30,28 +33,37 @@ public class HandlerFactory {
     private final ChatRoomRepository chatRoomRepo;
     private final MessageRepository messageRepo;
     private final PrivateMessageRepository privateMessageRepo;
+    private final SessionRepository sessionRepo;
+    private final AuthService authService;
+    private final MessageSender sender;
     private final Handler unsupportedTypeHandler = new UnsupportedTypeHandler();
 
     public HandlerFactory(UserRepository userRepo,
                           ChatRoomRepository chatRoomRepo,
                           MessageRepository messageRepo,
-                          PrivateMessageRepository privateMessageRepo
+                          PrivateMessageRepository privateMessageRepo,
+                          SessionRepository sessionRepo,
+                          AuthService authService,
+                          MessageSender sender
     ) {
         this.userRepo = userRepo;
         this.chatRoomRepo = chatRoomRepo;
         this.messageRepo = messageRepo;
         this.privateMessageRepo = privateMessageRepo;
+        this.sessionRepo = sessionRepo;
+        this.authService = authService;
+        this.sender = sender;
 
         initialize();
     }
 
     private void initialize() {
-        handlers.put(MessageType.LOGIN, new LoginHandler(userRepo));
-        handlers.put(MessageType.LOGOUT, new LogoutHandler(userRepo));
-        handlers.put(MessageType.USER_LIST, new UserListHandler(userRepo));
+        handlers.put(MessageType.LOGIN, new LoginHandler(authService));
+        handlers.put(MessageType.LOGOUT, new LogoutHandler(authService));
+        handlers.put(MessageType.USER_LIST, new UserListHandler(userRepo, sessionRepo));
 
-        handlers.put(MessageType.CHAT_MESSAGE, new ChatMessageHandler(userRepo, chatRoomRepo, messageRepo));
-        handlers.put(MessageType.PRIVATE_MESSAGE, new PrivateMessageHandler(userRepo, privateMessageRepo));
+        handlers.put(MessageType.CHAT_MESSAGE, new ChatMessageHandler(userRepo, chatRoomRepo, messageRepo, sender));
+        handlers.put(MessageType.PRIVATE_MESSAGE, new PrivateMessageHandler(userRepo, privateMessageRepo, sender));
 
         handlers.put(MessageType.CHAT_ROOM_CREATE, new ChatRoomCreateHandler(chatRoomRepo));
         handlers.put(MessageType.CHAT_ROOM_ENTER, new ChatRoomEnterHandler(chatRoomRepo));

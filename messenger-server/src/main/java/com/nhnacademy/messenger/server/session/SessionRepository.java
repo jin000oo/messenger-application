@@ -12,35 +12,27 @@
 
 package com.nhnacademy.messenger.server.session;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
-
 import java.net.Socket;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.List;
 
-@AllArgsConstructor
-@Getter
-public class Session {
-    private final String sessionId;
-    private final String userId;
-    @Setter
-    private volatile Socket socket;
-    private final AtomicLong lastSeenAt;
+public interface SessionRepository {
+    // add
+    void add(Session session);
 
-    public Session(String sessionId, String userId, Socket socket, long now) {
-        this.sessionId = sessionId;
-        this.userId = userId;
-        this.socket = socket;
-        this.lastSeenAt = new AtomicLong();
-        this.lastSeenAt.set(now);
-    }
+    // remove
+    void remove(String sessionId);
 
-    public long getLastSeenAt() {
-        return lastSeenAt.get();
-    }
+    void removeByUserId(String userId);
 
-    public void setLastSeenAt(long now) {
-        lastSeenAt.set(now);
-    }
+    // get
+    Session getSession(String sessionId);
+
+    Session getByUserId(String userId);
+
+    // update
+    void updateSocket(String sessionId, Socket newSocket);
+
+    void updateLastSeenAt(String sessionId, long now);
+
+    List<Session> snapshot();
 }

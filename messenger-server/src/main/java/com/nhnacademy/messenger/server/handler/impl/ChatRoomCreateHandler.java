@@ -19,7 +19,6 @@ import com.nhnacademy.messenger.server.chatroom.chatroomrepository.ChatRoomRepos
 import com.nhnacademy.messenger.server.chatroom.domain.ChatRoom;
 import com.nhnacademy.messenger.server.handler.Handler;
 import com.nhnacademy.messenger.server.session.Session;
-import com.nhnacademy.messenger.server.session.SessionManager;
 import com.nhnacademy.messenger.server.utils.IdGenerator;
 import com.nhnacademy.messenger.server.utils.ResponseFactory;
 import lombok.RequiredArgsConstructor;
