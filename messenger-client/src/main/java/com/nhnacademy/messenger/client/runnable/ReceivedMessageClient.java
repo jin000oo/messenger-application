@@ -27,21 +27,21 @@ public class ReceivedMessageClient implements Runnable {
     private final BlockingQueue<MessageResponse> messageQueue;
     private final ClientUI clientUI;
 
-    public ReceivedMessageClient(Socket socket, BlockingQueue<MessageResponse> messageQueue, ClientUI clientUI) {
-        if (socket == null) {
-            throw new IllegalArgumentException("[ReceivedMessageClient] Socket이 null입니다.");
-        }
+    private final MessageUtils messageUtils;
 
+    public ReceivedMessageClient(Socket socket, BlockingQueue<MessageResponse> messageQueue, ClientUI clientUI,
+                                 MessageUtils messageUtils) {
         this.socket = socket;
         this.messageQueue = messageQueue;
         this.clientUI = clientUI;
+        this.messageUtils = messageUtils;
     }
 
     @Override
     public void run() {
         while (!Thread.currentThread().isInterrupted()) {
             try {
-                MessageResponse response = MessageUtils.readResponse(socket.getInputStream());
+                MessageResponse response = messageUtils.readResponse(socket.getInputStream());
 
                 if (response == null) {
                     break;

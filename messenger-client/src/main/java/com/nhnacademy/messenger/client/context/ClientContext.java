@@ -14,6 +14,7 @@ package com.nhnacademy.messenger.client.context;
 
 import com.nhnacademy.messenger.client.session.ClientSession;
 import com.nhnacademy.messenger.client.ui.ClientUI;
+import com.nhnacademy.messenger.common.util.MessageUtils;
 import java.net.Socket;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -27,5 +28,7 @@ public class ClientContext {
     private final ClientUI clientUI;
 
     private final Socket socket;
+
+    private final MessageUtils messageUtils;
 
 }

@@ -12,6 +12,8 @@
 
 package com.nhnacademy.messenger.client;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.nhnacademy.messenger.client.command.ClientCommand;
 import com.nhnacademy.messenger.client.command.CommandFactory;
 import com.nhnacademy.messenger.client.context.ClientContext;
@@ -27,6 +29,7 @@ import com.nhnacademy.messenger.client.ui.ClientUI;
 import com.nhnacademy.messenger.client.ui.impl.ConsoleUI;
 import com.nhnacademy.messenger.client.ui.impl.SwingUI;
 import com.nhnacademy.messenger.common.domain.MessageResponse;
+import com.nhnacademy.messenger.common.util.MessageUtils;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.Scanner;
@@ -40,10 +43,10 @@ public class ClientMain {
     private static CommandFactory commandFactory;
 
     private static ClientUI clientUI;
-
     private static ClientSession clientSession;
-
     private static ClientContext clientContext;
+
+    private static MessageUtils messageUtils;
 
     private static final String DEFAULT_SERVER_ADDRESS = "localhost";
     private static final int DEFAULT_PORT = 12345;
@@ -62,26 +65,31 @@ public class ClientMain {
                         DEFAULT_SERVER_ADDRESS, DEFAULT_PORT));
             }
 
+            ObjectMapper objectMapper = new ObjectMapper();
+            objectMapper.registerModule(new JavaTimeModule());
+
+            MessageUtils messageUtils = new MessageUtils(objectMapper);
+
             if (isGui) {
-                clientUI = new SwingUI(ClientMain::processCommand);
+                clientUI = new SwingUI(ClientMain::processCommand, messageUtils);
             } else {
-                clientUI = new ConsoleUI();
+                clientUI = new ConsoleUI(messageUtils);
 
                 clientUI.displayMessage("/help 명령어 입력시 모든 명령어 목록을 볼 수 있습니다.");
             }
 
             clientSession = new ClientSession();
-            clientContext = new ClientContext(clientSession, clientUI, socket);
+            clientContext = new ClientContext(clientSession, clientUI, socket, messageUtils);
 
             Subject subject = new MessageSubject();
 
-            subject.register(EventType.RECV, new ClientSessionObserver(clientUI, clientSession));
+            subject.register(EventType.RECV, new ClientSessionObserver(clientUI, clientSession, messageUtils));
             subject.register(EventType.RECV, new UIUpdateObserver(clientUI));
 
             BlockingQueue<MessageResponse> messageQueue = new LinkedBlockingQueue<>();
 
             // 생산자: 수신 스레드
-            Thread receiverThread = new Thread(new ReceivedMessageClient(socket, messageQueue, clientUI));
+            Thread receiverThread = new Thread(new ReceivedMessageClient(socket, messageQueue, clientUI, messageUtils));
             receiverThread.start();
 
             // 소비자: 처리 스레드

@@ -25,12 +25,14 @@ import com.nhnacademy.messenger.common.util.MessageUtils;
 public class ClientSessionObserver implements Observer {
 
     private final ClientUI clientUI;
-
     private final ClientSession clientSession;
 
-    public ClientSessionObserver(ClientUI clientUI, ClientSession clientSession) {
+    private final MessageUtils messageUtils;
+
+    public ClientSessionObserver(ClientUI clientUI, ClientSession clientSession, MessageUtils messageUtils) {
         this.clientUI = clientUI;
         this.clientSession = clientSession;
+        this.messageUtils = messageUtils;
     }
 
     @Override
@@ -48,7 +50,7 @@ public class ClientSessionObserver implements Observer {
 
         // 로그인 성공 시 세션 ID 저장
         if (type.equals(MessageType.LOGIN_SUCCESS)) {
-            LoginResponse data = MessageUtils.convertData(response.getData(), LoginResponse.class);
+            LoginResponse data = messageUtils.convertData(response.getData(), LoginResponse.class);
 
             if (data != null) {
                 clientSession.setSessionId(data.sessionId());
@@ -67,7 +69,7 @@ public class ClientSessionObserver implements Observer {
 
         // 채팅방 입장 성공 시 채팅방 ID 저장
         else if (type.equals(MessageType.CHAT_ROOM_ENTER_SUCCESS)) {
-            EnterChatRoomResponse data = MessageUtils.convertData(response.getData(), EnterChatRoomResponse.class);
+            EnterChatRoomResponse data = messageUtils.convertData(response.getData(), EnterChatRoomResponse.class);
 
             if (data != null) {
                 clientSession.setCurrentRoomId(data.roomId());

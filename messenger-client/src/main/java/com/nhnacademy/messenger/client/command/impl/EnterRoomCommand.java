@@ -20,7 +20,6 @@ import com.nhnacademy.messenger.client.ui.ClientUI;
 import com.nhnacademy.messenger.common.domain.MessageRequest;
 import com.nhnacademy.messenger.common.domain.MessageType;
 import com.nhnacademy.messenger.common.dto.request.EnterChatRoomRequest;
-import com.nhnacademy.messenger.common.util.MessageUtils;
 import java.io.IOException;
 import java.time.LocalDateTime;
 
@@ -53,7 +52,7 @@ public class EnterRoomCommand implements ClientCommand<EnterRoomParams> {
         );
 
         try {
-            MessageUtils.send(context.getSocket().getOutputStream(), request);
+            context.getMessageUtils().send(context.getSocket().getOutputStream(), request);
 
         } catch (IOException e) {
             clientUI.displayMessage(String.format("예상치 못한 오류: %s", e.getMessage()));
