@@ -10,19 +10,32 @@
  * +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  */
 
-package com.nhnacademy.messenger.server.handler;
+package com.nhnacademy.messenger.server.thread.channel;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nhnacademy.messenger.common.domain.MessageRequest;
 import com.nhnacademy.messenger.common.domain.MessageResponse;
+import com.nhnacademy.messenger.server.handler.MessageDispatcher;
+import com.nhnacademy.messenger.server.thread.MessageSender;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import java.net.Socket;
 
-public interface SocketHandler extends Handler {
+@Slf4j
+@RequiredArgsConstructor
+public class DispatchJob implements Job {
 
-    MessageResponse<?> handle(MessageRequest<?> request, Socket socket);
+    private final Socket socket;
+    private final MessageRequest<?> request;
+    private final MessageDispatcher dispatcher;
+    private final MessageSender sender;
+
+    private static final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
-    default MessageResponse<?> handle(MessageRequest<?> request) {
-        throw new RuntimeException("SocketHandler의 잘못된 handle() 호출");
+    public void execute() {
+        MessageResponse<?> response = dispatcher.dispatch(request, socket);
+        sender.send(socket, response);
     }
 }

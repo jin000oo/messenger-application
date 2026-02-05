@@ -15,26 +15,27 @@ package com.nhnacademy.messenger.server.handler.impl;
 import com.nhnacademy.messenger.common.domain.MessageRequest;
 import com.nhnacademy.messenger.common.domain.MessageResponse;
 import com.nhnacademy.messenger.common.domain.MessageType;
-import com.nhnacademy.messenger.common.util.MessageUtils;
+import com.nhnacademy.messenger.common.dto.request.ChatRequest;
+import com.nhnacademy.messenger.common.dto.response.ChatResponse;
 import com.nhnacademy.messenger.server.chatroom.chatroomrepository.ChatRoomRepository;
 import com.nhnacademy.messenger.server.chatroom.domain.ChatRoom;
 import com.nhnacademy.messenger.server.handler.Handler;
 import com.nhnacademy.messenger.server.message.domain.ChatMessage;
 import com.nhnacademy.messenger.server.message.repository.MessageRepository;
 import com.nhnacademy.messenger.server.session.Session;
-import com.nhnacademy.messenger.server.session.SessionManager;
+import com.nhnacademy.messenger.server.session.SessionRepository;
+import com.nhnacademy.messenger.server.thread.MessageSender;
 import com.nhnacademy.messenger.server.user.repository.UserRepository;
 import com.nhnacademy.messenger.server.utils.IdGenerator;
 import com.nhnacademy.messenger.server.utils.ResponseFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 
-import java.io.IOException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.Map;
+import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -43,84 +44,60 @@ public class ChatMessageHandler implements Handler {
     private final UserRepository userRepository;
     private final ChatRoomRepository chatRoomRepository;
     private final MessageRepository messageRepository;
+    private final SessionRepository sessionRepository;
+    private final MessageSender sender;
 
     @Override
-    public MessageResponse handle(MessageRequest request) {
-        if (Objects.isNull(request)) {
+    public MessageResponse<?> handle(MessageRequest<?> request) {
+        if (request == null || request.getHeader() == null || request.getData() == null) {
             return ResponseFactory.error("COMMON.BAD_REQUEST", "데이터 형식이 올바르지 않습니다.");
         }
 
-        // 유효한 세션인지 다시 확인.
-        String sessionId = request.getHeader().getSessionId();
-        Session session = SessionManager.findBySessionId(sessionId);
-        if (Objects.isNull(session)) {
+        if (!(request.getData() instanceof ChatRequest(Long roomId, String message)) || roomId == null) {
+            return ResponseFactory.error("COMMON.BAD_REQUEST", "데이터 형식이 올바르지 않습니다.");
+        }
+
+        if (StringUtils.isBlank(message)) {
+            return ResponseFactory.error("COMMON.BAD_REQUEST", "데이터 형식이 올바르지 않습니다.");
+        }
+
+        Session session = sessionRepository.getSession(request.getHeader().getSessionId());
+        if (session == null) {
             return ResponseFactory.error("AUTH.INVALID_SESSION", "유효하지 않은 세션입니다.");
         }
 
-//        Long roomId = (Long) request.getData().get("roomId");
-//        String message = (String) request.getData().get("message");
-
-        Object obj1 = request.getData().get("roomId");
-        Object obj2 = request.getData().get("message");
-
-        if (obj1 == null || obj2 == null) {
-            return ResponseFactory.error("COMMON.BAD_REQUEST", "데이터 형식이 올바르지 않습니다.");
-        }
-        long roomId = Long.parseLong(String.valueOf(obj1));
-        String message = String.valueOf(obj2);
-
-//        if (roomId == null || message == null) {
-//            return ResponseFactory.error("COMMON.BAD_REQUEST", "데이터 형식이 올바르지 않습니다.");
-//        }
-
-        if (!chatRoomRepository.exists(roomId)) {
+        ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElse(null);
+        if (chatRoom == null) {
             return ResponseFactory.error("ROOM.NOT_FOUND", "해당 채팅방을 찾을 수 없습니다.");
         }
 
-        ChatRoom chatRoom = chatRoomRepository.findById(roomId).get();
-        Set<String> members = chatRoom.getAllMembers();
-
-        String senderId = session.getUserId();
-        MessageResponse response = ResponseFactory.success(
-                MessageType.CHAT_MESSAGE,
-                Map.of(
-                        "senderId", senderId,
-                        "message", message
-                )
-        );
-
-        for (String userId : members) {
-            // echo.
-            // if (userId.equals(senderId)) { continue; }
-
-            try {
-                MessageUtils.send(
-                        SessionManager.findByUserId(userId).getSocket().getOutputStream(),
-                        response
-                );
-            } catch (IOException e) {
-                log.debug("메시지 전송 중 오류 발생: {}", e.getMessage());
-            }
-        }
-
-        // 수정 필요.
         long messageId = IdGenerator.nextMessageId();
+        String senderId = session.getUserId();
+        String senderName = userRepository.find(senderId)
+                .map(user -> Objects.toString(user.getUserName(), ""))
+                .orElse("");
+        String now = Instant.now().truncatedTo(ChronoUnit.SECONDS).toString();
 
         messageRepository.save(new ChatMessage(
                 messageId,
                 roomId,
-                session.getUserId(),
-                userRepository.find(session.getUserId()).get().getUserName(),
-                Instant.now().truncatedTo(ChronoUnit.SECONDS).toString(),
+                senderId,
+                senderName,
+                now,
                 message
         ));
 
+        List<String> members = chatRoom.getAllMembers().stream().toList();
+        MessageResponse<com.nhnacademy.messenger.common.dto.ChatMessage> response = ResponseFactory.success(
+                MessageType.CHAT_MESSAGE,
+                new com.nhnacademy.messenger.common.dto.ChatMessage(senderId, message)
+        );
+
+        sender.sendToUsers(members, response);
+
         return ResponseFactory.success(
                 MessageType.CHAT_MESSAGE_SUCCESS,
-                Map.of(
-                        "roomId", roomId,
-                        "messageId", messageId
-                )
+                new ChatResponse(roomId, messageId)
         );
     }
 }

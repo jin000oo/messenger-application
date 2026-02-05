@@ -10,19 +10,24 @@
  * +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  */
 
-package com.nhnacademy.messenger.server.handler;
+package com.nhnacademy.messenger.server.thread.channel;
 
-import com.nhnacademy.messenger.common.domain.MessageRequest;
-import com.nhnacademy.messenger.common.domain.MessageResponse;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
-import java.net.Socket;
+public class RequestChannel {
 
-public interface SocketHandler extends Handler {
+    private final BlockingQueue<Job> requestQueue;
 
-    MessageResponse<?> handle(MessageRequest<?> request, Socket socket);
+    public RequestChannel(int capacity) {
+        this.requestQueue = new LinkedBlockingQueue<>(capacity);
+    }
 
-    @Override
-    default MessageResponse<?> handle(MessageRequest<?> request) {
-        throw new RuntimeException("SocketHandler의 잘못된 handle() 호출");
+    public void put(Job job) throws InterruptedException {
+        requestQueue.put(job);
+    }
+
+    public Job take() throws InterruptedException {
+        return requestQueue.take();
     }
 }

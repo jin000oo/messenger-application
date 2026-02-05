@@ -17,6 +17,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.net.Socket;
+import java.util.concurrent.atomic.AtomicLong;
 
 @AllArgsConstructor
 @Getter
@@ -25,4 +26,21 @@ public class Session {
     private final String userId;
     @Setter
     private volatile Socket socket;
+    private final AtomicLong lastSeenAt;
+
+    public Session(String sessionId, String userId, Socket socket, long now) {
+        this.sessionId = sessionId;
+        this.userId = userId;
+        this.socket = socket;
+        this.lastSeenAt = new AtomicLong();
+        this.lastSeenAt.set(now);
+    }
+
+    public long getLastSeenAt() {
+        return lastSeenAt.get();
+    }
+
+    public void setLastSeenAt(long now) {
+        lastSeenAt.set(now);
+    }
 }

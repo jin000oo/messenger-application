@@ -20,7 +20,7 @@ import com.nhnacademy.messenger.server.utils.ResponseFactory;
 public class UnsupportedTypeHandler implements Handler {
 
     @Override
-    public MessageResponse handle(MessageRequest request) {
+    public MessageResponse<?> handle(MessageRequest<?> request) {
         return ResponseFactory.error("COMMON.UNSUPPORTED_TYPE", "지원하지 않는 메시지 타입입니다.");
     }
 }

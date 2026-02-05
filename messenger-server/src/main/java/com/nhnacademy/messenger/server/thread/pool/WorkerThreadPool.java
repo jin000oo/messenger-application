@@ -10,19 +10,32 @@
  * +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  */
 
-package com.nhnacademy.messenger.server.handler;
+package com.nhnacademy.messenger.server.thread.pool;
 
-import com.nhnacademy.messenger.common.domain.MessageRequest;
-import com.nhnacademy.messenger.common.domain.MessageResponse;
+import com.nhnacademy.messenger.server.thread.channel.RequestChannel;
 
-import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 
-public interface SocketHandler extends Handler {
+public class WorkerThreadPool {
 
-    MessageResponse<?> handle(MessageRequest<?> request, Socket socket);
+    private final List<Thread> threads = new ArrayList<>();
 
-    @Override
-    default MessageResponse<?> handle(MessageRequest<?> request) {
-        throw new RuntimeException("SocketHandler의 잘못된 handle() 호출");
+    public WorkerThreadPool(int poolSize, RequestChannel requestChannel) {
+        for (int i = 0; i < poolSize; i++) {
+            threads.add(new Thread(new RequestWorker(requestChannel)));
+        }
+    }
+
+    public void start() {
+        for (Thread thread : threads) {
+            thread.start();
+        }
+    }
+
+    public void stop() {
+        for (Thread thread : threads) {
+            thread.interrupt();
+        }
     }
 }

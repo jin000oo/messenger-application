@@ -10,19 +10,29 @@
  * +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  */
 
-package com.nhnacademy.messenger.server.handler;
-
-import com.nhnacademy.messenger.common.domain.MessageRequest;
-import com.nhnacademy.messenger.common.domain.MessageResponse;
+package com.nhnacademy.messenger.server.session;
 
 import java.net.Socket;
+import java.util.List;
 
-public interface SocketHandler extends Handler {
+public interface SessionRepository {
+    // add
+    void add(Session session);
 
-    MessageResponse<?> handle(MessageRequest<?> request, Socket socket);
+    // remove
+    void remove(String sessionId);
 
-    @Override
-    default MessageResponse<?> handle(MessageRequest<?> request) {
-        throw new RuntimeException("SocketHandler의 잘못된 handle() 호출");
-    }
+    void removeByUserId(String userId);
+
+    // get
+    Session getSession(String sessionId);
+
+    Session getByUserId(String userId);
+
+    // update
+    void updateSocket(String sessionId, Socket newSocket);
+
+    void updateLastSeenAt(String sessionId, long now);
+
+    List<Session> snapshot();
 }

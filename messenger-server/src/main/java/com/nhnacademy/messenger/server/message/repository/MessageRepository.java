@@ -20,5 +20,5 @@ public interface MessageRepository {
 
     void save(ChatMessage chatMessage);
 
-    List<ChatMessage> findAll(long roomId, int limit);
+    List<ChatMessage> findAll(long roomId);
 }

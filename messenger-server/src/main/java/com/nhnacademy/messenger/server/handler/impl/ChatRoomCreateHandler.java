@@ -15,17 +15,15 @@ package com.nhnacademy.messenger.server.handler.impl;
 import com.nhnacademy.messenger.common.domain.MessageRequest;
 import com.nhnacademy.messenger.common.domain.MessageResponse;
 import com.nhnacademy.messenger.common.domain.MessageType;
+import com.nhnacademy.messenger.common.dto.request.CreateChatRoomRequest;
+import com.nhnacademy.messenger.common.dto.response.CreateChatRoomResponse;
 import com.nhnacademy.messenger.server.chatroom.chatroomrepository.ChatRoomRepository;
 import com.nhnacademy.messenger.server.chatroom.domain.ChatRoom;
 import com.nhnacademy.messenger.server.handler.Handler;
-import com.nhnacademy.messenger.server.session.Session;
-import com.nhnacademy.messenger.server.session.SessionManager;
 import com.nhnacademy.messenger.server.utils.IdGenerator;
 import com.nhnacademy.messenger.server.utils.ResponseFactory;
 import lombok.RequiredArgsConstructor;
-
-import java.util.Map;
-import java.util.Objects;
+import org.apache.commons.lang3.StringUtils;
 
 @RequiredArgsConstructor
 public class ChatRoomCreateHandler implements Handler {
@@ -33,40 +31,25 @@ public class ChatRoomCreateHandler implements Handler {
     private final ChatRoomRepository chatRoomRepository;
 
     @Override
-    public MessageResponse handle(MessageRequest request) {
-        if (Objects.isNull(request)) {
+    public MessageResponse<?> handle(MessageRequest<?> request) {
+        if (request == null || request.getHeader() == null || request.getData() == null) {
             return ResponseFactory.error("COMMON.BAD_REQUEST", "데이터 형식이 올바르지 않습니다.");
         }
 
-        // 유효한 세션인지 다시 확인.
-        String sessionId = request.getHeader().getSessionId();
-        Session session = SessionManager.findBySessionId(sessionId);
-        if (Objects.isNull(session)) {
-            return ResponseFactory.error("AUTH.INVALID_SESSION", "유효하지 않은 세션입니다.");
-        }
-
-        Object obj = request.getData().get("roomName");
-        if (obj == null) {
+        if (!(request.getData() instanceof CreateChatRoomRequest(String roomName))) {
             return ResponseFactory.error("COMMON.BAD_REQUEST", "데이터 형식이 올바르지 않습니다.");
         }
-        String roomName = String.valueOf(obj);
 
-        if (chatRoomRepository.existsByRoomName(roomName)) {
-            return ResponseFactory.error("ROOM.ALREADY_EXISTS", "이미 존재하는 채팅방입니다.");
+        if (StringUtils.isBlank(roomName)) {
+            return ResponseFactory.error("COMMON.BAD_REQUEST", "데이터 형식이 올바르지 않습니다.");
         }
 
         long roomId = IdGenerator.nextRoomId();
-        chatRoomRepository.save(new ChatRoom(
-                roomId,
-                roomName
-        ));
+        chatRoomRepository.save(new ChatRoom(roomId, roomName));
 
         return ResponseFactory.success(
                 MessageType.CHAT_ROOM_CREATE_SUCCESS,
-                Map.of(
-                        "roomId", roomId,
-                        "roomName", roomName
-                )
+                new CreateChatRoomResponse(roomId, roomName)
         );
     }
 }

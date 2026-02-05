@@ -10,19 +10,9 @@
  * +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  */
 
-package com.nhnacademy.messenger.server.handler;
+package com.nhnacademy.messenger.server.thread.channel;
 
-import com.nhnacademy.messenger.common.domain.MessageRequest;
-import com.nhnacademy.messenger.common.domain.MessageResponse;
+public interface Job {
 
-import java.net.Socket;
-
-public interface SocketHandler extends Handler {
-
-    MessageResponse<?> handle(MessageRequest<?> request, Socket socket);
-
-    @Override
-    default MessageResponse<?> handle(MessageRequest<?> request) {
-        throw new RuntimeException("SocketHandler의 잘못된 handle() 호출");
-    }
+    void execute();
 }

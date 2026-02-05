@@ -17,5 +17,5 @@ import com.nhnacademy.messenger.common.domain.MessageResponse;
 
 public interface Handler {
 
-    MessageResponse handle(MessageRequest request);
+    MessageResponse<?> handle(MessageRequest<?> request);
 }
