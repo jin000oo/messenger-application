@@ -40,9 +40,15 @@ public class MessageDispatcher {
         MessageType messageType = request.getHeader().getType();
         Handler handler = handlerFactory.getHandler(messageType);
 
+        MessageRequest<?> typedRequest = requestTypeMapper.toTyped(request);
+        // DTO 변환 실패
+        if (requiresData(messageType) && typedRequest.getData() == null) {
+            return ResponseFactory.error("COMMON.BAD_REQUEST", "데이터 형식이 올바르지 않습니다.");
+        }
+
         // 로그인
         if (handler instanceof SocketHandler socketHandler) {
-            return socketHandler.handle(request, socket);
+            return socketHandler.handle(typedRequest, socket);
         }
 
         // 세션 유효 확인
@@ -53,12 +59,6 @@ public class MessageDispatcher {
 
         // 소켓 업데이트
         sessionService.reconnect(sessionId, socket);
-
-        MessageRequest<?> typedRequest = requestTypeMapper.toTyped(request);
-        // DTO 변환 실패
-        if (requiresData(messageType) && typedRequest.getData() == null) {
-            return ResponseFactory.error("COMMON.BAD_REQUEST", "데이터 형식이 올바르지 않습니다.");
-        }
 
         return handler.handle(typedRequest);
     }
@@ -72,7 +72,8 @@ public class MessageDispatcher {
                  CHAT_ROOM_ENTER,
                  CHAT_ROOM_EXIT,
                  CHAT_MESSAGE_HISTORY -> true;
-            default -> false; // LOGOUT, USER_LIST, CHAT_ROOM_LIST
+            // LOGOUT, USER_LIST, CHAT_ROOM_LIST
+            default -> false;
         };
     }
 }

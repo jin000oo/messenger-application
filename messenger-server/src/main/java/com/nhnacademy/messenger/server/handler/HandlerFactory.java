@@ -70,7 +70,7 @@ public class HandlerFactory {
         handlers.put(MessageType.CHAT_ROOM_EXIT, new ChatRoomExitHandler(chatRoomRepo, sessionRepo));
         handlers.put(MessageType.CHAT_ROOM_LIST, new ChatRoomListHandler(chatRoomRepo));
 
-//        handlers.put(MessageType.CHAT_MESSAGE_HISTORY, new ChatMessageHistoryHandler(messageRepo));
+        handlers.put(MessageType.CHAT_MESSAGE_HISTORY, new ChatMessageHistoryHandler(messageRepo));
     }
 
     public Handler getHandler(MessageType messageType) {
