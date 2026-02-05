@@ -27,7 +27,7 @@ import java.net.Socket;
 public class DispatchJob implements Job {
 
     private final Socket socket;
-    private final MessageRequest request;
+    private final MessageRequest<?> request;
     private final MessageDispatcher dispatcher;
     private final MessageSender sender;
 
@@ -35,7 +35,7 @@ public class DispatchJob implements Job {
 
     @Override
     public void execute() {
-        MessageResponse response = dispatcher.dispatch(request, socket);
+        MessageResponse<?> response = dispatcher.dispatch(request, socket);
         sender.send(socket, response);
     }
 }

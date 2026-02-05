@@ -14,33 +14,24 @@ package com.nhnacademy.messenger.server.utils;
 
 import com.nhnacademy.messenger.common.domain.MessageResponse;
 import com.nhnacademy.messenger.common.domain.MessageType;
+import com.nhnacademy.messenger.common.dto.response.ErrorResponse;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.Map;
 
 public class ResponseFactory {
 
-    public static MessageResponse success(MessageType messageType, Map<String, Object> data) {
-        return new MessageResponse(
-                new MessageResponse.ResponseHeader(
-                        messageType,
-                        ResponseFactory.now(),
-                        true
-                ),
+    public static <T> MessageResponse<T> success(MessageType messageType, T data) {
+        return new MessageResponse<>(
+                new MessageResponse.ResponseHeader(messageType, now(), true),
                 data
         );
     }
 
-    public static MessageResponse error(String code, String message) {
-        return new MessageResponse(
-                new MessageResponse.ResponseHeader(
-                        MessageType.ERROR,
-                        ResponseFactory.now(),
-                        false
-                ),
-                Map.of("code", code,
-                        "message", message)
+    public static MessageResponse<ErrorResponse> error(String code, String message) {
+        return new MessageResponse<>(
+                new MessageResponse.ResponseHeader(MessageType.ERROR, now(), false),
+                new ErrorResponse(code, message)
         );
     }
 

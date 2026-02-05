@@ -15,17 +15,17 @@ package com.nhnacademy.messenger.server.handler.impl;
 import com.nhnacademy.messenger.common.domain.MessageRequest;
 import com.nhnacademy.messenger.common.domain.MessageResponse;
 import com.nhnacademy.messenger.common.domain.MessageType;
+import com.nhnacademy.messenger.common.dto.request.HistoryRequest;
+import com.nhnacademy.messenger.common.dto.response.HistoryResponse;
+import com.nhnacademy.messenger.common.dto.response.info.MessageInfo;
 import com.nhnacademy.messenger.server.handler.Handler;
 import com.nhnacademy.messenger.server.message.domain.ChatMessage;
 import com.nhnacademy.messenger.server.message.repository.MessageRepository;
-import com.nhnacademy.messenger.server.session.Session;
 import com.nhnacademy.messenger.server.utils.ResponseFactory;
 import lombok.RequiredArgsConstructor;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 
 @RequiredArgsConstructor
 public class ChatMessageHistoryHandler implements Handler {
@@ -33,65 +33,53 @@ public class ChatMessageHistoryHandler implements Handler {
     private final MessageRepository messageRepository;
 
     @Override
-    public MessageResponse handle(MessageRequest request) {
-        if (Objects.isNull(request)) {
+    public MessageResponse<?> handle(MessageRequest<?> request) {
+        if (request == null || request.getHeader() == null || request.getData() == null) {
             return ResponseFactory.error("COMMON.BAD_REQUEST", "데이터 형식이 올바르지 않습니다.");
         }
 
-        // 유효한 세션인지 다시 확인.
-        String sessionId = request.getHeader().getSessionId();
-        Session session = SessionManager.findBySessionId(sessionId);
-        if (Objects.isNull(session)) {
-            return ResponseFactory.error("AUTH.INVALID_SESSION", "유효하지 않은 세션입니다.");
-        }
-
-        Object obj1 = request.getData().get("roomId");
-        Object obj2 = request.getData().get("limit");
-        Object obj3 = request.getData().get("beforeMessageId");
-        if (obj1 == null || obj2 == null || obj3 == null) {
+        if (!(request.getData() instanceof HistoryRequest data) || data.roomId() == null) {
             return ResponseFactory.error("COMMON.BAD_REQUEST", "데이터 형식이 올바르지 않습니다.");
         }
 
-        long roomId;
-        int limit;
-        long beforeMessageId;
-        try {
-            roomId = Long.parseLong(String.valueOf(obj1));
-            limit = Integer.parseInt(String.valueOf(obj2));
-            beforeMessageId = Long.parseLong(String.valueOf(obj3));
-        } catch (NumberFormatException e) {
-            return ResponseFactory.error("COMMON.BAD_REQUEST", "데이터 형식이 올바르지 않습니다.");
+        int limit = (data.limit() == null || data.limit() <= 0) ? 50 : data.limit();
+        long before = (data.beforeMessageId() == null) ? Long.MAX_VALUE : data.beforeMessageId();
+
+        List<ChatMessage> chatMessages = messageRepository.findAll(data.roomId());
+        if (chatMessages.isEmpty()) {
+            return ResponseFactory.success(
+                    MessageType.CHAT_MESSAGE_HISTORY_SUCCESS,
+                    new HistoryResponse(Collections.emptyList(), false)
+            );
         }
 
-        List<ChatMessage> chatMessages = messageRepository.findAll(roomId, limit);
-        List<Map<String, Object>> history = new ArrayList<>();
-
-        for (ChatMessage chatMessage : chatMessages) {
-            long messageId = chatMessage.getMessageId();
-            if (messageId >= beforeMessageId) {
-                break;
-            }
-
-            String senderId = chatMessage.getSenderId();
-            String senderName = chatMessage.getSenderName();
-            String timestamp = chatMessage.getTimestamp();
-            String content = chatMessage.getContent();
-
-            history.add(Map.of(
-                    "messageId", messageId,
-                    "senderId", senderId,
-                    "senderName", senderName,
-                    "timestamp", timestamp,
-                    "content", content
-            ));
+        List<ChatMessage> filteredMessage = chatMessages.stream()
+                .filter(message -> message.getMessageId() < before)
+                .toList();
+        if (filteredMessage.isEmpty()) {
+            return ResponseFactory.success(
+                    MessageType.CHAT_MESSAGE_HISTORY_SUCCESS,
+                    new HistoryResponse(Collections.emptyList(), false)
+            );
         }
+
+        boolean hasMore = filteredMessage.size() > limit;
+
+        List<ChatMessage> truncated = filteredMessage.subList(Math.max(0, filteredMessage.size() - limit), filteredMessage.size());
+
+        List<MessageInfo> messageHistory = truncated.stream()
+                .map(message -> new MessageInfo(
+                        message.getMessageId(),
+                        message.getSenderId(),
+                        message.getSenderName(),
+                        message.getTimestamp(),
+                        message.getContent()
+                ))
+                .toList();
 
         return ResponseFactory.success(
                 MessageType.CHAT_MESSAGE_HISTORY_SUCCESS,
-                Map.of(
-                        "roomId", roomId,
-                        "messages", history
-                )
+                new HistoryResponse(messageHistory, hasMore)
         );
     }
 }

@@ -34,6 +34,7 @@ public class ClientHandler implements Runnable {
     private final RequestChannel channel;
     private final MessageDispatcher dispatcher;
     private final MessageSender sender;
+    private final MessageUtils messageUtils;
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -46,7 +47,7 @@ public class ClientHandler implements Runnable {
              InputStream in = socket.getInputStream()
         ) {
             while (!Thread.currentThread().isInterrupted() && !socket.isClosed()) {
-                MessageRequest request = MessageUtils.readRequest(in);
+                MessageRequest<?> request = messageUtils.readRequest(in);
                 // 클라이언트 정상 종료
                 if (request == null) break;
                 log.debug("[{}:{}] 요청: {}", ip, port, objectMapper.writeValueAsString(request));

@@ -15,8 +15,11 @@ package com.nhnacademy.messenger.server.handler.impl;
 import com.nhnacademy.messenger.common.domain.MessageRequest;
 import com.nhnacademy.messenger.common.domain.MessageResponse;
 import com.nhnacademy.messenger.common.domain.MessageType;
+import com.nhnacademy.messenger.common.dto.request.LoginRequest;
+import com.nhnacademy.messenger.common.dto.response.LoginResponse;
 import com.nhnacademy.messenger.server.handler.SocketHandler;
 import com.nhnacademy.messenger.server.session.Session;
+import com.nhnacademy.messenger.server.session.SessionService;
 import com.nhnacademy.messenger.server.user.domain.User;
 import com.nhnacademy.messenger.server.user.repository.UserRepository;
 import com.nhnacademy.messenger.server.utils.ResponseFactory;
@@ -24,64 +27,48 @@ import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 
 import java.net.Socket;
-import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
-import java.util.UUID;
 
 @RequiredArgsConstructor
 public class LoginHandler implements SocketHandler {
 
     private final UserRepository userRepository;
+    private final SessionService sessionService;
 
     @Override
-    public MessageResponse handle(MessageRequest request, Socket socket) {
-        if (Objects.isNull(request) || Objects.isNull(request.getData())) {
+    public MessageResponse<?> handle(MessageRequest<?> request, Socket socket) {
+        if (request == null || request.getHeader() == null || request.getData() == null) {
             return ResponseFactory.error("COMMON.BAD_REQUEST", "데이터 형식이 올바르지 않습니다.");
         }
 
-        Object objUserId = request.getData().get("userId");
-        Object objPassword = request.getData().get("password");
-
-        if (Objects.isNull(objUserId) || Objects.isNull(objPassword)) {
+        if (!(request.getData() instanceof LoginRequest(String userId, String password))) {
             return ResponseFactory.error("COMMON.BAD_REQUEST", "데이터 형식이 올바르지 않습니다.");
         }
-
-        String userId = String.valueOf(objUserId);
-        String password = String.valueOf(objPassword);
 
         if (StringUtils.isBlank(userId) || StringUtils.isBlank(password)) {
             return ResponseFactory.error("COMMON.BAD_REQUEST", "데이터 형식이 올바르지 않습니다.");
         }
 
-        // 아이디를 찾을 수 없는 경우.
-        Optional<User> optionalUser = userRepository.find(userId);
-        if (optionalUser.isEmpty()) {
+        // 아이디로 사용자를 찾을 수 없는 경우.
+        Optional<User> optUser = userRepository.find(userId);
+        if (optUser.isEmpty()) {
             return ResponseFactory.error("AUTH.INVALID_CREDENTIALS", "아이디 또는 비밀번호가 올바르지 않습니다.");
         }
 
-        // Online 이면 로그인 실패.
-        User user = optionalUser.get();
-//        if (user.isOnline()) {
-//            return ResponseFactory.error("AUTH.ALREADY_LOGGED_IN", "이미 로그인 상태입니다.");
-//        }
-
-        // 아이디와 비밀번호 불일치.
+        // 비밀번호 불일치 하는 경우.
+        User user = optUser.get();
         if (!user.getPassword().equals(password)) {
             return ResponseFactory.error("AUTH.INVALID_CREDENTIALS", "아이디 또는 비밀번호가 올바르지 않습니다.");
         }
 
-        String sessionId = UUID.randomUUID().toString();
-        SessionManager.addSession(new Session(sessionId, userId, socket));
-        userRepository.setOnline(userId, true);
+        // 기존 세션이 있는 경우 삭제한다.
+        sessionService.removeByUserId(userId);
+        // 새로운 세션을 추가한다.
+        Session session = sessionService.registerSession(userId, socket);
 
         return ResponseFactory.success(
                 MessageType.LOGIN_SUCCESS,
-                Map.of(
-                        "userId", userId,
-                        "sessionId", sessionId,
-                        "message", "Welcome!"
-                )
+                new LoginResponse(userId, session.getSessionId(), "Welcome!")
         );
     }
 }

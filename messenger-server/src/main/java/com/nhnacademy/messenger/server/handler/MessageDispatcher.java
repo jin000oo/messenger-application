@@ -17,6 +17,7 @@ import com.nhnacademy.messenger.common.domain.MessageResponse;
 import com.nhnacademy.messenger.common.domain.MessageType;
 import com.nhnacademy.messenger.server.session.SessionService;
 import com.nhnacademy.messenger.server.utils.HeaderValidator;
+import com.nhnacademy.messenger.server.utils.RequestTypeMapper;
 import com.nhnacademy.messenger.server.utils.ResponseFactory;
 import lombok.RequiredArgsConstructor;
 
@@ -27,16 +28,13 @@ public class MessageDispatcher {
 
     private final HandlerFactory handlerFactory;
     private final SessionService sessionService;
+    private final RequestTypeMapper requestTypeMapper;
 
-    public MessageResponse dispatch(MessageRequest request, Socket socket) {
-        HeaderValidator.ValidationError error = HeaderValidator.validateHeader(request.getHeader());
-
+    public MessageResponse<?> dispatch(MessageRequest<?> request, Socket socket) {
         // request 확인
+        HeaderValidator.ValidationError error = HeaderValidator.validateHeader(request.getHeader());
         if (error != null) {
             return ResponseFactory.error(error.getCode(), error.getMessage());
-        }
-        if (request.getData() == null) {
-            return ResponseFactory.error("COMMON.BAD_REQUEST", "데이터 형식이 올바르지 않습니다.");
         }
 
         MessageType messageType = request.getHeader().getType();
@@ -56,6 +54,25 @@ public class MessageDispatcher {
         // 소켓 업데이트
         sessionService.reconnect(sessionId, socket);
 
-        return handler.handle(request);
+        MessageRequest<?> typedRequest = requestTypeMapper.toTyped(request);
+        // DTO 변환 실패
+        if (requiresData(messageType) && typedRequest.getData() == null) {
+            return ResponseFactory.error("COMMON.BAD_REQUEST", "데이터 형식이 올바르지 않습니다.");
+        }
+
+        return handler.handle(typedRequest);
+    }
+
+    private boolean requiresData(MessageType type) {
+        return switch (type) {
+            case LOGIN,
+                 CHAT_MESSAGE,
+                 PRIVATE_MESSAGE,
+                 CHAT_ROOM_CREATE,
+                 CHAT_ROOM_ENTER,
+                 CHAT_ROOM_EXIT,
+                 CHAT_MESSAGE_HISTORY -> true;
+            default -> false; // LOGOUT, USER_LIST, CHAT_ROOM_LIST
+        };
     }
 }

@@ -15,16 +15,14 @@ package com.nhnacademy.messenger.server.handler.impl;
 import com.nhnacademy.messenger.common.domain.MessageRequest;
 import com.nhnacademy.messenger.common.domain.MessageResponse;
 import com.nhnacademy.messenger.common.domain.MessageType;
+import com.nhnacademy.messenger.common.dto.response.UserListResponse;
+import com.nhnacademy.messenger.common.dto.response.info.UserInfo;
 import com.nhnacademy.messenger.server.handler.Handler;
-import com.nhnacademy.messenger.server.session.Session;
-import com.nhnacademy.messenger.server.user.domain.User;
 import com.nhnacademy.messenger.server.user.repository.UserRepository;
 import com.nhnacademy.messenger.server.utils.ResponseFactory;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 
 @RequiredArgsConstructor
 public class UserListHandler implements Handler {
@@ -32,33 +30,18 @@ public class UserListHandler implements Handler {
     private final UserRepository userRepository;
 
     @Override
-    public MessageResponse handle(MessageRequest request) {
-        if (Objects.isNull(request)) {
+    public MessageResponse<?> handle(MessageRequest<?> request) {
+        if (request == null || request.getHeader() == null) {
             return ResponseFactory.error("COMMON.BAD_REQUEST", "데이터 형식이 올바르지 않습니다.");
         }
 
-        // 유효한 세션인지 다시 확인.
-        String sessionId = request.getHeader().getSessionId();
-        Session session = SessionManager.findBySessionId(sessionId);
-        if (Objects.isNull(session)) {
-            return ResponseFactory.error("AUTH.INVALID_SESSION", "유효하지 않은 세션입니다.");
-        }
-
-        // 유저 목록.
-        List<Map<String, Object>> users = userRepository.findAll().stream()
-                .filter(User::isOnline) // Online 상태만
-                .map(user -> Map.<String, Object>of(
-                        "id", user.getUserId(),
-                        "name", Objects.toString(user.getUserName(), ""),
-                        "online", user.isOnline()
-                ))
+        List<UserInfo> userList = userRepository.findAll().stream()
+                .map(user -> new UserInfo(user.getUserId(), user.getUserName(), user.isOnline()))
                 .toList();
 
         return ResponseFactory.success(
                 MessageType.USER_LIST_SUCCESS,
-                Map.of(
-                        "users", users
-                )
+                new UserListResponse(userList)
         );
     }
 }

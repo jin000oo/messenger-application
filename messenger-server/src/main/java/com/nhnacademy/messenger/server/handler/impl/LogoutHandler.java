@@ -15,44 +15,36 @@ package com.nhnacademy.messenger.server.handler.impl;
 import com.nhnacademy.messenger.common.domain.MessageRequest;
 import com.nhnacademy.messenger.common.domain.MessageResponse;
 import com.nhnacademy.messenger.common.domain.MessageType;
+import com.nhnacademy.messenger.common.dto.response.LogoutResponse;
 import com.nhnacademy.messenger.server.handler.Handler;
-import com.nhnacademy.messenger.server.session.Session;
+import com.nhnacademy.messenger.server.session.SessionService;
 import com.nhnacademy.messenger.server.user.repository.UserRepository;
 import com.nhnacademy.messenger.server.utils.ResponseFactory;
 import lombok.RequiredArgsConstructor;
-
-import java.util.Map;
-import java.util.Objects;
+import org.apache.commons.lang3.StringUtils;
 
 @RequiredArgsConstructor
 public class LogoutHandler implements Handler {
 
     private final UserRepository userRepository;
+    private final SessionService sessionService;
 
     @Override
-    public MessageResponse handle(MessageRequest request) {
-        if (Objects.isNull(request)) {
+    public MessageResponse<?> handle(MessageRequest<?> request) {
+        if (request == null || request.getHeader() == null) {
             return ResponseFactory.error("COMMON.BAD_REQUEST", "데이터 형식이 올바르지 않습니다.");
         }
 
-        // 유효한 세션인지 다시 확인.
         String sessionId = request.getHeader().getSessionId();
-        Session session = SessionManager.findBySessionId(sessionId);
-        if (Objects.isNull(session)) {
+        if (StringUtils.isBlank(sessionId) || !sessionService.validateSession(sessionId)) {
             return ResponseFactory.error("AUTH.INVALID_SESSION", "유효하지 않은 세션입니다.");
         }
 
-        String userId = session.getUserId();
-
-        // 로그아웃 과정.
-        userRepository.setOnline(userId, false);
-        SessionManager.removeBySessionId(sessionId);
+        sessionService.removeSession(sessionId);
 
         return ResponseFactory.success(
                 MessageType.LOGOUT_SUCCESS,
-                Map.of(
-                        "message", "로그아웃 되었습니다."
-                )
+                new LogoutResponse("로그아웃 되었습니다.")
         );
     }
 }

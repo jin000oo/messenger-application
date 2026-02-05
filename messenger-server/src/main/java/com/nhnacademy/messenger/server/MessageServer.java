@@ -12,6 +12,8 @@
 
 package com.nhnacademy.messenger.server;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.nhnacademy.messenger.common.util.MessageUtils;
 import com.nhnacademy.messenger.server.chatroom.chatroomrepository.ChatRoomRepository;
 import com.nhnacademy.messenger.server.chatroom.chatroomrepository.impl.MemoryChatRoomRepository;
 import com.nhnacademy.messenger.server.handler.HandlerFactory;
@@ -20,7 +22,6 @@ import com.nhnacademy.messenger.server.message.repository.MessageRepository;
 import com.nhnacademy.messenger.server.message.repository.PrivateMessageRepository;
 import com.nhnacademy.messenger.server.message.repository.impl.MemoryMessageRepository;
 import com.nhnacademy.messenger.server.message.repository.impl.MemoryPrivateMessageRepository;
-import com.nhnacademy.messenger.server.session.AuthService;
 import com.nhnacademy.messenger.server.session.SessionRepository;
 import com.nhnacademy.messenger.server.session.SessionService;
 import com.nhnacademy.messenger.server.session.TimeoutService;
@@ -31,6 +32,7 @@ import com.nhnacademy.messenger.server.thread.channel.RequestChannel;
 import com.nhnacademy.messenger.server.thread.pool.WorkerThreadPool;
 import com.nhnacademy.messenger.server.user.repository.UserRepository;
 import com.nhnacademy.messenger.server.user.repository.impl.MemoryUserRepository;
+import com.nhnacademy.messenger.server.utils.RequestTypeMapper;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
@@ -49,6 +51,10 @@ public class MessageServer implements Runnable {
     private final MessageSender messageSender;
     private final TimeoutService timeoutService;
 
+    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final MessageUtils messageUtils = new MessageUtils(objectMapper);
+    private final RequestTypeMapper requestTypeMapper = new RequestTypeMapper(messageUtils);
+
     public MessageServer() {
         UserRepository userRepo = new MemoryUserRepository();
         ChatRoomRepository chatRoomRepo = new MemoryChatRoomRepository();
@@ -57,11 +63,10 @@ public class MessageServer implements Runnable {
         SessionRepository sessionRepo = new MemorySessionRepository();
 
         SessionService sessionService = new SessionService(userRepo, sessionRepo);
-        AuthService authService = new AuthService(userRepo, sessionService);
 
-        messageSender = new MessageSender(userRepo, sessionRepo, sessionService);
-        handlerFactory = new HandlerFactory(userRepo, chatRoomRepo, messageRepo, privateMessageRepo, sessionRepo, authService, messageSender);
-        messageDispatcher = new MessageDispatcher(handlerFactory, sessionService);
+        messageSender = new MessageSender(userRepo, sessionRepo, sessionService, messageUtils);
+        handlerFactory = new HandlerFactory(userRepo, chatRoomRepo, messageRepo, privateMessageRepo, sessionRepo, sessionService, messageSender);
+        messageDispatcher = new MessageDispatcher(handlerFactory, sessionService, requestTypeMapper);
         requestChannel = new RequestChannel(16);
         workerThreadPool = new WorkerThreadPool(4, requestChannel);
         timeoutService = new TimeoutService(sessionRepo, sessionService, messageSender, 30_000, 120_000);
@@ -80,7 +85,7 @@ public class MessageServer implements Runnable {
                     Socket client = serverSocket.accept();
                     log.info("[{}:{}] 클라이언트 접속", client.getInetAddress().getHostAddress(), client.getPort());
 
-                    new Thread(new ClientHandler(client, requestChannel, messageDispatcher, messageSender)).start();
+                    new Thread(new ClientHandler(client, requestChannel, messageDispatcher, messageSender, messageUtils)).start();
                 } catch (IOException e) {
                     log.warn("클라이언트 연결 중 오류 발생", e);
                 }

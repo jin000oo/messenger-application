@@ -33,6 +33,7 @@ public class MessageSender {
     private final UserRepository userRepository;
     private final SessionRepository sessionRepository;
     private final SessionService sessionService;
+    private final MessageUtils messageUtils;
 
     private final static ObjectMapper objectMapper = new ObjectMapper();
 
@@ -43,12 +44,13 @@ public class MessageSender {
         }
 
         synchronized (socket) {
-            try (OutputStream out = socket.getOutputStream()) {
+            try {
+                OutputStream out = socket.getOutputStream();
                 String ip = socket.getInetAddress().getHostAddress();
                 int port = socket.getPort();
                 log.debug("[{}:{}] 응답: {}", ip, port, objectMapper.writeValueAsString(response));
 
-                MessageUtils.send(out, response);
+                messageUtils.send(out, response);
             } catch (IOException e) {
                 log.warn("전송 실패", e);
                 closeSocket(socket);

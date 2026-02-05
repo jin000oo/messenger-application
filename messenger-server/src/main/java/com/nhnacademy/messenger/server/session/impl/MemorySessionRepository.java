@@ -72,11 +72,13 @@ public class MemorySessionRepository implements SessionRepository {
 
     @Override
     public Session getSession(String sessionId) {
+        if (sessionId == null) return null;
         return sessions.get(sessionId);
     }
 
     @Override
     public Session getByUserId(String userId) {
+        if (userId == null) return null;
         return sessionsByUserId.get(userId);
     }
 
