@@ -46,8 +46,6 @@ public class ClientMain {
     private static ClientSession clientSession;
     private static ClientContext clientContext;
 
-    private static MessageUtils messageUtils;
-
     private static final String DEFAULT_SERVER_ADDRESS = "localhost";
     private static final int DEFAULT_PORT = 12345;
 
