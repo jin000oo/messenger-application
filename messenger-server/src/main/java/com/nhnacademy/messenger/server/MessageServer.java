@@ -69,7 +69,7 @@ public class MessageServer implements Runnable {
         messageDispatcher = new MessageDispatcher(handlerFactory, sessionService, requestTypeMapper);
         requestChannel = new RequestChannel(16);
         workerThreadPool = new WorkerThreadPool(4, requestChannel);
-        timeoutService = new TimeoutService(sessionRepo, sessionService, messageSender, 30_000, 120_000);
+        timeoutService = new TimeoutService(sessionRepo, sessionService, messageSender, 30_000, 60_000);
     }
 
     @Override
