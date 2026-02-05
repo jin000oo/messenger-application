@@ -15,23 +15,23 @@ package com.nhnacademy.messenger.server.handler.impl;
 import com.nhnacademy.messenger.common.domain.MessageRequest;
 import com.nhnacademy.messenger.common.domain.MessageResponse;
 import com.nhnacademy.messenger.common.domain.MessageType;
-import com.nhnacademy.messenger.common.util.MessageUtils;
+import com.nhnacademy.messenger.common.dto.request.WhisperRequest;
+import com.nhnacademy.messenger.common.dto.response.WhisperResponse;
 import com.nhnacademy.messenger.server.handler.Handler;
 import com.nhnacademy.messenger.server.message.domain.PrivateMessage;
 import com.nhnacademy.messenger.server.message.repository.PrivateMessageRepository;
 import com.nhnacademy.messenger.server.session.Session;
-import com.nhnacademy.messenger.server.session.SessionManager;
+import com.nhnacademy.messenger.server.session.SessionRepository;
+import com.nhnacademy.messenger.server.thread.MessageSender;
 import com.nhnacademy.messenger.server.user.repository.UserRepository;
 import com.nhnacademy.messenger.server.utils.IdGenerator;
 import com.nhnacademy.messenger.server.utils.ResponseFactory;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 
-import java.io.IOException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.Map;
-import java.util.Objects;
 
 @Slf4j
 @AllArgsConstructor
@@ -39,68 +39,53 @@ public class PrivateMessageHandler implements Handler {
 
     private final UserRepository userRepository;
     private final PrivateMessageRepository privateMessageRepository;
+    private final SessionRepository sessionRepository;
+    private final MessageSender sender;
 
     @Override
-    public MessageResponse handle(MessageRequest request) {
-        if (Objects.isNull(request)) {
+    public MessageResponse<?> handle(MessageRequest<?> request) {
+        if (request == null || request.getHeader() == null || request.getData() == null) {
             return ResponseFactory.error("COMMON.BAD_REQUEST", "데이터 형식이 올바르지 않습니다.");
         }
 
-        // 유효한 세션인지 다시 확인.
-        String sessionId = request.getHeader().getSessionId();
-        Session session = SessionManager.findBySessionId(sessionId);
-        if (Objects.isNull(session)) {
+        if (!(request.getData() instanceof WhisperRequest(String senderId, String receiverId, String message))) {
+            return ResponseFactory.error("COMMON.BAD_REQUEST", "데이터 형식이 올바르지 않습니다.");
+        }
+
+        if (StringUtils.isBlank(receiverId) || StringUtils.isBlank(message)) {
+            return ResponseFactory.error("COMMON.BAD_REQUEST", "데이터 형식이 올바르지 않습니다.");
+        }
+
+        Session session = sessionRepository.getSession(request.getHeader().getSessionId());
+        if (session == null) {
             return ResponseFactory.error("AUTH.INVALID_SESSION", "유효하지 않은 세션입니다.");
         }
 
-        String senderId = (String) request.getData().get("senderId");
-        String receiverId = (String) request.getData().get("receiverId");
-        String message = (String) request.getData().get("message");
-
-        if (senderId == null || receiverId == null || message == null) {
-            return ResponseFactory.error("COMMON.BAD_REQUEST", "데이터 형식이 올바르지 않습니다.");
-        }
-
+        senderId = session.getUserId();
         if (!userRepository.exists(receiverId)) {
             return ResponseFactory.error("USER.NOT_FOUND", "수신자를 찾을 수 없습니다.");
         }
 
         long messageId = IdGenerator.nextMessageId();
-        MessageResponse response = ResponseFactory.success(
-                MessageType.PRIVATE_MESSAGE,
-                Map.of(
-                        "senderId", senderId,
-                        "receiverId", receiverId,
-                        "message", message,
-                        "messageId", messageId
-                )
-        );
-
-        try {
-            MessageUtils.send(
-                    SessionManager.findByUserId(receiverId).getSocket().getOutputStream(),
-                    response
-            );
-        } catch (IOException e) {
-            log.debug("귓속말 메시지 전송 중 오류 발생: {}", e.getMessage());
-        }
-
+        String now = Instant.now().truncatedTo(ChronoUnit.SECONDS).toString();
         privateMessageRepository.save(new PrivateMessage(
                 messageId,
                 senderId,
                 receiverId,
-                Instant.now().truncatedTo(ChronoUnit.SECONDS).toString(),
+                now,
                 message
         ));
 
+        MessageResponse<WhisperResponse> response = ResponseFactory.success(
+                MessageType.PRIVATE_MESSAGE,
+                new WhisperResponse(senderId, receiverId, message, messageId)
+        );
+
+        sender.sendToUser(receiverId, response);
+
         return ResponseFactory.success(
                 MessageType.PRIVATE_MESSAGE_SUCCESS,
-                Map.of(
-                        "senderId", senderId,
-                        "receiverId", receiverId,
-                        "message", "귓속말이 전송되었습니다.",
-                        "messageId", messageId
-                )
+                new WhisperResponse(senderId, receiverId, "귓속말이 전송되었습니다.", messageId)
         );
     }
 }

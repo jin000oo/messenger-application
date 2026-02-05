@@ -15,52 +15,48 @@ package com.nhnacademy.messenger.server.handler.impl;
 import com.nhnacademy.messenger.common.domain.MessageRequest;
 import com.nhnacademy.messenger.common.domain.MessageResponse;
 import com.nhnacademy.messenger.common.domain.MessageType;
+import com.nhnacademy.messenger.common.dto.request.LeaveChatRoomRequest;
+import com.nhnacademy.messenger.common.dto.response.LeaveChatRoomResponse;
 import com.nhnacademy.messenger.server.chatroom.chatroomrepository.ChatRoomRepository;
+import com.nhnacademy.messenger.server.chatroom.domain.ChatRoom;
 import com.nhnacademy.messenger.server.handler.Handler;
 import com.nhnacademy.messenger.server.session.Session;
-import com.nhnacademy.messenger.server.session.SessionManager;
+import com.nhnacademy.messenger.server.session.SessionRepository;
 import com.nhnacademy.messenger.server.utils.ResponseFactory;
 import lombok.RequiredArgsConstructor;
-
-import java.util.Map;
-import java.util.Objects;
 
 @RequiredArgsConstructor
 public class ChatRoomExitHandler implements Handler {
 
     private final ChatRoomRepository chatRoomRepository;
+    private final SessionRepository sessionRepository;
 
     @Override
-    public MessageResponse handle(MessageRequest request) {
-        if (Objects.isNull(request)) {
+    public MessageResponse<?> handle(MessageRequest<?> request) {
+        if (request == null || request.getHeader() == null || request.getData() == null) {
             return ResponseFactory.error("COMMON.BAD_REQUEST", "데이터 형식이 올바르지 않습니다.");
         }
 
-        // 유효한 세션인지 다시 확인.
-        String sessionId = request.getHeader().getSessionId();
-        Session session = SessionManager.findBySessionId(sessionId);
-        if (Objects.isNull(session)) {
+        if (!(request.getData() instanceof LeaveChatRoomRequest(Long roomId)) || roomId == null) {
+            return ResponseFactory.error("COMMON.BAD_REQUEST", "데이터 형식이 올바르지 않습니다.");
+        }
+
+        Session session = sessionRepository.getSession(request.getHeader().getSessionId());
+        if (session == null) {
             return ResponseFactory.error("AUTH.INVALID_SESSION", "유효하지 않은 세션입니다.");
         }
 
-        Object obj = request.getData().get("roomId");
-        if (obj == null) {
-            return ResponseFactory.error("COMMON.BAD_REQUEST", "데이터 형식이 올바르지 않습니다.");
-        }
-        long roomId = Long.parseLong(String.valueOf(obj));
-
-        if (chatRoomRepository.findById(roomId).isEmpty()) {
+        ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElse(null);
+        if (chatRoom == null) {
             return ResponseFactory.error("ROOM.NOT_FOUND", "채팅방을 찾을 수 없습니다.");
         }
 
-        chatRoomRepository.findById(roomId).get().removeMember(session.getUserId());
+        // 채팅방에서 사용자 제거한다.
+        chatRoom.removeMember(session.getUserId());
 
         return ResponseFactory.success(
                 MessageType.CHAT_ROOM_EXIT_SUCCESS,
-                Map.of(
-                        "roomId", roomId,
-                        "message", "채팅방에서 나갔습니다."
-                )
+                new LeaveChatRoomResponse(roomId, "채팅방에서 나갔습니다.")
         );
     }
 }

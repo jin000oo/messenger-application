@@ -19,13 +19,7 @@ public interface Subject {
 
     void register(EventType eventType, Observer observer);
 
-    void remove(EventType eventType, Observer observer);
-
     void notifyObservers(EventType eventType, MessageResponse response);
-
-    default void sendMessage(MessageResponse response) {
-        notifyObservers(EventType.SEND, response);
-    }
 
     default void receiveMessage(MessageResponse response) {
         notifyObservers(EventType.RECV, response);

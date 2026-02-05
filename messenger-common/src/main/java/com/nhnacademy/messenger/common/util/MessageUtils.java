@@ -13,7 +13,6 @@
 package com.nhnacademy.messenger.common.util;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.nhnacademy.messenger.common.domain.MessageRequest;
 import com.nhnacademy.messenger.common.domain.MessageResponse;
 import java.io.IOException;
@@ -23,15 +22,16 @@ import java.nio.charset.StandardCharsets;
 
 public class MessageUtils {
 
-    private static final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper;
+
     private static final String LENGTH_PREFIX = "message-length: ";
 
-    static {
-        objectMapper.registerModule(new JavaTimeModule());
+    public MessageUtils(ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper;
     }
 
     // 객체를 JSON으로 변환 후 헤더를 붙여 전송
-    public static void send(OutputStream out, Object message) throws IOException {
+    public void send(OutputStream out, Object message) throws IOException {
         // 객체 > JSON > byte 배열
         String json = objectMapper.writeValueAsString(message);
         byte[] bodyBytes = json.getBytes(StandardCharsets.UTF_8);
@@ -47,7 +47,7 @@ public class MessageUtils {
     }
 
     // 클라이언트가 보낸 요청을 받을 때 사용
-    public static MessageRequest readRequest(InputStream in) throws IOException {
+    public MessageRequest<?> readRequest(InputStream in) throws IOException {
         byte[] data = readStream(in);
 
         if (data == null) {
@@ -58,7 +58,7 @@ public class MessageUtils {
     }
 
     // 서버가 보낸 응답을 받을 때 사용
-    public static MessageResponse readResponse(InputStream in) throws IOException {
+    public MessageResponse<?> readResponse(InputStream in) throws IOException {
         byte[] data = readStream(in);
 
         if (data == null) {
@@ -68,8 +68,12 @@ public class MessageUtils {
         return objectMapper.readValue(data, MessageResponse.class);
     }
 
+    public <T> T convertData(Object data, Class<T> clazz) {
+        return objectMapper.convertValue(data, clazz);
+    }
+
     // 실제 스트림에서 바이트를 읽어오는 메소드
-    private static byte[] readStream(InputStream in) throws IOException {
+    private byte[] readStream(InputStream in) throws IOException {
         // 헤더 읽기
         String headerLine = readLine(in);
 
@@ -96,7 +100,7 @@ public class MessageUtils {
     }
 
     // 한줄 읽기 (헬퍼 메소드)
-    private static String readLine(InputStream in) throws IOException {
+    private String readLine(InputStream in) throws IOException {
         StringBuilder sb = new StringBuilder();
         int line;
 

@@ -12,29 +12,44 @@
 
 package com.nhnacademy.messenger.client;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.nhnacademy.messenger.client.command.ClientCommand;
 import com.nhnacademy.messenger.client.command.CommandFactory;
+import com.nhnacademy.messenger.client.context.ClientContext;
 import com.nhnacademy.messenger.client.observer.impl.ClientSessionObserver;
 import com.nhnacademy.messenger.client.observer.impl.UIUpdateObserver;
+import com.nhnacademy.messenger.client.runnable.MessageProcessor;
 import com.nhnacademy.messenger.client.runnable.ReceivedMessageClient;
+import com.nhnacademy.messenger.client.session.ClientSession;
 import com.nhnacademy.messenger.client.subject.EventType;
 import com.nhnacademy.messenger.client.subject.MessageSubject;
 import com.nhnacademy.messenger.client.subject.Subject;
 import com.nhnacademy.messenger.client.ui.ClientUI;
 import com.nhnacademy.messenger.client.ui.impl.ConsoleUI;
 import com.nhnacademy.messenger.client.ui.impl.SwingUI;
+import com.nhnacademy.messenger.common.domain.MessageResponse;
+import com.nhnacademy.messenger.common.util.MessageUtils;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.Scanner;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 public class ClientMain {
 
-    private static final String DEFAULT_SERVER_ADDRESS = "localhost";
-    private static final int DEFAULT_PORT = 12345;
+    private static Socket socket;
 
     private static CommandFactory commandFactory;
-    private static Socket socket;
+
     private static ClientUI clientUI;
+    private static ClientSession clientSession;
+    private static ClientContext clientContext;
+
+    private static MessageUtils messageUtils;
+
+    private static final String DEFAULT_SERVER_ADDRESS = "localhost";
+    private static final int DEFAULT_PORT = 12345;
 
     public static void main(String[] args) {
         // 실행 방법
@@ -45,27 +60,43 @@ public class ClientMain {
         try {
             socket = new Socket(DEFAULT_SERVER_ADDRESS, DEFAULT_PORT);
 
+            ObjectMapper objectMapper = new ObjectMapper();
+            objectMapper.registerModule(new JavaTimeModule());
+
+            MessageUtils messageUtils = new MessageUtils(objectMapper);
+
             if (isGui) {
-                clientUI = new SwingUI(ClientMain::processCommand);
+                clientUI = new SwingUI(ClientMain::processCommand, messageUtils);
             } else {
-                clientUI = new ConsoleUI();
+                clientUI = new ConsoleUI(messageUtils);
+
+                clientUI.displayMessage("/help 명령어 입력시 모든 명령어 목록을 볼 수 있습니다.");
             }
 
             if (socket.isConnected()) {
                 clientUI.displayMessage(String.format("%s:%d 서버 연결에 성공했습니다.\n",
                         DEFAULT_SERVER_ADDRESS, DEFAULT_PORT));
-                clientUI.displayMessage("/help 명령어 입력시 모든 명령어 목록을 볼 수 있습니다.");
             }
 
-            commandFactory = new CommandFactory(clientUI);
+            clientSession = new ClientSession();
+            clientContext = new ClientContext(clientSession, clientUI, socket, messageUtils);
+
             Subject subject = new MessageSubject();
 
-            subject.register(EventType.RECV, new ClientSessionObserver(clientUI));
+            subject.register(EventType.RECV, new ClientSessionObserver(clientUI, clientSession, messageUtils));
             subject.register(EventType.RECV, new UIUpdateObserver(clientUI));
 
-            // 서버로부터 오는 메시지를 받는 스레드
-            Thread receiverThread = new Thread(new ReceivedMessageClient(socket, subject, clientUI));
+            BlockingQueue<MessageResponse> messageQueue = new LinkedBlockingQueue<>();
+
+            // 생산자: 수신 스레드
+            Thread receiverThread = new Thread(new ReceivedMessageClient(socket, messageQueue, clientUI, messageUtils));
             receiverThread.start();
+
+            // 소비자: 처리 스레드
+            Thread processorThread = new Thread(new MessageProcessor(messageQueue, subject));
+            processorThread.start();
+
+            commandFactory = new CommandFactory();
 
             // 입력 로직 분기
             if (!isGui) {
@@ -77,26 +108,6 @@ public class ClientMain {
         }
     }
 
-    private static void processCommand(String input) {
-        if (input == null || input.trim().isEmpty()) {
-            return;
-        }
-
-        try {
-            String[] parts = input.split(" ");
-            ClientCommand command = commandFactory.getCommand(parts[0]);
-
-            if (command != null) {
-                command.execute(parts, socket.getOutputStream());
-            } else {
-                clientUI.displayMessage("지원하지 않는 명령어입니다.");
-            }
-
-        } catch (IOException e) {
-            clientUI.displayError(String.format("명령어 전송 실패: %s", e.getMessage()));
-        }
-    }
-
     private static void runConsoleLoop() {
         Scanner scanner = new Scanner(System.in);
 
@@ -105,6 +116,42 @@ public class ClientMain {
         while (true) {
             processCommand(scanner.nextLine());
         }
+    }
+
+    private static void processCommand(String input) {
+        if (input == null || input.trim().isEmpty()) {
+            return;
+        }
+
+        try {
+            String[] parts = input.split(" ");
+            String commandKey = parts[0];
+
+            ClientCommand<?> command = commandFactory.getCommand(commandKey);
+
+            if (command != null) {
+                if (!commandFactory.isPublicCommand(commandKey) && !clientSession.isAuthenticated()) {
+                    clientUI.displayMessage("해당 서비스를 이용하려면 로그인이 필요합니다.");
+                    return;
+                }
+
+                executeGenericCommand(command, parts);
+            } else {
+                clientUI.displayMessage("지원하지 않는 명령어입니다.");
+            }
+
+        } catch (IllegalArgumentException e) {
+            clientUI.displayMessage(e.getMessage());
+
+        } catch (Exception e) {
+            clientUI.displayError(String.format("명령어 처리 중 오류 발생: %s", e.getMessage()));
+        }
+    }
+
+    private static <T> void executeGenericCommand(ClientCommand<T> command, String[] args) {
+        T params = command.parse(args);
+
+        command.execute(params, clientContext);
     }
 
 }

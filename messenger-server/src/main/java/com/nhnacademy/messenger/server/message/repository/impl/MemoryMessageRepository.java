@@ -32,11 +32,11 @@ public class MemoryMessageRepository implements MessageRepository {
     }
 
     @Override
-    public List<ChatMessage> findAll(long roomId, int limit) {
+    public List<ChatMessage> findAll(long roomId) {
         if (!messages.containsKey(roomId)) {
             return Collections.emptyList();
         }
 
-        return List.copyOf(messages.get(roomId).subList(0, Math.min(limit, messages.get(roomId).size())));
+        return List.copyOf(messages.get(roomId));
     }
 }

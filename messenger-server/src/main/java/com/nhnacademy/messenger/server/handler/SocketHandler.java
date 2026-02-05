@@ -19,10 +19,10 @@ import java.net.Socket;
 
 public interface SocketHandler extends Handler {
 
-    MessageResponse handle(MessageRequest request, Socket socket);
+    MessageResponse<?> handle(MessageRequest<?> request, Socket socket);
 
     @Override
-    default MessageResponse handle(MessageRequest request) {
+    default MessageResponse<?> handle(MessageRequest<?> request) {
         throw new RuntimeException("SocketHandler의 잘못된 handle() 호출");
     }
 }

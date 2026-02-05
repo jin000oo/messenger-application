@@ -15,16 +15,14 @@ package com.nhnacademy.messenger.server.handler.impl;
 import com.nhnacademy.messenger.common.domain.MessageRequest;
 import com.nhnacademy.messenger.common.domain.MessageResponse;
 import com.nhnacademy.messenger.common.domain.MessageType;
+import com.nhnacademy.messenger.common.dto.response.RoomListResponse;
+import com.nhnacademy.messenger.common.dto.response.info.RoomInfo;
 import com.nhnacademy.messenger.server.chatroom.chatroomrepository.ChatRoomRepository;
 import com.nhnacademy.messenger.server.handler.Handler;
-import com.nhnacademy.messenger.server.session.Session;
-import com.nhnacademy.messenger.server.session.SessionManager;
 import com.nhnacademy.messenger.server.utils.ResponseFactory;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 
 @RequiredArgsConstructor
 public class ChatRoomListHandler implements Handler {
@@ -32,31 +30,18 @@ public class ChatRoomListHandler implements Handler {
     private final ChatRoomRepository chatRoomRepository;
 
     @Override
-    public MessageResponse handle(MessageRequest request) {
-        if (Objects.isNull(request)) {
+    public MessageResponse<?> handle(MessageRequest<?> request) {
+        if (request == null || request.getHeader() == null) {
             return ResponseFactory.error("COMMON.BAD_REQUEST", "데이터 형식이 올바르지 않습니다.");
         }
 
-        // 유효한 세션인지 다시 확인.
-        String sessionId = request.getHeader().getSessionId();
-        Session session = SessionManager.findBySessionId(sessionId);
-        if (Objects.isNull(session)) {
-            return ResponseFactory.error("AUTH.INVALID_SESSION", "유효하지 않은 세션입니다.");
-        }
-
-        List<Map<String, Object>> rooms = chatRoomRepository.findAll().stream()
-                .map(room -> Map.<String, Object>of(
-                        "roomId", room.getRoomId(),
-                        "roomName", room.getRoomName(),
-                        "userCount", room.memberCount()
-                ))
+        List<RoomInfo> roomList = chatRoomRepository.findAll().stream()
+                .map(chatRoom -> new RoomInfo(chatRoom.getRoomId(), chatRoom.getRoomName(), chatRoom.memberCount()))
                 .toList();
 
         return ResponseFactory.success(
                 MessageType.CHAT_ROOM_LIST_SUCCESS,
-                Map.of(
-                        "rooms", rooms
-                )
+                new RoomListResponse(roomList)
         );
     }
 }

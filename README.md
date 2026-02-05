@@ -30,11 +30,11 @@
     - [x] `CHAT-ROOM-LIST`: 채팅방 목록 조회가 정상적으로 작동하는가?
     - [x] `CHAT-ROOM-ENTER`: 채팅방 입장 및 현재 참여자 목록 반환이 정상적인가?
     - [x] `CHAT-ROOM-EXIT`: 채팅방 나가기 처리가 정상적인가?
-- [ ] **메시징 기능**
+- [x] **메시징 기능**
     - [x] `CHAT-MESSAGE`: 채팅방 내 메시지 전송 및 브로드캐스트가 정상적인가?
     - [x] `PRIVATE-MESSAGE`: 특정 사용자에 대한 귓속말 전송이 가능한가?
     - [x] `CHAT-MESSAGE-HISTORY`: 과거 메시지 기록 조회가 가능한가?
-    - [ ] 메시지 전송 성공 시 고유한 `messageId`를 반환하는가?
+    - [x] 메시지 전송 성공 시 고유한 `messageId`를 반환하는가?
 
 ## 4. 추가 구현 사항 (Advanced Features)
 

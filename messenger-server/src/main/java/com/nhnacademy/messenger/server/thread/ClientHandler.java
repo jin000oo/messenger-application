@@ -10,61 +10,60 @@
  * +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  */
 
-package com.nhnacademy.messenger.server;
+package com.nhnacademy.messenger.server.thread;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nhnacademy.messenger.common.domain.MessageRequest;
-import com.nhnacademy.messenger.common.domain.MessageResponse;
 import com.nhnacademy.messenger.common.util.MessageUtils;
 import com.nhnacademy.messenger.server.handler.MessageDispatcher;
+import com.nhnacademy.messenger.server.thread.channel.DispatchJob;
+import com.nhnacademy.messenger.server.thread.channel.RequestChannel;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.Socket;
 import java.net.SocketException;
 
 @Slf4j
+@AllArgsConstructor
 public class ClientHandler implements Runnable {
 
-    private final Socket client;
-    private final MessageDispatcher messageDispatcher;
+    private final Socket socket;
+    private final RequestChannel channel;
+    private final MessageDispatcher dispatcher;
+    private final MessageSender sender;
+    private final MessageUtils messageUtils;
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
-    public ClientHandler(Socket client, MessageDispatcher messageDispatcher) {
-        this.client = client;
-        this.messageDispatcher = messageDispatcher;
-    }
-
     @Override
     public void run() {
-        String ip = client.getInetAddress().getHostAddress();
-        int port = client.getPort();
+        String ip = socket.getInetAddress().getHostAddress();
+        int port = socket.getPort();
 
-        try (client;
-             InputStream in = client.getInputStream();
-             OutputStream out = client.getOutputStream()
+        try (socket;
+             InputStream in = socket.getInputStream()
         ) {
-            MessageRequest request;
-            // null 클라이언트 정상 종료
-            while ((request = MessageUtils.readRequest(in)) != null) {
-                MessageResponse response = messageDispatcher.dispatch(request, client);
+            while (!Thread.currentThread().isInterrupted() && !socket.isClosed()) {
+                MessageRequest<?> request = messageUtils.readRequest(in);
+                // 클라이언트 정상 종료
+                if (request == null) break;
                 log.debug("[{}:{}] 요청: {}", ip, port, objectMapper.writeValueAsString(request));
 
-                MessageUtils.send(out, response);
-                log.debug("[{}:{}] 응답: {}", ip, port, objectMapper.writeValueAsString(response));
+                channel.put(new DispatchJob(socket, request, dispatcher, sender));
             }
 
             log.info("[{}:{}] 클라이언트 연결 종료", ip, port);
-            // SocketException 클라이언트 비정상 종료
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
         } catch (SocketException e) {
             log.debug("[{}:{}] 클라이언트 연결 끊김: {}", ip, port, e.getMessage());
-        } catch (RuntimeException e) {
-            log.warn("[{}:{}] 클라이언트 통신 중 예기치 않은 오류 발생", ip, port, e);
         } catch (IOException e) {
             log.warn("[{}:{}] 클라이언트 통신 중 오류 발생", ip, port, e);
+        } catch (RuntimeException e) {
+            log.warn("[{}:{}] 클라이언트 통신 중 예기치 않은 오류 발생", ip, port, e);
         }
     }
 }
