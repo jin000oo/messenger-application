@@ -51,6 +51,8 @@ public class RequestTypeMapper {
 
             case CHAT_MESSAGE_HISTORY -> convert(data, HistoryRequest.class);
 
+            case FILE_TRANSFER -> convert(data, FileTransferRequest.class);
+
             // LOGOUT, USER-LIST, CHAT-ROOM-LIST
             default -> data;
         };

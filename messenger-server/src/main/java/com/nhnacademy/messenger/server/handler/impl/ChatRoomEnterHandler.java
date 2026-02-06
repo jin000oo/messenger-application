@@ -13,13 +13,14 @@
 package com.nhnacademy.messenger.server.handler.impl;
 
 import com.nhnacademy.messenger.common.domain.MessageRequest;
-import com.nhnacademy.messenger.common.domain.MessageResponse;
 import com.nhnacademy.messenger.common.domain.MessageType;
 import com.nhnacademy.messenger.common.dto.request.EnterChatRoomRequest;
 import com.nhnacademy.messenger.common.dto.response.EnterChatRoomResponse;
 import com.nhnacademy.messenger.server.chatroom.chatroomrepository.ChatRoomRepository;
 import com.nhnacademy.messenger.server.chatroom.domain.ChatRoom;
 import com.nhnacademy.messenger.server.handler.Handler;
+import com.nhnacademy.messenger.server.handler.HandlerResult;
+import com.nhnacademy.messenger.server.notification.NotificationService;
 import com.nhnacademy.messenger.server.session.Session;
 import com.nhnacademy.messenger.server.session.SessionRepository;
 import com.nhnacademy.messenger.server.utils.ResponseFactory;
@@ -32,9 +33,10 @@ public class ChatRoomEnterHandler implements Handler {
 
     private final ChatRoomRepository chatRoomRepository;
     private final SessionRepository sessionRepository;
+    private final NotificationService notificationService;
 
     @Override
-    public MessageResponse<?> handle(MessageRequest<?> request) {
+    public HandlerResult handle(MessageRequest<?> request) {
         if (request == null || request.getHeader() == null || request.getData() == null) {
             return ResponseFactory.error("COMMON.BAD_REQUEST", "데이터 형식이 올바르지 않습니다.");
         }
@@ -60,6 +62,6 @@ public class ChatRoomEnterHandler implements Handler {
         return ResponseFactory.success(
                 MessageType.CHAT_ROOM_ENTER_SUCCESS,
                 new EnterChatRoomResponse(roomId, members)
-        );
+        ).addNotification(() -> notificationService.pushRoomEnter(roomId, session.getUserId(), session.getUserId()));
     }
 }

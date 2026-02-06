@@ -13,10 +13,10 @@
 package com.nhnacademy.messenger.server.handler.impl;
 
 import com.nhnacademy.messenger.common.domain.MessageRequest;
-import com.nhnacademy.messenger.common.domain.MessageResponse;
 import com.nhnacademy.messenger.common.domain.MessageType;
 import com.nhnacademy.messenger.common.dto.response.LogoutResponse;
 import com.nhnacademy.messenger.server.handler.Handler;
+import com.nhnacademy.messenger.server.handler.HandlerResult;
 import com.nhnacademy.messenger.server.session.SessionService;
 import com.nhnacademy.messenger.server.user.repository.UserRepository;
 import com.nhnacademy.messenger.server.utils.ResponseFactory;
@@ -30,7 +30,7 @@ public class LogoutHandler implements Handler {
     private final SessionService sessionService;
 
     @Override
-    public MessageResponse<?> handle(MessageRequest<?> request) {
+    public HandlerResult handle(MessageRequest<?> request) {
         if (request == null || request.getHeader() == null) {
             return ResponseFactory.error("COMMON.BAD_REQUEST", "데이터 형식이 올바르지 않습니다.");
         }

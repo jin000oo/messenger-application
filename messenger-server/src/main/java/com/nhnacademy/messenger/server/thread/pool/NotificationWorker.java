@@ -10,32 +10,30 @@
  * +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  */
 
-package com.nhnacademy.messenger.server.thread.channel;
+package com.nhnacademy.messenger.server.thread.pool;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.nhnacademy.messenger.common.domain.MessageRequest;
-import com.nhnacademy.messenger.common.domain.MessageResponse;
-import com.nhnacademy.messenger.server.handler.MessageDispatcher;
-import com.nhnacademy.messenger.server.thread.MessageSender;
+import com.nhnacademy.messenger.server.thread.channel.Job;
+import com.nhnacademy.messenger.server.thread.channel.NotificationChannel;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import java.net.Socket;
-
 @Slf4j
 @RequiredArgsConstructor
-public class DispatchJob implements Job {
+public class NotificationWorker implements Runnable {
 
-    private final Socket socket;
-    private final MessageRequest<?> request;
-    private final MessageDispatcher dispatcher;
-    private final MessageSender sender;
-
-    private static final ObjectMapper objectMapper = new ObjectMapper();
+    private final NotificationChannel channel;
 
     @Override
-    public void execute() {
-        MessageResponse<?> response = dispatcher.dispatch(request, socket);
-        sender.send(socket, response);
+    public void run() {
+        while (!Thread.currentThread().isInterrupted()) {
+            try {
+                Job job = channel.take();
+                job.execute();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            } catch (RuntimeException e) {
+                log.warn("job 실행 중 오류 발생", e);
+            }
+        }
     }
 }

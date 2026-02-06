@@ -12,6 +12,7 @@
 
 package com.nhnacademy.messenger.server.thread.pool;
 
+import com.nhnacademy.messenger.server.thread.channel.NotificationChannel;
 import com.nhnacademy.messenger.server.thread.channel.RequestChannel;
 
 import java.util.ArrayList;
@@ -20,21 +21,29 @@ import java.util.List;
 public class WorkerThreadPool {
 
     private final List<Thread> threads = new ArrayList<>();
+    private final List<Thread> notificationThreads = new ArrayList<>();
 
-    public WorkerThreadPool(int poolSize, RequestChannel requestChannel) {
+    public WorkerThreadPool(int poolSize, RequestChannel requestChannel, NotificationChannel notificationChannel) {
         for (int i = 0; i < poolSize; i++) {
             threads.add(new Thread(new RequestWorker(requestChannel)));
         }
+        notificationThreads.add(new Thread(new NotificationWorker(notificationChannel)));
     }
 
     public void start() {
         for (Thread thread : threads) {
             thread.start();
         }
+        for (Thread thread : notificationThreads) {
+            thread.start();
+        }
     }
 
     public void stop() {
         for (Thread thread : threads) {
+            thread.interrupt();
+        }
+        for (Thread thread : notificationThreads) {
             thread.interrupt();
         }
     }

@@ -13,9 +13,8 @@
 package com.nhnacademy.messenger.server.handler;
 
 import com.nhnacademy.messenger.common.domain.MessageRequest;
-import com.nhnacademy.messenger.common.domain.MessageResponse;
 
 public interface Handler {
 
-    MessageResponse<?> handle(MessageRequest<?> request);
+    HandlerResult handle(MessageRequest<?> request);
 }

@@ -48,6 +48,9 @@ public class TimeoutService {
 
             if (now - last > timeout) {
                 log.info("세션 타임아웃 [userId={}, sessionId={}]", session.getUserId(), session.getSessionId());
+
+//                sender.sendToUser(session.getUserId(),
+//                        ResponseFactory.success(MessageType.LOGOUT_SUCCESS, new LogoutResponse("세션 타임아웃")));
                 sessionService.removeByUserId(session.getUserId());
                 continue;
             }

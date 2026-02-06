@@ -10,17 +10,24 @@
  * +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  */
 
-package com.nhnacademy.messenger.server.handler.impl;
+package com.nhnacademy.messenger.server.thread.channel;
 
-import com.nhnacademy.messenger.common.domain.MessageRequest;
-import com.nhnacademy.messenger.server.handler.Handler;
-import com.nhnacademy.messenger.server.handler.HandlerResult;
-import com.nhnacademy.messenger.server.utils.ResponseFactory;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
-public class UnsupportedTypeHandler implements Handler {
+public class NotificationChannel {
 
-    @Override
-    public HandlerResult handle(MessageRequest<?> request) {
-        return ResponseFactory.error("COMMON.UNSUPPORTED_TYPE", "지원하지 않는 메시지 타입입니다.");
+    private final BlockingQueue<Job> requestQueue;
+
+    public NotificationChannel(int capacity) {
+        this.requestQueue = new LinkedBlockingQueue<>(capacity);
+    }
+
+    public void put(Job job) throws InterruptedException {
+        requestQueue.put(job);
+    }
+
+    public Job take() throws InterruptedException {
+        return requestQueue.take();
     }
 }

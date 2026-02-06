@@ -16,14 +16,11 @@ import com.nhnacademy.messenger.client.ui.ClientUI;
 import com.nhnacademy.messenger.client.ui.swing.MessageClientForm;
 import com.nhnacademy.messenger.common.domain.MessageResponse;
 import com.nhnacademy.messenger.common.domain.MessageType;
-import com.nhnacademy.messenger.common.dto.ChatMessage;
-import com.nhnacademy.messenger.common.dto.response.ErrorResponse;
-import com.nhnacademy.messenger.common.dto.response.HistoryResponse;
-import com.nhnacademy.messenger.common.dto.response.RoomListResponse;
-import com.nhnacademy.messenger.common.dto.response.UserListResponse;
-import com.nhnacademy.messenger.common.dto.response.WhisperResponse;
+import com.nhnacademy.messenger.common.dto.message.ChatMessage;
+import com.nhnacademy.messenger.common.dto.response.*;
 import com.nhnacademy.messenger.common.dto.response.info.MessageInfo;
 import com.nhnacademy.messenger.common.util.MessageUtils;
+
 import java.util.function.Consumer;
 
 public class SwingUI implements ClientUI {

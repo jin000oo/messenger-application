@@ -22,12 +22,14 @@ import com.nhnacademy.messenger.server.message.repository.MessageRepository;
 import com.nhnacademy.messenger.server.message.repository.PrivateMessageRepository;
 import com.nhnacademy.messenger.server.message.repository.impl.MemoryMessageRepository;
 import com.nhnacademy.messenger.server.message.repository.impl.MemoryPrivateMessageRepository;
+import com.nhnacademy.messenger.server.notification.NotificationService;
 import com.nhnacademy.messenger.server.session.SessionRepository;
 import com.nhnacademy.messenger.server.session.SessionService;
 import com.nhnacademy.messenger.server.session.TimeoutService;
 import com.nhnacademy.messenger.server.session.impl.MemorySessionRepository;
 import com.nhnacademy.messenger.server.thread.ClientHandler;
 import com.nhnacademy.messenger.server.thread.MessageSender;
+import com.nhnacademy.messenger.server.thread.channel.NotificationChannel;
 import com.nhnacademy.messenger.server.thread.channel.RequestChannel;
 import com.nhnacademy.messenger.server.thread.pool.WorkerThreadPool;
 import com.nhnacademy.messenger.server.user.repository.UserRepository;
@@ -47,9 +49,11 @@ public class MessageServer implements Runnable {
     private final HandlerFactory handlerFactory;
     private final MessageDispatcher messageDispatcher;
     private final RequestChannel requestChannel;
+    private final NotificationChannel notificationChannel;
     private final WorkerThreadPool workerThreadPool;
     private final MessageSender messageSender;
     private final TimeoutService timeoutService;
+    private final NotificationService notificationService;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final MessageUtils messageUtils = new MessageUtils(objectMapper);
@@ -65,11 +69,13 @@ public class MessageServer implements Runnable {
         SessionService sessionService = new SessionService(userRepo, sessionRepo);
 
         messageSender = new MessageSender(userRepo, sessionRepo, sessionService, messageUtils);
-        handlerFactory = new HandlerFactory(userRepo, chatRoomRepo, messageRepo, privateMessageRepo, sessionRepo, sessionService, messageSender);
+        notificationService = new NotificationService(chatRoomRepo, messageSender);
+        handlerFactory = new HandlerFactory(userRepo, chatRoomRepo, messageRepo, privateMessageRepo, sessionRepo, sessionService, messageSender, notificationService);
         messageDispatcher = new MessageDispatcher(handlerFactory, sessionService, requestTypeMapper);
         requestChannel = new RequestChannel(16);
-        workerThreadPool = new WorkerThreadPool(4, requestChannel);
-        timeoutService = new TimeoutService(sessionRepo, sessionService, messageSender, 30_000, 120_000);
+        notificationChannel = new NotificationChannel(64);
+        workerThreadPool = new WorkerThreadPool(4, requestChannel, notificationChannel);
+        timeoutService = new TimeoutService(sessionRepo, sessionService, messageSender, 30_000, 300_000);
     }
 
     @Override
@@ -85,7 +91,7 @@ public class MessageServer implements Runnable {
                     Socket client = serverSocket.accept();
                     log.info("[{}:{}] 클라이언트 접속", client.getInetAddress().getHostAddress(), client.getPort());
 
-                    new Thread(new ClientHandler(client, requestChannel, messageDispatcher, messageSender, messageUtils)).start();
+                    new Thread(new ClientHandler(client, requestChannel, notificationChannel, messageDispatcher, messageSender, messageUtils)).start();
                 } catch (IOException e) {
                     log.warn("클라이언트 연결 중 오류 발생", e);
                 }
