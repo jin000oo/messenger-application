@@ -13,6 +13,7 @@
 package com.nhnacademy.messenger.server.thread;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.nhnacademy.messenger.common.domain.MessageResponse;
 import com.nhnacademy.messenger.common.util.MessageUtils;
 import com.nhnacademy.messenger.server.session.Session;
 import com.nhnacademy.messenger.server.session.SessionRepository;
@@ -38,7 +39,7 @@ public class MessageSender {
     private final static ObjectMapper objectMapper = new ObjectMapper();
 
     // 해당 Socket의 OutStream으로 전송한다.
-    public void send(Socket socket, Object response) {
+    public void send(Socket socket, MessageResponse<?> response) {
         if (socket == null || response == null) {
             return;
         }
@@ -60,7 +61,7 @@ public class MessageSender {
     }
 
     // 해당 UserId의 Socket을 SessionManager에서 찾아서 전송한다.
-    public boolean sendToUser(String userId, Object response) {
+    public boolean sendToUser(String userId, MessageResponse<?> response) {
         // 해당 userId로 세션을 찾는다.
         Session session = sessionRepository.getByUserId(userId);
         // 세션이 없다면 전송 실패.
@@ -79,7 +80,7 @@ public class MessageSender {
     }
 
     // 브로드캐스트.
-    public void sendToUsers(List<String> userIds, Object response) {
+    public void sendToUsers(List<String> userIds, MessageResponse<?> response) {
         for (String userId : userIds) {
             sendToUser(userId, response);
         }

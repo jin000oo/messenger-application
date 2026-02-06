@@ -15,24 +15,32 @@ package com.nhnacademy.messenger.server.utils;
 import com.nhnacademy.messenger.common.domain.MessageResponse;
 import com.nhnacademy.messenger.common.domain.MessageType;
 import com.nhnacademy.messenger.common.dto.response.ErrorResponse;
+import com.nhnacademy.messenger.server.handler.HandlerResult;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
 public class ResponseFactory {
 
-    public static <T> MessageResponse<T> success(MessageType messageType, T data) {
+    public static <T> HandlerResult success(MessageType messageType, T data) {
+        return new HandlerResult(new MessageResponse<T>(
+                new MessageResponse.ResponseHeader(messageType, now(), true),
+                data
+        ));
+    }
+
+    public static <T> MessageResponse<T> successResponse(MessageType messageType, T data) {
         return new MessageResponse<>(
                 new MessageResponse.ResponseHeader(messageType, now(), true),
                 data
         );
     }
 
-    public static MessageResponse<ErrorResponse> error(String code, String message) {
-        return new MessageResponse<>(
+    public static HandlerResult error(String code, String message) {
+        return new HandlerResult(new MessageResponse<ErrorResponse>(
                 new MessageResponse.ResponseHeader(MessageType.ERROR, now(), false),
                 new ErrorResponse(code, message)
-        );
+        ));
     }
 
     private static String now() {

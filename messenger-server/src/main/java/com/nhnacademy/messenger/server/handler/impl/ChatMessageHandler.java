@@ -21,6 +21,7 @@ import com.nhnacademy.messenger.common.dto.response.ChatResponse;
 import com.nhnacademy.messenger.server.chatroom.chatroomrepository.ChatRoomRepository;
 import com.nhnacademy.messenger.server.chatroom.domain.ChatRoom;
 import com.nhnacademy.messenger.server.handler.Handler;
+import com.nhnacademy.messenger.server.handler.HandlerResult;
 import com.nhnacademy.messenger.server.message.domain.ChatMessage;
 import com.nhnacademy.messenger.server.message.repository.MessageRepository;
 import com.nhnacademy.messenger.server.notification.NotificationService;
@@ -51,7 +52,7 @@ public class ChatMessageHandler implements Handler {
     private final NotificationService notificationService;
 
     @Override
-    public MessageResponse<?> handle(MessageRequest<?> request) {
+    public HandlerResult handle(MessageRequest<?> request) {
         if (request == null || request.getHeader() == null || request.getData() == null) {
             return ResponseFactory.error("COMMON.BAD_REQUEST", "데이터 형식이 올바르지 않습니다.");
         }
@@ -91,17 +92,16 @@ public class ChatMessageHandler implements Handler {
         ));
 
         List<String> members = chatRoom.getAllMembers().stream().toList();
-        MessageResponse<com.nhnacademy.messenger.common.dto.ChatMessage> response = ResponseFactory.success(
+        MessageResponse<com.nhnacademy.messenger.common.dto.ChatMessage> response = ResponseFactory.successResponse(
                 MessageType.CHAT_MESSAGE,
                 new com.nhnacademy.messenger.common.dto.ChatMessage(senderId, message)
         );
 
         sender.sendToUsers(members, response);
-        notificationService.pushNewMessage(roomId, messageId, senderId, message, ContentType.TEXT, null, 0L);
 
         return ResponseFactory.success(
                 MessageType.CHAT_MESSAGE_SUCCESS,
                 new ChatResponse(roomId, messageId)
-        );
+        ).addNotification(() -> notificationService.pushNewMessage(roomId, messageId, senderId, message, ContentType.TEXT, null, 0L));
     }
 }

@@ -44,12 +44,12 @@ public class NotificationService {
         if (members.isEmpty()) return;
 
         if (type == ContentType.TEXT) {
-            sender.sendToUsers(members, ResponseFactory.success(
+            sender.sendToUsers(members, ResponseFactory.successResponse(
                     MessageType.PUSH_NEW_MESSAGE,
                     new NewMessageNotification(roomId, messageId, senderId, content, type, null, 0L)
             ));
         } else if (type == ContentType.FILE) {
-            sender.sendToUsers(members, ResponseFactory.success(
+            sender.sendToUsers(members, ResponseFactory.successResponse(
                     MessageType.PUSH_NEW_MESSAGE,
                     new NewMessageNotification(roomId, messageId, senderId, content, type, fileName, fileSize)
             ));
@@ -62,7 +62,7 @@ public class NotificationService {
         List<String> members = getMembers(roomId, userId);
         if (members.isEmpty()) return;
 
-        sender.sendToUsers(members, ResponseFactory.success(
+        sender.sendToUsers(members, ResponseFactory.successResponse(
                 MessageType.PUSH_ROOM_ENTER,
                 new RoomEnterNotification(roomId, userId, userName)
         ));
@@ -73,7 +73,7 @@ public class NotificationService {
         List<String> members = getMembers(roomId, userId);
         if (members.isEmpty()) return;
 
-        sender.sendToUsers(members, ResponseFactory.success(
+        sender.sendToUsers(members, ResponseFactory.successResponse(
                 MessageType.PUSH_ROOM_EXIT,
                 new RoomExitNotification(roomId, userId)
         ));

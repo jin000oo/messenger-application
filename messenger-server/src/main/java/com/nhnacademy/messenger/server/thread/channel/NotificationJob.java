@@ -10,17 +10,17 @@
  * +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  */
 
-package com.nhnacademy.messenger.server.handler.impl;
+package com.nhnacademy.messenger.server.thread.channel;
 
-import com.nhnacademy.messenger.common.domain.MessageRequest;
-import com.nhnacademy.messenger.server.handler.Handler;
-import com.nhnacademy.messenger.server.handler.HandlerResult;
-import com.nhnacademy.messenger.server.utils.ResponseFactory;
+import lombok.RequiredArgsConstructor;
 
-public class UnsupportedTypeHandler implements Handler {
+@RequiredArgsConstructor
+public class NotificationJob implements Job {
+
+    private final Runnable task;
 
     @Override
-    public HandlerResult handle(MessageRequest<?> request) {
-        return ResponseFactory.error("COMMON.UNSUPPORTED_TYPE", "지원하지 않는 메시지 타입입니다.");
+    public void execute() {
+        task.run();
     }
 }

@@ -18,6 +18,7 @@ import com.nhnacademy.messenger.common.domain.MessageType;
 import com.nhnacademy.messenger.common.dto.request.WhisperRequest;
 import com.nhnacademy.messenger.common.dto.response.WhisperResponse;
 import com.nhnacademy.messenger.server.handler.Handler;
+import com.nhnacademy.messenger.server.handler.HandlerResult;
 import com.nhnacademy.messenger.server.message.domain.PrivateMessage;
 import com.nhnacademy.messenger.server.message.repository.PrivateMessageRepository;
 import com.nhnacademy.messenger.server.session.Session;
@@ -43,7 +44,7 @@ public class PrivateMessageHandler implements Handler {
     private final MessageSender sender;
 
     @Override
-    public MessageResponse<?> handle(MessageRequest<?> request) {
+    public HandlerResult handle(MessageRequest<?> request) {
         if (request == null || request.getHeader() == null || request.getData() == null) {
             return ResponseFactory.error("COMMON.BAD_REQUEST", "데이터 형식이 올바르지 않습니다.");
         }
@@ -76,7 +77,7 @@ public class PrivateMessageHandler implements Handler {
                 message
         ));
 
-        MessageResponse<WhisperResponse> response = ResponseFactory.success(
+        MessageResponse<WhisperResponse> response = ResponseFactory.successResponse(
                 MessageType.PRIVATE_MESSAGE,
                 new WhisperResponse(senderId, receiverId, message, messageId)
         );

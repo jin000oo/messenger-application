@@ -17,6 +17,7 @@ import com.nhnacademy.messenger.common.domain.MessageRequest;
 import com.nhnacademy.messenger.common.util.MessageUtils;
 import com.nhnacademy.messenger.server.handler.MessageDispatcher;
 import com.nhnacademy.messenger.server.thread.channel.DispatchJob;
+import com.nhnacademy.messenger.server.thread.channel.NotificationChannel;
 import com.nhnacademy.messenger.server.thread.channel.RequestChannel;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,6 +33,7 @@ public class ClientHandler implements Runnable {
 
     private final Socket socket;
     private final RequestChannel channel;
+    private final NotificationChannel notificationChannel;
     private final MessageDispatcher dispatcher;
     private final MessageSender sender;
     private final MessageUtils messageUtils;
@@ -52,7 +54,7 @@ public class ClientHandler implements Runnable {
                 if (request == null) break;
                 log.debug("[{}:{}] 요청: {}", ip, port, objectMapper.writeValueAsString(request));
 
-                channel.put(new DispatchJob(socket, request, dispatcher, sender));
+                channel.put(new DispatchJob(socket, request, dispatcher, sender, notificationChannel));
             }
 
             log.info("[{}:{}] 클라이언트 연결 종료", ip, port);

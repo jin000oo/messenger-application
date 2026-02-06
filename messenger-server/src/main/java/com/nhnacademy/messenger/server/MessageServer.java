@@ -29,6 +29,7 @@ import com.nhnacademy.messenger.server.session.TimeoutService;
 import com.nhnacademy.messenger.server.session.impl.MemorySessionRepository;
 import com.nhnacademy.messenger.server.thread.ClientHandler;
 import com.nhnacademy.messenger.server.thread.MessageSender;
+import com.nhnacademy.messenger.server.thread.channel.NotificationChannel;
 import com.nhnacademy.messenger.server.thread.channel.RequestChannel;
 import com.nhnacademy.messenger.server.thread.pool.WorkerThreadPool;
 import com.nhnacademy.messenger.server.user.repository.UserRepository;
@@ -48,6 +49,7 @@ public class MessageServer implements Runnable {
     private final HandlerFactory handlerFactory;
     private final MessageDispatcher messageDispatcher;
     private final RequestChannel requestChannel;
+    private final NotificationChannel notificationChannel;
     private final WorkerThreadPool workerThreadPool;
     private final MessageSender messageSender;
     private final TimeoutService timeoutService;
@@ -71,7 +73,8 @@ public class MessageServer implements Runnable {
         handlerFactory = new HandlerFactory(userRepo, chatRoomRepo, messageRepo, privateMessageRepo, sessionRepo, sessionService, messageSender, notificationService);
         messageDispatcher = new MessageDispatcher(handlerFactory, sessionService, requestTypeMapper);
         requestChannel = new RequestChannel(16);
-        workerThreadPool = new WorkerThreadPool(4, requestChannel);
+        notificationChannel = new NotificationChannel(64);
+        workerThreadPool = new WorkerThreadPool(4, requestChannel, notificationChannel);
         timeoutService = new TimeoutService(sessionRepo, sessionService, messageSender, 30_000, 300_000);
     }
 
@@ -88,7 +91,7 @@ public class MessageServer implements Runnable {
                     Socket client = serverSocket.accept();
                     log.info("[{}:{}] 클라이언트 접속", client.getInetAddress().getHostAddress(), client.getPort());
 
-                    new Thread(new ClientHandler(client, requestChannel, messageDispatcher, messageSender, messageUtils)).start();
+                    new Thread(new ClientHandler(client, requestChannel, notificationChannel, messageDispatcher, messageSender, messageUtils)).start();
                 } catch (IOException e) {
                     log.warn("클라이언트 연결 중 오류 발생", e);
                 }

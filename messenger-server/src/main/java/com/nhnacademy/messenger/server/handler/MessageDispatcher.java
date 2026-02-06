@@ -13,7 +13,6 @@
 package com.nhnacademy.messenger.server.handler;
 
 import com.nhnacademy.messenger.common.domain.MessageRequest;
-import com.nhnacademy.messenger.common.domain.MessageResponse;
 import com.nhnacademy.messenger.common.domain.MessageType;
 import com.nhnacademy.messenger.server.session.SessionService;
 import com.nhnacademy.messenger.server.utils.HeaderValidator;
@@ -30,7 +29,7 @@ public class MessageDispatcher {
     private final SessionService sessionService;
     private final RequestTypeMapper requestTypeMapper;
 
-    public MessageResponse<?> dispatch(MessageRequest<?> request, Socket socket) {
+    public HandlerResult dispatch(MessageRequest<?> request, Socket socket) {
         // request 확인
         HeaderValidator.ValidationError error = HeaderValidator.validateHeader(request.getHeader());
         if (error != null) {
@@ -72,6 +71,7 @@ public class MessageDispatcher {
                  CHAT_ROOM_ENTER,
                  CHAT_ROOM_EXIT,
                  CHAT_MESSAGE_HISTORY -> true;
+
             // LOGOUT, USER_LIST, CHAT_ROOM_LIST
             default -> false;
         };
