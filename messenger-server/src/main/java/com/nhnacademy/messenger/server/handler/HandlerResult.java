@@ -14,7 +14,7 @@ package com.nhnacademy.messenger.server.handler;
 
 import com.nhnacademy.messenger.common.domain.MessageResponse;
 import com.nhnacademy.messenger.server.thread.channel.Job;
-import com.nhnacademy.messenger.server.thread.channel.NotificationJob;
+import com.nhnacademy.messenger.server.thread.channel.impl.NotificationJob;
 import lombok.Getter;
 
 import java.util.ArrayList;

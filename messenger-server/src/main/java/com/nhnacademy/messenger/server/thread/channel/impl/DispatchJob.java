@@ -10,13 +10,15 @@
  * +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  */
 
-package com.nhnacademy.messenger.server.thread.channel;
+package com.nhnacademy.messenger.server.thread.channel.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nhnacademy.messenger.common.domain.MessageRequest;
 import com.nhnacademy.messenger.server.handler.HandlerResult;
 import com.nhnacademy.messenger.server.handler.MessageDispatcher;
 import com.nhnacademy.messenger.server.thread.MessageSender;
+import com.nhnacademy.messenger.server.thread.channel.Job;
+import com.nhnacademy.messenger.server.thread.channel.NotificationChannel;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 

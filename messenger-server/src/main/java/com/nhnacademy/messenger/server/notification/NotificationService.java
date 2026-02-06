@@ -14,9 +14,9 @@ package com.nhnacademy.messenger.server.notification;
 
 import com.nhnacademy.messenger.common.domain.ContentType;
 import com.nhnacademy.messenger.common.domain.MessageType;
-import com.nhnacademy.messenger.common.dto.notification.NewMessageNotification;
-import com.nhnacademy.messenger.common.dto.notification.RoomEnterNotification;
-import com.nhnacademy.messenger.common.dto.notification.RoomExitNotification;
+import com.nhnacademy.messenger.common.dto.push.NewMessagePush;
+import com.nhnacademy.messenger.common.dto.push.RoomEnterPush;
+import com.nhnacademy.messenger.common.dto.push.RoomExitPush;
 import com.nhnacademy.messenger.server.chatroom.chatroomrepository.ChatRoomRepository;
 import com.nhnacademy.messenger.server.chatroom.domain.ChatRoom;
 import com.nhnacademy.messenger.server.thread.MessageSender;
@@ -46,12 +46,12 @@ public class NotificationService {
         if (type == ContentType.TEXT) {
             sender.sendToUsers(members, ResponseFactory.successResponse(
                     MessageType.PUSH_NEW_MESSAGE,
-                    new NewMessageNotification(roomId, messageId, senderId, content, type, null, 0L)
+                    new NewMessagePush(roomId, messageId, senderId, content, type, null, 0L)
             ));
         } else if (type == ContentType.FILE) {
             sender.sendToUsers(members, ResponseFactory.successResponse(
                     MessageType.PUSH_NEW_MESSAGE,
-                    new NewMessageNotification(roomId, messageId, senderId, content, type, fileName, fileSize)
+                    new NewMessagePush(roomId, messageId, senderId, content, type, fileName, fileSize)
             ));
         }
     }
@@ -64,7 +64,7 @@ public class NotificationService {
 
         sender.sendToUsers(members, ResponseFactory.successResponse(
                 MessageType.PUSH_ROOM_ENTER,
-                new RoomEnterNotification(roomId, userId, userName)
+                new RoomEnterPush(roomId, userId, userName)
         ));
     }
 
@@ -75,7 +75,7 @@ public class NotificationService {
 
         sender.sendToUsers(members, ResponseFactory.successResponse(
                 MessageType.PUSH_ROOM_EXIT,
-                new RoomExitNotification(roomId, userId)
+                new RoomExitPush(roomId, userId)
         ));
     }
 

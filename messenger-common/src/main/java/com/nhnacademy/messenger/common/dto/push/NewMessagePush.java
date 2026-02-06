@@ -10,17 +10,15 @@
  * +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  */
 
-package com.nhnacademy.messenger.server.thread.channel;
+package com.nhnacademy.messenger.common.dto.push;
 
-import lombok.RequiredArgsConstructor;
+import com.nhnacademy.messenger.common.domain.ContentType;
 
-@RequiredArgsConstructor
-public class NotificationJob implements Job {
-
-    private final Runnable task;
-
-    @Override
-    public void execute() {
-        task.run();
-    }
+public record NewMessagePush(Long roomId,
+                             Long messageId,
+                             String senderId,
+                             String content,
+                             ContentType type,
+                             String fileName,
+                             Long fileSize) {
 }

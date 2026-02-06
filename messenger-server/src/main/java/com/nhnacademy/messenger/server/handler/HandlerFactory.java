@@ -75,6 +75,8 @@ public class HandlerFactory {
         handlers.put(MessageType.CHAT_ROOM_LIST, new ChatRoomListHandler(chatRoomRepo));
 
         handlers.put(MessageType.CHAT_MESSAGE_HISTORY, new ChatMessageHistoryHandler(messageRepo));
+
+        handlers.put(MessageType.FILE_TRANSFER, new FileTransferHandler(userRepo, chatRoomRepo, messageRepo, sessionRepo, sender, notificationService));
     }
 
     public Handler getHandler(MessageType messageType) {

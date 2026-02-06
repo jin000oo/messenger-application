@@ -10,7 +10,7 @@
  * +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  */
 
-package com.nhnacademy.messenger.common.dto;
+package com.nhnacademy.messenger.common.dto.message;
 
 public record ChatMessage(String senderId,
                           String message) {

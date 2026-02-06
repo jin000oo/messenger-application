@@ -10,9 +10,18 @@
  * +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  */
 
-package com.nhnacademy.messenger.common.dto.notification;
+package com.nhnacademy.messenger.server.thread.channel.impl;
 
-public record RoomEnterNotification(Long roomId,
-                                    String userId,
-                                    String userName) {
+import com.nhnacademy.messenger.server.thread.channel.Job;
+import lombok.RequiredArgsConstructor;
+
+@RequiredArgsConstructor
+public class NotificationJob implements Job {
+
+    private final Runnable task;
+
+    @Override
+    public void execute() {
+        task.run();
+    }
 }

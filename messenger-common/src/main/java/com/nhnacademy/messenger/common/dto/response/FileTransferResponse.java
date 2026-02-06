@@ -10,8 +10,9 @@
  * +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  */
 
-package com.nhnacademy.messenger.common.dto.notification;
+package com.nhnacademy.messenger.common.dto.response;
 
-public record RoomExitNotification(Long roomId,
-                                   String userId) {
+public record FileTransferResponse(Long roomId,
+                                   Long messageId,
+                                   String fileName) {
 }

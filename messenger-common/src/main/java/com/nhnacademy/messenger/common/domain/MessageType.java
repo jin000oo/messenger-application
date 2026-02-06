@@ -47,6 +47,9 @@ public enum MessageType {
     @JsonProperty("CHAT-MESSAGE-HISTORY")
     CHAT_MESSAGE_HISTORY,   // 메시지 기록 조회
 
+    @JsonProperty("FILE-TRANSFER")
+    FILE_TRANSFER, // 파일 전송
+
 
     // Response
     @JsonProperty("LOGIN-SUCCESS")
@@ -78,6 +81,9 @@ public enum MessageType {
 
     @JsonProperty("CHAT-MESSAGE-HISTORY-SUCCESS")
     CHAT_MESSAGE_HISTORY_SUCCESS,   // 메시지 기록 조회
+
+    @JsonProperty("FILE-TRANSFER-SUCCESS")
+    FILE_TRANSFER_SUCCESS, // 파일 전송
 
 
     // Notification

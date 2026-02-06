@@ -10,15 +10,8 @@
  * +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  */
 
-package com.nhnacademy.messenger.common.dto.notification;
+package com.nhnacademy.messenger.common.dto.push;
 
-import com.nhnacademy.messenger.common.domain.ContentType;
-
-public record NewMessageNotification(Long roomId,
-                                     Long messageId,
-                                     String senderId,
-                                     String content,
-                                     ContentType type,
-                                     String fileName,
-                                     Long fileSize) {
+public record RoomExitPush(Long roomId,
+                           String userId) {
 }
