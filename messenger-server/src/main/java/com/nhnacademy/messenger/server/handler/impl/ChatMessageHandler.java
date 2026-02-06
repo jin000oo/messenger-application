@@ -12,6 +12,7 @@
 
 package com.nhnacademy.messenger.server.handler.impl;
 
+import com.nhnacademy.messenger.common.domain.ContentType;
 import com.nhnacademy.messenger.common.domain.MessageRequest;
 import com.nhnacademy.messenger.common.domain.MessageResponse;
 import com.nhnacademy.messenger.common.domain.MessageType;
@@ -22,6 +23,7 @@ import com.nhnacademy.messenger.server.chatroom.domain.ChatRoom;
 import com.nhnacademy.messenger.server.handler.Handler;
 import com.nhnacademy.messenger.server.message.domain.ChatMessage;
 import com.nhnacademy.messenger.server.message.repository.MessageRepository;
+import com.nhnacademy.messenger.server.notification.NotificationService;
 import com.nhnacademy.messenger.server.session.Session;
 import com.nhnacademy.messenger.server.session.SessionRepository;
 import com.nhnacademy.messenger.server.thread.MessageSender;
@@ -46,6 +48,7 @@ public class ChatMessageHandler implements Handler {
     private final MessageRepository messageRepository;
     private final SessionRepository sessionRepository;
     private final MessageSender sender;
+    private final NotificationService notificationService;
 
     @Override
     public MessageResponse<?> handle(MessageRequest<?> request) {
@@ -94,6 +97,7 @@ public class ChatMessageHandler implements Handler {
         );
 
         sender.sendToUsers(members, response);
+        notificationService.pushNewMessage(roomId, messageId, senderId, message, ContentType.TEXT, null, 0L);
 
         return ResponseFactory.success(
                 MessageType.CHAT_MESSAGE_SUCCESS,

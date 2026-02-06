@@ -20,6 +20,7 @@ import com.nhnacademy.messenger.common.dto.response.EnterChatRoomResponse;
 import com.nhnacademy.messenger.server.chatroom.chatroomrepository.ChatRoomRepository;
 import com.nhnacademy.messenger.server.chatroom.domain.ChatRoom;
 import com.nhnacademy.messenger.server.handler.Handler;
+import com.nhnacademy.messenger.server.notification.NotificationService;
 import com.nhnacademy.messenger.server.session.Session;
 import com.nhnacademy.messenger.server.session.SessionRepository;
 import com.nhnacademy.messenger.server.utils.ResponseFactory;
@@ -32,6 +33,7 @@ public class ChatRoomEnterHandler implements Handler {
 
     private final ChatRoomRepository chatRoomRepository;
     private final SessionRepository sessionRepository;
+    private final NotificationService notificationService;
 
     @Override
     public MessageResponse<?> handle(MessageRequest<?> request) {
@@ -56,6 +58,8 @@ public class ChatRoomEnterHandler implements Handler {
         // 채팅방에 사용자를 추가한다.
         chatRoom.addMember(session.getUserId());
         List<String> members = chatRoom.getAllMembers().stream().toList();
+
+        notificationService.pushRoomEnter(roomId, session.getUserId(), session.getUserId());
 
         return ResponseFactory.success(
                 MessageType.CHAT_ROOM_ENTER_SUCCESS,

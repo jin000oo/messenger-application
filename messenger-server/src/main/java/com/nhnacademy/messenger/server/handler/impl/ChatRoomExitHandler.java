@@ -20,6 +20,7 @@ import com.nhnacademy.messenger.common.dto.response.LeaveChatRoomResponse;
 import com.nhnacademy.messenger.server.chatroom.chatroomrepository.ChatRoomRepository;
 import com.nhnacademy.messenger.server.chatroom.domain.ChatRoom;
 import com.nhnacademy.messenger.server.handler.Handler;
+import com.nhnacademy.messenger.server.notification.NotificationService;
 import com.nhnacademy.messenger.server.session.Session;
 import com.nhnacademy.messenger.server.session.SessionRepository;
 import com.nhnacademy.messenger.server.utils.ResponseFactory;
@@ -30,6 +31,7 @@ public class ChatRoomExitHandler implements Handler {
 
     private final ChatRoomRepository chatRoomRepository;
     private final SessionRepository sessionRepository;
+    private final NotificationService notificationService;
 
     @Override
     public MessageResponse<?> handle(MessageRequest<?> request) {
@@ -53,6 +55,8 @@ public class ChatRoomExitHandler implements Handler {
 
         // 채팅방에서 사용자 제거한다.
         chatRoom.removeMember(session.getUserId());
+
+        notificationService.pushRoomExit(roomId, session.getUserId());
 
         return ResponseFactory.success(
                 MessageType.CHAT_ROOM_EXIT_SUCCESS,

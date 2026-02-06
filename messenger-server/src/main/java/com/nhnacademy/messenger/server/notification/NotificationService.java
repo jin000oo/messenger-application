@@ -40,7 +40,7 @@ public class NotificationService {
                                String fileName,
                                long fileSize) {
 
-        List<String> members = getMembers(roomId);
+        List<String> members = getMembers(roomId, senderId);
         if (members.isEmpty()) return;
 
         if (type == ContentType.TEXT) {
@@ -59,7 +59,7 @@ public class NotificationService {
     public void pushRoomEnter(long roomId,
                               String userId,
                               String userName) {
-        List<String> members = getMembers(roomId);
+        List<String> members = getMembers(roomId, userId);
         if (members.isEmpty()) return;
 
         sender.sendToUsers(members, ResponseFactory.success(
@@ -70,19 +70,21 @@ public class NotificationService {
 
     public void pushRoomExit(long roomId,
                              String userId) {
-        List<String> members = getMembers(roomId);
+        List<String> members = getMembers(roomId, userId);
         if (members.isEmpty()) return;
 
         sender.sendToUsers(members, ResponseFactory.success(
-                MessageType.PUSH_ROOM_ENTER,
+                MessageType.PUSH_ROOM_EXIT,
                 new RoomExitNotification(roomId, userId)
         ));
     }
 
-    public List<String> getMembers(long roomId) {
+    public List<String> getMembers(long roomId, String senderId) {
         ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElse(null);
         if (chatRoom == null) return Collections.emptyList();
 
-        return chatRoom.getAllMembers().stream().toList();
+        return chatRoom.getAllMembers().stream()
+                .filter(userId -> !userId.equals(senderId))
+                .toList();
     }
 }
