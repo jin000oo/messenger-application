@@ -10,17 +10,15 @@
  * +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  */
 
-package com.nhnacademy.messenger.server.handler.impl;
+package com.nhnacademy.messenger.common.dto.push;
 
-import com.nhnacademy.messenger.common.domain.MessageRequest;
-import com.nhnacademy.messenger.server.handler.Handler;
-import com.nhnacademy.messenger.server.handler.HandlerResult;
-import com.nhnacademy.messenger.server.utils.ResponseFactory;
+import com.nhnacademy.messenger.common.domain.ContentType;
 
-public class UnsupportedTypeHandler implements Handler {
-
-    @Override
-    public HandlerResult handle(MessageRequest<?> request) {
-        return ResponseFactory.error("COMMON.UNSUPPORTED_TYPE", "지원하지 않는 메시지 타입입니다.");
-    }
+public record NewMessagePush(Long roomId,
+                             Long messageId,
+                             String senderId,
+                             String content,
+                             ContentType type,
+                             String fileName,
+                             Long fileSize) {
 }

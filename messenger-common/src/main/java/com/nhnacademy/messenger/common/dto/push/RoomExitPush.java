@@ -10,8 +10,8 @@
  * +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  */
 
-package com.nhnacademy.messenger.common.dto;
+package com.nhnacademy.messenger.common.dto.push;
 
-public record ChatMessage(String senderId,
-                          String message) {
+public record RoomExitPush(Long roomId,
+                           String userId) {
 }

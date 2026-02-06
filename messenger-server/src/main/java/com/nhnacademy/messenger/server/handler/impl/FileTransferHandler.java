@@ -16,8 +16,9 @@ import com.nhnacademy.messenger.common.domain.ContentType;
 import com.nhnacademy.messenger.common.domain.MessageRequest;
 import com.nhnacademy.messenger.common.domain.MessageResponse;
 import com.nhnacademy.messenger.common.domain.MessageType;
-import com.nhnacademy.messenger.common.dto.request.ChatRequest;
-import com.nhnacademy.messenger.common.dto.response.ChatResponse;
+import com.nhnacademy.messenger.common.dto.message.ChatFileMessage;
+import com.nhnacademy.messenger.common.dto.request.FileTransferRequest;
+import com.nhnacademy.messenger.common.dto.response.FileTransferResponse;
 import com.nhnacademy.messenger.server.chatroom.chatroomrepository.ChatRoomRepository;
 import com.nhnacademy.messenger.server.chatroom.domain.ChatRoom;
 import com.nhnacademy.messenger.server.handler.Handler;
@@ -32,17 +33,24 @@ import com.nhnacademy.messenger.server.user.repository.UserRepository;
 import com.nhnacademy.messenger.server.utils.IdGenerator;
 import com.nhnacademy.messenger.server.utils.ResponseFactory;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Base64;
 import java.util.List;
 import java.util.Objects;
 
-@Slf4j
+
+//Long roomId,
+//String fileName,
+//Long fileSize,
+//String fileData
+
 @RequiredArgsConstructor
-public class ChatMessageHandler implements Handler {
+public class FileTransferHandler implements Handler {
+
+    private static final long MAX_SIZE = 10L * 1024 * 1024;
 
     private final UserRepository userRepository;
     private final ChatRoomRepository chatRoomRepository;
@@ -57,11 +65,13 @@ public class ChatMessageHandler implements Handler {
             return ResponseFactory.error("COMMON.BAD_REQUEST", "데이터 형식이 올바르지 않습니다.");
         }
 
-        if (!(request.getData() instanceof ChatRequest(Long roomId, String message)) || roomId == null) {
+        if (!(request.getData() instanceof FileTransferRequest(
+                Long roomId, String fileName, Long requestFileSize, String fileData
+        )) || roomId == null || requestFileSize == null) {
             return ResponseFactory.error("COMMON.BAD_REQUEST", "데이터 형식이 올바르지 않습니다.");
         }
 
-        if (StringUtils.isBlank(message)) {
+        if (StringUtils.isBlank(fileName) || requestFileSize < 0 || StringUtils.isBlank(fileData)) {
             return ResponseFactory.error("COMMON.BAD_REQUEST", "데이터 형식이 올바르지 않습니다.");
         }
 
@@ -70,9 +80,25 @@ public class ChatMessageHandler implements Handler {
             return ResponseFactory.error("AUTH.INVALID_SESSION", "유효하지 않은 세션입니다.");
         }
 
+        if (requestFileSize > MAX_SIZE) {
+            return ResponseFactory.error("FILE.SIZE_EXCEEDED", "파일 크기 제한(10MB)을 초과했습니다.");
+        }
+
         ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElse(null);
         if (chatRoom == null) {
             return ResponseFactory.error("ROOM.NOT_FOUND", "해당 채팅방을 찾을 수 없습니다.");
+        }
+
+        byte[] decodedFileData = {};
+        try {
+            decodedFileData = Base64.getDecoder().decode(fileData);
+        } catch (IllegalArgumentException e) {
+            return ResponseFactory.error("COMMON.BAD_REQUEST", "데이터 형식이 올바르지 않습니다.");
+        }
+
+        long fileSize = decodedFileData.length;
+        if (fileSize > MAX_SIZE) {
+            return ResponseFactory.error("FILE.SIZE_EXCEEDED", "파일 크기 제한(10MB)을 초과했습니다.");
         }
 
         long messageId = IdGenerator.nextMessageId();
@@ -88,24 +114,24 @@ public class ChatMessageHandler implements Handler {
                 senderId,
                 senderName,
                 now,
-                message
+                fileData
         ));
 
         // 현재는 Send, Push 모두 한다.
-        // MessageType.CHAT_MESSAGE -> Send
+        // MessageType.FILE_TRANSFER -> Send
         // MessageType.PUSH_NEW_MESSAGE -> Push
         // 나중에는 Push만 하도록 수정.
         List<String> members = chatRoom.getAllMembers().stream().toList();
-        MessageResponse<com.nhnacademy.messenger.common.dto.message.ChatMessage> response = ResponseFactory.successResponse(
-                MessageType.CHAT_MESSAGE,
-                new com.nhnacademy.messenger.common.dto.message.ChatMessage(senderId, message)
+        MessageResponse<ChatFileMessage> response = ResponseFactory.successResponse(
+                MessageType.FILE_TRANSFER,
+                new ChatFileMessage(senderId, fileName, fileSize, fileData)
         );
 
         sender.sendToUsers(members, response);
 
         return ResponseFactory.success(
-                MessageType.CHAT_MESSAGE_SUCCESS,
-                new ChatResponse(roomId, messageId)
-        ).addNotification(() -> notificationService.pushNewMessage(roomId, messageId, senderId, message, ContentType.TEXT, null, 0L));
+                MessageType.FILE_TRANSFER_SUCCESS,
+                new FileTransferResponse(roomId, messageId, fileName)
+        ).addNotification(() -> notificationService.pushNewMessage(roomId, messageId, senderId, null, ContentType.FILE, fileName, fileSize));
     }
 }
