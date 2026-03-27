@@ -1,62 +1,135 @@
-# 셀프 체크리스트 (Self-Checklist)
+# TCP 기반 메신저 시스템
 
-본 문서는 메신저 시스템 개발 완료 후 요구사항 충족 여부를 스스로 확인하기 위한 체크리스트입니다.
+> Java 21과 TCP 소켓 통신을 기반으로 구현한 멀티 모듈 메신저 시스템
 
-## 1. 프로젝트 기본 구성 및 기술 스택
+---
 
-- [x] Maven 멀티 모듈 구조로 구성되어 있는가? (`messenger-common`, `messenger-server`, `messenger-client`)
-- [x] Java 21 버전을 사용하는가?
-- [x] Jackson 라이브러리를 사용하여 JSON 직렬화/역직렬화를 처리하는가?
-- [x] TCP 소켓 통신을 기반으로 구현되었는가?
+## 프로젝트 개요
 
-## 2. 공통 규격 및 비기능적 요소
+- **개발 기간**: 2026. 01. 28 ~ 2026. 02. 05
+- **개발 인원**: 2명
+- **아키텍처**: Client-Server 구조
+- **통신 방식**: TCP Socket 기반
+- **데이터 포맷**: JSON
 
-- [x] **메시지 규격**
-    - [x] Text-based Length-Prefix 방식을 준수하는가? (`message-length: [길이]\n{JSON}`)
-    - [x] 모든 요청의 헤더에 `sessionId`가 포함되어 있으며, 서버에서 이를 검증하는가?
-- [x] **예외 처리**
-    - [x] 모든 실패 응답이 공통 에러 형식(`code`, `message`)을 따르는가?
-- [x] **보안**
-    - [x] 인증된 사용자만 시스템 이용이 가능한가?
+---
 
-## 3. 기본 기능 구현 (Basic Features)
+## 기술 스택
 
-- [x] **로그인 및 사용자 관리**
-    - [x] `LOGIN`: 로그인 요청 및 성공(sessionId 발급)/실패 응답이 정상적인가?
-    - [x] `LOGOUT`: 로그아웃 요청 및 세션 종료 처리가 정상적인가?
-    - [x] `USER-LIST`: 전체 사용자 목록 및 온라인 상태 조회가 가능한가?
-- [x] **채팅방 관리**
-    - [x] `CHAT-ROOM-CREATE`: 채팅방 생성이 정상적으로 작동하는가?
-    - [x] `CHAT-ROOM-LIST`: 채팅방 목록 조회가 정상적으로 작동하는가?
-    - [x] `CHAT-ROOM-ENTER`: 채팅방 입장 및 현재 참여자 목록 반환이 정상적인가?
-    - [x] `CHAT-ROOM-EXIT`: 채팅방 나가기 처리가 정상적인가?
-- [x] **메시징 기능**
-    - [x] `CHAT-MESSAGE`: 채팅방 내 메시지 전송 및 브로드캐스트가 정상적인가?
-    - [x] `PRIVATE-MESSAGE`: 특정 사용자에 대한 귓속말 전송이 가능한가?
-    - [x] `CHAT-MESSAGE-HISTORY`: 과거 메시지 기록 조회가 가능한가?
-    - [x] 메시지 전송 성공 시 고유한 `messageId`를 반환하는가?
+### Backend
 
-## 4. 추가 구현 사항 (Advanced Features)
+- Java 21
 
-- [x] **추가 구현 1: 파일 전송**
-    - [x] `FILE-TRANSFER`: Base64 인코딩을 통한 파일 전송이 구현되었는가?
-    - [x] 파일 크기 제한(10MB) 초과 시 에러 처리를 하는가?
-- [x] **추가 구현 2: 실시간 알림 (Push)**
-    - [x] `PUSH-NEW-MESSAGE`: 새 메시지 수신 시 실시간 알림을 보내는가?
-    - [x] `PUSH-ROOM-ENTER` / `PUSH-ROOM-EXIT`: 사용자 입장/퇴장 알림이 전달되는가?
-- [x] **추가 구현 3: 성능 개선 (Queue)**
-    - [x] 메시지 저장 및 브로드캐스트 처리를 비동기(Queue 활용)로 처리하는가?
-    - [x] Push 알림 발송 로직이 메인 메시징 로직과 분리되어 있는가?
-- [x] **추가 구현 4: 아키텍처 개선 (Design Patterns)**
-    - [x] **Observer 패턴**: UI와 메시지 수신 로직이 분리되어 있는가?
-    - [x] **Command 패턴**: 채팅 명령어(/list, /exit 등) 처리가 객체화되어 있는가?
-    - [x] **Factory Method 패턴**: 메시지 타입별 객체 생성 로직이 캡슐화되어 있는가?
-    - [x] **Strategy 패턴**: 메시지 타입별 처리 알고리즘이 동적으로 교체 가능한가?
-- [ ] **추가 구현 5: NIO 기반 커넥션 관리**
-    - [ ] Java NIO를 사용하여 Non-blocking I/O 모델로 구현되었는가?
-    - [ ] Selector를 활용하여 대규모 동시 접속을 효율적으로 관리하는가?
+### Build & Structure
 
-## 5. 테스트 및 배포
+- Maven Multi Module
+    - messenger-common
+    - messenger-server
+    - messenger-client
 
-- [x] JUnit 기반의 단위 테스트가 작성되어 있는가?
-- [x] `maven-shade-plugin`을 사용하여 독립 실행형 JAR로 빌드가 가능한가?
+### Test & Packaging
+
+- JUnit5
+- Maven Shade Plugin
+
+---
+
+## 메시지 프로토콜
+
+- Length-Prefix 기반 메시지 규격
+
+```
+message-length: [길이]
+{JSON}
+```
+
+- 모든 요청은 sessionId 포함
+- 서버에서 세션 검증 수행
+
+---
+
+## 공통 설계 요소
+
+### 예외 처리
+
+- 모든 실패 응답은 공통 포맷 사용
+
+```json
+{
+  "code": "ERROR_CODE",
+  "message": "에러 메시지"
+}
+```
+
+### 보안
+
+- 로그인 기반 인증
+- 인증된 사용자만 기능 접근 가능
+
+---
+
+## 주요 기능
+
+### 사용자 관리
+
+- 로그인 / 로그아웃
+- 세션 기반 인증 (sessionId)
+- 전체 사용자 목록 및 온라인 상태 조회
+
+---
+
+### 채팅방 기능
+
+- 채팅방 생성
+- 채팅방 목록 조회
+- 채팅방 입장 / 퇴장
+- 참여자 목록 조회
+
+---
+
+### 메시징 기능
+
+- 채팅방 메시지 전송 (Broadcast)
+- 귓속말
+- 메시지 히스토리 조회
+- 메시지 전송 시 messageId 반환
+
+---
+
+### 디자인 패턴 적용
+
+| 패턴             | 적용 목적             |
+|----------------|-------------------|
+| Observer       | UI와 메시지 수신 로직 분리  |
+| Command        | 채팅 명령어 객체화        |
+| Factory Method | 메시지 타입별 객체 생성     |
+| Strategy       | 메시지 처리 로직 유연하게 교체 |
+
+---
+
+## 테스트
+
+- JUnit5 기반 단위 테스트 작성
+
+---
+
+## 빌드 및 실행
+
+```bash
+# 빌드
+mvn clean package
+
+# 실행
+java -jar messenger-server.jar
+java -jar messenger-client.jar
+```
+
+---
+
+## 프로젝트 핵심 포인트
+
+- TCP 기반 메시지 프로토콜 직접 설계
+- 세션 기반 인증 및 보안 처리 구현
+- Queue 기반 비동기 아키텍처 적용
+- 다양한 디자인 패턴 실전 적용
+- 확장성을 고려한 멀티 모듈 구조 설계
